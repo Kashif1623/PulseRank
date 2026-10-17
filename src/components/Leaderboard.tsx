@@ -56,7 +56,7 @@ export function Leaderboard() {
   if (!CONTRACTS_DEPLOYED) return <NotDeployedBanner />
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pb-24">
+    <div className="max-w-2xl mx-auto px-4 pb-32 sm:pb-24">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -4 }}
@@ -122,13 +122,35 @@ export function Leaderboard() {
         ) : entries.length === 0 ? (
           <motion.div
             key="empty"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-24 text-slate-500"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-20"
           >
-            <Trophy size={36} className="mx-auto mb-4 opacity-20" />
-            <p className="font-medium text-slate-400">{t.no_agents_title}</p>
-            <p className="text-sm mt-1">{t.no_agents_body}</p>
+            {/* Decorative rings */}
+            <div className="relative w-20 h-20 mx-auto mb-6">
+              <div className="absolute inset-0 rounded-full border-2 border-dashed border-white/[0.07] animate-spin" style={{ animationDuration: '12s' }} />
+              <div className="absolute inset-2 rounded-full border border-white/[0.05]" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Trophy size={28} className="text-amber-400/40" />
+              </div>
+            </div>
+            <p className="font-semibold text-slate-300 text-base mb-2">{t.no_agents_title}</p>
+            <p className="text-sm text-slate-600 max-w-xs mx-auto leading-relaxed">{t.no_agents_body}</p>
+            {/* Step hint */}
+            <div className="mt-6 inline-flex flex-col gap-2 text-left">
+              {[
+                { num: '1', text: 'Go to Agent tab' },
+                { num: '2', text: 'Click Register as Agent' },
+                { num: '3', text: 'Send heartbeats to earn score' },
+              ].map(({ num, text }) => (
+                <div key={num} className="flex items-center gap-3 text-xs text-slate-600">
+                  <span className="w-5 h-5 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center font-semibold text-slate-500 shrink-0">
+                    {num}
+                  </span>
+                  {text}
+                </div>
+              ))}
+            </div>
           </motion.div>
         ) : (
           <motion.div key="list" className="space-y-2">

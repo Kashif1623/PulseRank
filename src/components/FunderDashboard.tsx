@@ -1,8 +1,11 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSwitchChain } from 'wagmi'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, PauseCircle, PlayCircle, AlertTriangle, ChevronDown, ChevronUp, Coins, X, Zap } from 'lucide-react'
+import {
+  Plus, PauseCircle, PlayCircle, AlertTriangle,
+  ChevronDown, Coins, X, Zap, ChevronUp, Search, Check,
+} from 'lucide-react'
 
 import {
   STREAM_ABI, STREAM_ADDRESS, USDC_ABI, USDC_ADDRESS,
@@ -25,6 +28,177 @@ import { txSuccess, txError } from '../lib/txToast'
 
 const CHAIN = ARC_MAINNET_ID
 
+// ─── Featured demo agents ──────────────────────────────────────────────────────
+// Replace these with real registered agents once deployed
+const FEATURED_AGENTS = [
+  { address: '0x1111000000000000000000000000000000000001' as `0x${string}`, name: 'alpha-bot',    score: 920 },
+  { address: '0x2222000000000000000000000000000000000002' as `0x${string}`, name: 'beta-sentinel', score: 810 },
+  { address: '0x3333000000000000000000000000000000000003' as `0x${string}`, name: 'gamma-watch',  score: 650 },
+  { address: '0x4444000000000000000000000000000000000004' as `0x${string}`, name: 'delta-guard',  score: 490 },
+]
+
+// ─── Agent selector sub-component ─────────────────────────────────────────────
+
+function AgentSelector({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (v: string) => void
+}) {
+  const { t } = useLang()
+  const [open, setOpen] = useState(false)
+  const [custom, setCustom] = useState(false)
+  const dropRef = useRef<HTMLDivElement>(null)
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return
+    function handler(e: MouseEvent) {
+      if (dropRef.current && !dropRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  const selected = FEATURED_AGENTS.find((a) => a.address === value)
+  const isCustom = !!value && !selected
+
+  const displayLabel = custom || isCustom
+    ? t.custom_address
+    : selected ? selected.name : t.select_agent
+
+  function pickFeatured(addr: `0x${string}`) {
+    onChange(addr)
+    setCustom(false)
+    setOpen(false)
+  }
+
+  function pickCustom() {
+    setCustom(true)
+    onChange('')
+    setOpen(false)
+  }
+
+  return (
+    <div className="space-y-2">
+      <label className="text-[11px] text-slate-500 uppercase tracking-widest font-medium block">
+        {t.agent_address}
+      </label>
+
+      {/* Dropdown trigger */}
+      <div ref={dropRef} className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className={cn(
+            'w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-sm transition-all',
+            'bg-white/[0.05] border-white/[0.09] hover:bg-white/[0.08] focus:outline-none focus:border-emerald-400/50',
+            open && 'border-emerald-400/40 bg-white/[0.07]',
+          )}
+        >
+          <span className={cn('truncate', selected || custom || isCustom ? 'text-slate-200' : 'text-slate-600')}>
+            {displayLabel}
+          </span>
+          <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+            <ChevronDown size={14} className="text-slate-500 shrink-0 ml-2" />
+          </motion.div>
+        </button>
+
+        {/* Dropdown panel */}
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              initial={{ opacity: 0, y: -6, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -6, scale: 0.98 }}
+              transition={{ duration: 0.15 }}
+              className="absolute z-20 mt-1 w-full bg-[#0f1a2e] border border-white/[0.12] rounded-2xl shadow-2xl shadow-black/60 overflow-hidden"
+            >
+              {/* Featured section */}
+              <div className="px-3 pt-3 pb-1">
+                <p className="text-[10px] text-slate-600 uppercase tracking-widest font-medium mb-1.5">
+                  {t.featured_agents}
+                </p>
+              </div>
+              {FEATURED_AGENTS.map((agent) => {
+                const isActive = value === agent.address
+                return (
+                  <button
+                    key={agent.address}
+                    type="button"
+                    onClick={() => pickFeatured(agent.address)}
+                    className={cn(
+                      'w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors',
+                      isActive ? 'bg-emerald-400/10' : 'hover:bg-white/[0.05]',
+                    )}
+                  >
+                    <div className="w-8 h-8 rounded-full bg-white/[0.07] flex items-center justify-center text-xs font-semibold text-slate-300 shrink-0">
+                      {agent.name.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={cn('text-sm font-medium truncate', isActive ? 'text-emerald-300' : 'text-slate-200')}>
+                        {agent.name}
+                      </p>
+                      <p className="mono text-[10px] text-slate-600 truncate">{formatAddress(agent.address)}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs tabular text-slate-500">{agent.score}</span>
+                      {isActive && <Check size={13} className="text-emerald-400" />}
+                    </div>
+                  </button>
+                )
+              })}
+
+              {/* Divider + custom option */}
+              <div className="border-t border-white/[0.07] mt-1">
+                <button
+                  type="button"
+                  onClick={pickCustom}
+                  className={cn(
+                    'w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors',
+                    (custom || isCustom) ? 'bg-emerald-400/10' : 'hover:bg-white/[0.05]',
+                  )}
+                >
+                  <div className="w-8 h-8 rounded-full bg-white/[0.05] border border-white/[0.08] flex items-center justify-center shrink-0">
+                    <Search size={12} className="text-slate-500" />
+                  </div>
+                  <span className={cn('text-sm', (custom || isCustom) ? 'text-emerald-300' : 'text-slate-400')}>
+                    {t.enter_custom_address}
+                  </span>
+                  {(custom || isCustom) && <Check size={13} className="text-emerald-400 ml-auto" />}
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Custom address input — shown when custom is selected */}
+      <AnimatePresence>
+        {(custom || isCustom) && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            className="overflow-hidden"
+          >
+            <input
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder={t.agent_address_placeholder}
+              spellCheck={false}
+              autoFocus
+              className="w-full bg-white/[0.05] border border-white/[0.09] rounded-xl px-3 py-2.5 text-sm mono text-slate-200 placeholder-slate-700 focus:outline-none focus:border-emerald-400/50 focus:bg-white/[0.07] transition-all"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 // ─── Stream creation modal ────────────────────────────────────────────────────
 
 function ProposeStreamModal({ onClose }: { onClose: () => void }) {
@@ -45,23 +219,19 @@ function ProposeStreamModal({ onClose }: { onClose: () => void }) {
   const needsApproval = allowance !== undefined && parsedAmount > 0n && allowance < parsedAmount
   const isWrongChain = chainId !== CHAIN
 
-  // Approve
   const { writeContract: approve, data: appHash, isPending: appPending, error: appError } = useWriteContract()
   const { isLoading: appConfirming, isSuccess: appSuccess } = useWaitForTransactionReceipt({ hash: appHash })
 
-  // Propose
   const { writeContract: propose, data: propHash, isPending: propPending, error: propError } = useWriteContract()
   const { isLoading: propConfirming, isSuccess: propSuccess } = useWaitForTransactionReceipt({ hash: propHash })
 
-  // Side-effects via useEffect to avoid render-phase side-effects
-  useEffect(() => { if (appSuccess) { txSuccess(t.toast_approved, appHash); void refetchAllowance() } }, [appSuccess, appHash, t.toast_approved, refetchAllowance])
+  useEffect(() => {
+    if (appSuccess) { txSuccess(t.toast_approved, appHash); void refetchAllowance() }
+  }, [appSuccess, appHash, t.toast_approved, refetchAllowance])
   useEffect(() => { if (appError) txError(t.toast_tx_error, appError) }, [appError, t.toast_tx_error])
   useEffect(() => { if (propError) txError(t.toast_tx_error, propError) }, [propError, t.toast_tx_error])
   useEffect(() => {
-    if (propSuccess) {
-      txSuccess(t.toast_proposed, propHash)
-      onClose()
-    }
+    if (propSuccess) { txSuccess(t.toast_proposed, propHash); onClose() }
   }, [propSuccess, propHash, t.toast_proposed, onClose])
 
   const handleApprove = useCallback(() => {
@@ -82,9 +252,7 @@ function ProposeStreamModal({ onClose }: { onClose: () => void }) {
   const balanceUsdc = balance ? formatUsdc(balance) : '—'
   const amountNum = parseFloat(amount || '0')
   const daysNum = parseFloat(durationDays || '0')
-  const canPropose = !!agentAddr && amountNum >= 0.2 && daysNum >= 1
-
-  // Estimated rate
+  const canPropose = !!agentAddr && /^0x[0-9a-fA-F]{40}$/.test(agentAddr) && amountNum >= 0.2 && daysNum >= 1
   const ratePerDay = amountNum > 0 && daysNum > 0 ? (amountNum / daysNum).toFixed(4) : null
 
   return (
@@ -92,7 +260,7 @@ function ProposeStreamModal({ onClose }: { onClose: () => void }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-md"
       onClick={onClose}
     >
       <motion.div
@@ -100,38 +268,29 @@ function ProposeStreamModal({ onClose }: { onClose: () => void }) {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 40, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-        className="w-full sm:max-w-md bg-[#101624] border border-white/10 rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl shadow-black/60"
+        className="w-full sm:max-w-md bg-[#101624] border border-white/10 rounded-t-3xl sm:rounded-3xl shadow-2xl shadow-black/60"
+        style={{ maxHeight: '90dvh', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        {/* Sticky header */}
+        <div className="sticky top-0 z-10 flex items-center justify-between px-6 pt-6 pb-4 bg-[#101624] border-b border-white/[0.07]">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-emerald-400/10 border border-emerald-400/20 flex items-center justify-center">
               <Zap size={14} className="text-emerald-400" />
             </div>
-            <h3 className="display font-semibold text-base text-white">
-              {t.new_stream}
-            </h3>
+            <h3 className="display font-semibold text-base text-white">{t.new_stream}</h3>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-300 hover:bg-white/[0.07] transition-colors">
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-300 hover:bg-white/[0.07] transition-colors"
+          >
             <X size={15} />
           </button>
         </div>
 
-        <div className="space-y-4">
-          {/* Agent address */}
-          <div>
-            <label className="text-[11px] text-slate-500 uppercase tracking-widest mb-1.5 block font-medium">
-              {t.agent_address}
-            </label>
-            <input
-              value={agentAddr}
-              onChange={(e) => setAgentAddr(e.target.value)}
-              placeholder={t.agent_address_placeholder}
-              spellCheck={false}
-              className="w-full bg-white/[0.05] border border-white/[0.09] rounded-xl px-3 py-2.5 text-sm mono text-slate-200 placeholder-slate-700 focus:outline-none focus:border-emerald-400/50 focus:bg-white/[0.07] transition-all"
-            />
-          </div>
+        <div className="px-6 pb-6 pt-4 space-y-4">
+          {/* Agent selector */}
+          <AgentSelector value={agentAddr} onChange={setAgentAddr} />
 
           {/* Amount */}
           <div>
@@ -153,11 +312,11 @@ function ProposeStreamModal({ onClose }: { onClose: () => void }) {
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 font-semibold">USDC</span>
             </div>
-            {/* Quick fill chips */}
-            <div className="flex gap-1.5 mt-2">
+            <div className="flex gap-1.5 mt-2 flex-wrap">
               {['1', '5', '10', '50', '100'].map((v) => (
                 <button
                   key={v}
+                  type="button"
                   onClick={() => setAmount(v)}
                   className={cn(
                     'text-xs px-2.5 py-1 rounded-lg border transition-all',
@@ -186,11 +345,11 @@ function ProposeStreamModal({ onClose }: { onClose: () => void }) {
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 font-semibold">d</span>
             </div>
-            {/* Duration quick chips */}
             <div className="flex gap-1.5 mt-2">
               {[7, 14, 30, 90].map((d) => (
                 <button
                   key={d}
+                  type="button"
                   onClick={() => setDurationDays(String(d))}
                   className={cn(
                     'text-xs px-2.5 py-1 rounded-lg border transition-all',
@@ -225,6 +384,7 @@ function ProposeStreamModal({ onClose }: { onClose: () => void }) {
                 return (
                   <button
                     key={m}
+                    type="button"
                     onClick={() => setMode(m)}
                     className={cn(
                       'rounded-xl border p-2.5 text-left transition-all',
@@ -295,17 +455,16 @@ function StreamCard({ streamId }: { streamId: bigint }) {
   const { writeContract, data: txHash, isPending, error: txErr } = useWriteContract()
   const { isLoading: isConfirming, isSuccess: txSuccess2 } = useWaitForTransactionReceipt({ hash: txHash })
 
-  const doTx = useCallback((fn: Parameters<typeof writeContract>[0], msg: string) => {
+  const doTx = useCallback((fn: Parameters<typeof writeContract>[0]) => {
     if (chainId !== CHAIN) { switchChain({ chainId: CHAIN }); return }
     writeContract(fn)
-    void msg
   }, [chainId, switchChain, writeContract])
 
   useEffect(() => { if (txSuccess2) void refetch() }, [txSuccess2, refetch])
   useEffect(() => { if (txErr) txError(t.toast_tx_error, txErr) }, [txErr, t.toast_tx_error])
 
   if (!stream) return (
-    <div className="h-[72px] rounded-2xl bg-white/[0.04] animate-pulse" />
+    <div className="h-[72px] rounded-2xl bg-white/[0.04] skeleton" />
   )
 
   const health = getStreamHealth(stream, now)
@@ -323,21 +482,18 @@ function StreamCard({ streamId }: { streamId: bigint }) {
   return (
     <div className={cn(
       'rounded-2xl border transition-all duration-200 overflow-hidden',
-      health === 'dead' ? 'border-red-400/20 bg-red-400/[0.04]' :
-      health === 'grace' ? 'border-amber-400/20 bg-amber-400/[0.04]' :
-      health === 'alive' ? 'border-emerald-400/15 bg-white/[0.04]' :
+      health === 'dead'   ? 'border-red-400/20 bg-red-400/[0.04]' :
+      health === 'grace'  ? 'border-amber-400/20 bg-amber-400/[0.04]' :
+      health === 'alive'  ? 'border-emerald-400/15 bg-white/[0.04]' :
       'border-white/[0.07] bg-white/[0.03]',
     )}>
       {/* Progress bar */}
       <div className="h-0.5 bg-white/[0.04]">
         <div
-          className={cn(
-            'h-full transition-all duration-700',
+          className={cn('h-full transition-all duration-700',
             health === 'dead' ? 'bg-red-500' :
             health === 'grace' ? 'bg-amber-400' :
-            health === 'alive' ? 'bg-emerald-400' :
-            'bg-slate-600',
-          )}
+            health === 'alive' ? 'bg-emerald-400' : 'bg-slate-600')}
           style={{ width: `${progressPct}%` }}
         />
       </div>
@@ -375,7 +531,7 @@ function StreamCard({ streamId }: { streamId: bigint }) {
         </button>
       </div>
 
-      {/* Expanded section */}
+      {/* Expanded */}
       <AnimatePresence>
         {expanded && (
           <motion.div
@@ -386,8 +542,7 @@ function StreamCard({ streamId }: { streamId: bigint }) {
             className="overflow-hidden"
           >
             <div className="px-4 pb-4 pt-1 border-t border-white/[0.06]">
-              {/* Details grid */}
-              <div className="grid grid-cols-3 gap-3 mb-3 mt-2">
+              <div className="grid grid-cols-3 gap-2 mb-3 mt-2">
                 <div className="bg-white/[0.03] rounded-xl p-2.5">
                   <p className="text-[10px] text-slate-600 mb-0.5">{t.duration}</p>
                   <p className="tabular text-xs text-slate-300 font-medium">{(Number(stream.durationSecs) / 86400).toFixed(1)}d</p>
@@ -404,54 +559,34 @@ function StreamCard({ streamId }: { streamId: bigint }) {
                 </div>
               </div>
 
-              {/* Action buttons */}
               <div className="flex flex-wrap gap-2">
                 {(health === 'alive' || health === 'grace') && (
-                  <TxButton
-                    size="sm" variant="ghost"
-                    onClick={() => doTx({ address: STREAM_ADDRESS, abi: STREAM_ABI, functionName: 'pauseStream', args: [streamId], chainId: CHAIN }, t.toast_paused)}
-                    isPending={isBusy}
-                  >
+                  <TxButton size="sm" variant="ghost" isPending={isBusy}
+                    onClick={() => doTx({ address: STREAM_ADDRESS, abi: STREAM_ABI, functionName: 'pauseStream', args: [streamId], chainId: CHAIN })}>
                     <PauseCircle size={12} /> {t.pause}
                   </TxButton>
                 )}
-
                 {health === 'paused' && !canForceUnpause && (
-                  <TxButton
-                    size="sm" variant="ghost"
-                    onClick={() => doTx({ address: STREAM_ADDRESS, abi: STREAM_ABI, functionName: 'unpauseStream', args: [streamId], chainId: CHAIN }, t.toast_unpaused)}
-                    isPending={isBusy}
-                  >
+                  <TxButton size="sm" variant="ghost" isPending={isBusy}
+                    onClick={() => doTx({ address: STREAM_ADDRESS, abi: STREAM_ABI, functionName: 'unpauseStream', args: [streamId], chainId: CHAIN })}>
                     <PlayCircle size={12} /> {t.unpause}
                   </TxButton>
                 )}
-
                 {health === 'proposed' && (
-                  <TxButton
-                    size="sm" variant="danger"
-                    onClick={() => doTx({ address: STREAM_ADDRESS, abi: STREAM_ABI, functionName: 'cancelProposal', args: [streamId], chainId: CHAIN }, t.toast_cancelled)}
-                    isPending={isBusy}
-                  >
+                  <TxButton size="sm" variant="danger" isPending={isBusy}
+                    onClick={() => doTx({ address: STREAM_ADDRESS, abi: STREAM_ABI, functionName: 'cancelProposal', args: [streamId], chainId: CHAIN })}>
                     <X size={12} /> {t.cancel_proposal}
                   </TxButton>
                 )}
-
                 {health === 'dead' && (
-                  <TxButton
-                    size="sm" variant="danger"
-                    onClick={() => doTx({ address: STREAM_ADDRESS, abi: STREAM_ABI, functionName: 'triggerReclaim', args: [streamId], chainId: CHAIN }, t.toast_reclaimed)}
-                    isPending={isBusy}
-                  >
+                  <TxButton size="sm" variant="danger" isPending={isBusy}
+                    onClick={() => doTx({ address: STREAM_ADDRESS, abi: STREAM_ABI, functionName: 'triggerReclaim', args: [streamId], chainId: CHAIN })}>
                     <AlertTriangle size={12} /> {t.force_reclaim}
                   </TxButton>
                 )}
-
                 {canForceUnpause && (
-                  <TxButton
-                    size="sm" variant="amber"
-                    onClick={() => doTx({ address: STREAM_ADDRESS, abi: STREAM_ABI, functionName: 'forceUnpause', args: [streamId], chainId: CHAIN }, t.toast_unpaused)}
-                    isPending={isBusy}
-                  >
+                  <TxButton size="sm" variant="amber" isPending={isBusy}
+                    onClick={() => doTx({ address: STREAM_ADDRESS, abi: STREAM_ABI, functionName: 'forceUnpause', args: [streamId], chainId: CHAIN })}>
                     <ChevronUp size={12} /> {t.force_unpause}
                   </TxButton>
                 )}
@@ -478,7 +613,7 @@ export function FunderDashboard() {
   if (!CONTRACTS_DEPLOYED) return <NotDeployedBanner />
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pb-24">
+    <div className="max-w-2xl mx-auto px-4 pb-32 sm:pb-24">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -4 }}
@@ -514,7 +649,7 @@ export function FunderDashboard() {
         ) : isLoading ? (
           <motion.div key="loading" className="space-y-2">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-[72px] rounded-2xl bg-white/[0.04] animate-pulse" style={{ animationDelay: `${i * 60}ms` }} />
+              <div key={i} className="h-[72px] rounded-2xl skeleton" style={{ animationDelay: `${i * 60}ms` }} />
             ))}
           </motion.div>
         ) : reversedIds.length === 0 ? (
@@ -542,7 +677,6 @@ export function FunderDashboard() {
         )}
       </AnimatePresence>
 
-      {/* Modal */}
       <AnimatePresence>
         {showForm && <ProposeStreamModal onClose={() => setShowForm(false)} />}
       </AnimatePresence>

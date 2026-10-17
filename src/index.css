@@ -152,12 +152,13 @@ input[type=number] { -moz-appearance: textfield; }
 /* ── Toast overrides ────────────────────────────────────────────────────────── */
 [data-sonner-toaster] {
   font-family: 'DM Sans', sans-serif !important;
-  bottom: calc(72px + var(--safe-bottom)) !important; /* above mobile nav */
 }
 
-@media (min-width: 640px) {
+/* On mobile: move toasts to top so they don't fight the bottom nav or watermark */
+@media (max-width: 639px) {
   [data-sonner-toaster] {
-    bottom: 24px !important;
+    top: 72px !important;
+    bottom: auto !important;
   }
 }
 

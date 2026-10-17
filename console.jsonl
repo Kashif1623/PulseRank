@@ -10,3 +10,76 @@
 {"level":"error","message":"[vite] failed to connect to websocket.\nyour current setup:\n  (browser) ijxtdhtp5otrei6qjbb60.preview.studio.arc.io/ <--[HTTP]--> localhost:5173/ (server)\n  (browser) ijxtdhtp5otrei6qjbb60.preview.studio.arc.io:/ <--[WebSocket (failing)]--> localhost:5173/ (server)\nCheck out your Vite / network configuration and https://vite.dev/config/server-options.html#server-hmr .","timestamp":1792145063775}
 {"level":"error","message":"[vite] failed to connect to websocket.\nyour current setup:\n  (browser) ijxtdhtp5otrei6qjbb60.preview.studio.arc.io/ <--[HTTP]--> localhost:5173/ (server)\n  (browser) ijxtdhtp5otrei6qjbb60.preview.studio.arc.io:/ <--[WebSocket (failing)]--> localhost:5173/ (server)\nCheck out your Vite / network configuration and https://vite.dev/config/server-options.html#server-hmr .","timestamp":1792145106864}
 {"level":"error","message":"[vite] failed to connect to websocket.\nyour current setup:\n  (browser) ijxtdhtp5otrei6qjbb60.preview.studio.arc.io/ <--[HTTP]--> localhost:5173/ (server)\n  (browser) ijxtdhtp5otrei6qjbb60.preview.studio.arc.io:/ <--[WebSocket (failing)]--> localhost:5173/ (server)\nCheck out your Vite / network configuration and https://vite.dev/config/server-options.html#server-hmr .","timestamp":1792145279690}
+{"level":"error","message":"[vite] failed to connect to websocket.\nyour current setup:\n  (browser) ijxtdhtp5otrei6qjbb60.preview.studio.arc.io/ <--[HTTP]--> localhost:5173/ (server)\n  (browser) ijxtdhtp5otrei6qjbb60.preview.studio.arc.io:/ <--[WebSocket (failing)]--> localhost:5173/ (server)\nCheck out your Vite / network configuration and https://vite.dev/config/server-options.html#server-hmr .","timestamp":1792162211065}
+{"level":"debug","message":"[vite] connected.","timestamp":1792208471418}
+{"level":"debug","message":"[vite] connected.","timestamp":1792208648539}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792208651493}
+{"level":"debug","message":"[vite] hot updated: /src/components/Leaderboard.tsx","timestamp":1792208651495}
+{"level":"debug","message":"[vite] hot updated: /src/components/FunderDashboard.tsx","timestamp":1792208651496}
+{"level":"debug","message":"[vite] hot updated: /src/components/AgentDashboard.tsx","timestamp":1792208651497}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1792208651499}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/LanguageSwitcher.tsx","timestamp":1792208651500}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/NotDeployedBanner.tsx","timestamp":1792208651501}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/StatusPill.tsx","timestamp":1792208651502}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792208666191}
+{"level":"debug","message":"[vite] hot updated: /src/components/Leaderboard.tsx","timestamp":1792208666193}
+{"level":"debug","message":"[vite] hot updated: /src/components/FunderDashboard.tsx","timestamp":1792208666195}
+{"level":"debug","message":"[vite] hot updated: /src/components/AgentDashboard.tsx","timestamp":1792208666196}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1792208666198}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/LanguageSwitcher.tsx","timestamp":1792208666199}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/NotDeployedBanner.tsx","timestamp":1792208666200}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/StatusPill.tsx","timestamp":1792208666201}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792208666729}
+{"level":"debug","message":"[vite] hot updated: /src/components/Leaderboard.tsx","timestamp":1792208666730}
+{"level":"debug","message":"[vite] hot updated: /src/components/FunderDashboard.tsx","timestamp":1792208666731}
+{"level":"debug","message":"[vite] hot updated: /src/components/AgentDashboard.tsx","timestamp":1792208666732}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1792208666733}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/LanguageSwitcher.tsx","timestamp":1792208666733}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/NotDeployedBanner.tsx","timestamp":1792208666734}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/StatusPill.tsx","timestamp":1792208666735}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792208689825}
+{"level":"debug","message":"[vite] hot updated: /src/components/Leaderboard.tsx","timestamp":1792208689827}
+{"level":"debug","message":"[vite] hot updated: /src/components/FunderDashboard.tsx","timestamp":1792208689828}
+{"level":"debug","message":"[vite] hot updated: /src/components/AgentDashboard.tsx","timestamp":1792208689830}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1792208689831}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/LanguageSwitcher.tsx","timestamp":1792208689833}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/NotDeployedBanner.tsx","timestamp":1792208689834}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/StatusPill.tsx","timestamp":1792208689836}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792208691954}
+{"level":"debug","message":"[vite] hot updated: /src/components/Leaderboard.tsx","timestamp":1792208691955}
+{"level":"debug","message":"[vite] hot updated: /src/components/FunderDashboard.tsx","timestamp":1792208691955}
+{"level":"debug","message":"[vite] hot updated: /src/components/AgentDashboard.tsx","timestamp":1792208691956}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1792208691957}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/LanguageSwitcher.tsx","timestamp":1792208691958}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/NotDeployedBanner.tsx","timestamp":1792208691959}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/StatusPill.tsx","timestamp":1792208691960}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792208692294}
+{"level":"debug","message":"[vite] hot updated: /src/components/Leaderboard.tsx","timestamp":1792208692295}
+{"level":"debug","message":"[vite] hot updated: /src/components/FunderDashboard.tsx","timestamp":1792208692295}
+{"level":"debug","message":"[vite] hot updated: /src/components/AgentDashboard.tsx","timestamp":1792208692296}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1792208692297}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/LanguageSwitcher.tsx","timestamp":1792208692297}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/NotDeployedBanner.tsx","timestamp":1792208692297}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/StatusPill.tsx","timestamp":1792208692298}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792208693609}
+{"level":"debug","message":"[vite] hot updated: /src/components/Leaderboard.tsx","timestamp":1792208693609}
+{"level":"debug","message":"[vite] hot updated: /src/components/FunderDashboard.tsx","timestamp":1792208693610}
+{"level":"debug","message":"[vite] hot updated: /src/components/AgentDashboard.tsx","timestamp":1792208693610}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1792208693611}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/LanguageSwitcher.tsx","timestamp":1792208693612}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/NotDeployedBanner.tsx","timestamp":1792208693612}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/StatusPill.tsx","timestamp":1792208693613}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/TxButton.tsx","timestamp":1792208741130}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792208741131}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/TxButton.tsx","timestamp":1792208741143}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792208741144}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/TxButton.tsx","timestamp":1792208754611}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792208754611}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/TxButton.tsx","timestamp":1792208754614}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792208754614}
+{"level":"debug","message":"[vite] connected.","timestamp":1792209090230}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792219791503}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792223473238}
+{"level":"debug","message":"[vite] connected.","timestamp":1792224593065}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792225505544}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792225585154}

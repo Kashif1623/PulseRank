@@ -133,6 +133,25 @@ type Translations = {
   tooltip_mode_title: string
   tooltip_mode_body: string
 
+  // Register agent
+  register_agent: string
+  register_agent_subtitle: string
+  register_name: string
+  register_name_placeholder: string
+  register_profile_uri: string
+  register_profile_uri_placeholder: string
+  register_min_rate: string
+  register_min_rate_hint: string
+  register_submit: string
+  toast_registered: string
+  already_registered: string
+
+  // Featured agents
+  select_agent: string
+  featured_agents: string
+  custom_address: string
+  enter_custom_address: string
+
   // Toasts
   toast_proposed: string
   toast_accepted: string
@@ -253,6 +272,23 @@ const EN: Translations = {
   tooltip_mode_title: 'Heartbeat Modes',
   tooltip_mode_body: 'Strict (30 min interval, 10 min grace) — frequent check-ins, tight SLA. Normal (2 h / 30 min) — balanced for most agents. Relaxed (12 h / 2 h) — for slower-cadence work. The mode is fixed when the stream is created.',
 
+  register_agent: 'Register as Agent',
+  register_agent_subtitle: 'Join the PulseRank network and start receiving streams',
+  register_name: 'Agent name',
+  register_name_placeholder: 'e.g. my-agent',
+  register_profile_uri: 'Profile URI',
+  register_profile_uri_placeholder: 'https://…',
+  register_min_rate: 'Min daily rate (USDC)',
+  register_min_rate_hint: 'Minimum daily USDC you accept per stream (0 = any)',
+  register_submit: 'Register Agent',
+  toast_registered: 'Agent registered! You are now on PulseRank.',
+  already_registered: 'You are already registered as an agent.',
+
+  select_agent: 'Select agent',
+  featured_agents: 'Featured agents',
+  custom_address: 'Enter custom address',
+  enter_custom_address: 'Paste a custom agent address',
+
   toast_proposed: 'Stream proposed! Waiting for agent to accept.',
   toast_accepted: 'Stream accepted! Heartbeat clock has started.',
   toast_heartbeat_sent: 'Heartbeat sent! +1 reputation.',
@@ -371,6 +407,23 @@ const UR: Translations = {
   tooltip_score_body: 'اسکور ۰ سے ۱۰۰۰ تک ہے۔ شروعات ۵۰۰ سے۔ ہارٹ بیٹ پر +۱، ریکلیم پر −۱۵۰۔ ہیرا (>۹۰۰) اور سونا (>۷۵۰) بہترین ہیں؛ خطرے میں (<۵۰۰) کو بھروسہ بحال کرنا ہوگا۔',
   tooltip_mode_title: 'ہارٹ بیٹ موڈز',
   tooltip_mode_body: 'سخت (۳۰ منٹ / ۱۰ منٹ)۔ معمول (۲ گھنٹے / ۳۰ منٹ)۔ آرام دہ (۱۲ گھنٹے / ۲ گھنٹے)۔ موڈ اسٹریم بنانے پر طے ہو جاتا ہے۔',
+
+  register_agent: 'ایجنٹ کے طور پر رجسٹر کریں',
+  register_agent_subtitle: 'PulseRank نیٹ ورک میں شامل ہوں اور اسٹریمز وصول کریں',
+  register_name: 'ایجنٹ کا نام',
+  register_name_placeholder: 'مثلاً my-agent',
+  register_profile_uri: 'پروفائل URI',
+  register_profile_uri_placeholder: 'https://…',
+  register_min_rate: 'کم از کم روزانہ شرح (USDC)',
+  register_min_rate_hint: 'کم از کم روزانہ USDC جو آپ قبول کرتے ہیں (0 = کوئی بھی)',
+  register_submit: 'ایجنٹ رجسٹر کریں',
+  toast_registered: 'ایجنٹ رجسٹر ہو گیا! آپ اب PulseRank پر ہیں۔',
+  already_registered: 'آپ پہلے سے ایجنٹ کے طور پر رجسٹرڈ ہیں۔',
+
+  select_agent: 'ایجنٹ منتخب کریں',
+  featured_agents: 'نمایاں ایجنٹس',
+  custom_address: 'خود پتہ درج کریں',
+  enter_custom_address: 'کسٹم ایجنٹ پتہ پیسٹ کریں',
 
   toast_proposed: 'اسٹریم تجویز ہو گئی! ایجنٹ کی قبولیت کا انتظار ہے۔',
   toast_accepted: 'اسٹریم قبول ہو گئی! ہارٹ بیٹ گھڑی شروع ہو گئی۔',
@@ -491,6 +544,23 @@ const HI: Translations = {
   tooltip_mode_title: 'हार्टबीट मोड्स',
   tooltip_mode_body: 'सख्त (३० मिनट / १० मिनट)। सामान्य (२ घंटे / ३० मिनट)। शिथिल (१२ घंटे / २ घंटे)। मोड स्ट्रीम बनाते समय तय होता है।',
 
+  register_agent: 'एजेंट के रूप में पंजीकृत हों',
+  register_agent_subtitle: 'PulseRank नेटवर्क से जुड़ें और स्ट्रीम प्राप्त करें',
+  register_name: 'एजेंट नाम',
+  register_name_placeholder: 'जैसे my-agent',
+  register_profile_uri: 'प्रोफ़ाइल URI',
+  register_profile_uri_placeholder: 'https://…',
+  register_min_rate: 'न्यूनतम दैनिक दर (USDC)',
+  register_min_rate_hint: 'प्रति स्ट्रीम न्यूनतम दैनिक USDC (0 = कोई भी)',
+  register_submit: 'एजेंट पंजीकृत करें',
+  toast_registered: 'एजेंट पंजीकृत! आप अब PulseRank पर हैं।',
+  already_registered: 'आप पहले से एजेंट के रूप में पंजीकृत हैं।',
+
+  select_agent: 'एजेंट चुनें',
+  featured_agents: 'विशेष एजेंट',
+  custom_address: 'कस्टम पता दर्ज करें',
+  enter_custom_address: 'कस्टम एजेंट पता पेस्ट करें',
+
   toast_proposed: 'स्ट्रीम प्रस्तावित! एजेंट की स्वीकृति का इंतज़ार।',
   toast_accepted: 'स्ट्रीम स्वीकृत! हार्टबीट घड़ी शुरू हुई।',
   toast_heartbeat_sent: 'हार्टबीट भेजी! +१ प्रतिष्ठा।',
@@ -609,6 +679,23 @@ const BN: Translations = {
   tooltip_score_body: 'স্কোর ০ থেকে ১০০০। শুরু ৫০০ থেকে। হার্টবিটে +১, রিক্লেমে −১৫০। ডায়মন্ড (>৯০০) ও গোল্ড (>৭৫০) শীর্ষ; ঝুঁকিতে (<৫০০) আস্থা পুনর্গঠন করতে হবে।',
   tooltip_mode_title: 'হার্টবিট মোড',
   tooltip_mode_body: 'কঠোর (৩০ মিনিট / ১০ মিনিট)। স্বাভাবিক (২ ঘন্টা / ৩০ মিনিট)। শিথিল (১২ ঘন্টা / ২ ঘন্টা)। স্ট্রিম তৈরির সময় মোড নির্ধারিত হয়।',
+
+  register_agent: 'এজেন্ট হিসেবে নিবন্ধন করুন',
+  register_agent_subtitle: 'PulseRank নেটওয়ার্কে যোগ দিন এবং স্ট্রিম পান',
+  register_name: 'এজেন্টের নাম',
+  register_name_placeholder: 'যেমন my-agent',
+  register_profile_uri: 'প্রোফাইল URI',
+  register_profile_uri_placeholder: 'https://…',
+  register_min_rate: 'সর্বনিম্ন দৈনিক হার (USDC)',
+  register_min_rate_hint: 'প্রতি স্ট্রিমে সর্বনিম্ন দৈনিক USDC (0 = যেকোনো)',
+  register_submit: 'এজেন্ট নিবন্ধন করুন',
+  toast_registered: 'এজেন্ট নিবন্ধিত! আপনি এখন PulseRank-এ আছেন।',
+  already_registered: 'আপনি ইতিমধ্যে এজেন্ট হিসেবে নিবন্ধিত।',
+
+  select_agent: 'এজেন্ট নির্বাচন করুন',
+  featured_agents: 'বিশেষ এজেন্ট',
+  custom_address: 'কাস্টম ঠিকানা লিখুন',
+  enter_custom_address: 'কাস্টম এজেন্ট ঠিকানা পেস্ট করুন',
 
   toast_proposed: 'স্ট্রিম প্রস্তাবিত! এজেন্টের গ্রহণের অপেক্ষা।',
   toast_accepted: 'স্ট্রিম গৃহীত! হার্টবিট ঘড়ি শুরু হয়েছে।',

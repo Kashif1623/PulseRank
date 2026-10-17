@@ -1,7 +1,7 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useSwitchChain } from 'wagmi'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Heart, Wallet, Activity, CheckCircle, Sparkles } from 'lucide-react'
+import { Heart, Wallet, Activity, CheckCircle, Sparkles, UserPlus } from 'lucide-react'
 
 import {
   STREAM_ABI, STREAM_ADDRESS,
@@ -22,6 +22,7 @@ import {
 } from '../hooks/usePulseData'
 import { useLang } from '../i18n'
 import { txSuccess, txError } from '../lib/txToast'
+import { RegisterAgentModal } from './RegisterAgentModal'
 
 const CHAIN = ARC_MAINNET_ID
 
@@ -210,6 +211,7 @@ export function AgentDashboard() {
   const { address, isConnected, chainId } = useAccount()
   const { switchChain } = useSwitchChain()
   const { t } = useLang()
+  const [showRegister, setShowRegister] = useState(false)
 
   const { data: streamIds, isLoading } = useAgentStreamIds(address)
   const ids = streamIds ?? []
@@ -244,7 +246,7 @@ export function AgentDashboard() {
   if (!CONTRACTS_DEPLOYED) return <NotDeployedBanner />
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pb-24">
+    <div className="max-w-2xl mx-auto px-4 pb-32 sm:pb-24">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -4 }}
@@ -262,7 +264,20 @@ export function AgentDashboard() {
             </p>
           </div>
         </div>
-        <Tooltip icon content={<TooltipCard title={t.tooltip_heartbeat_title} body={t.tooltip_heartbeat_body} />} maxWidth="280px" />
+        <div className="flex items-center gap-2">
+          {isConnected && !isRegistered && (
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              onClick={() => setShowRegister(true)}
+              className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-cyan-400/10 border border-cyan-400/25 text-cyan-300 text-xs font-semibold hover:bg-cyan-400/15 transition-colors"
+            >
+              <UserPlus size={12} />
+              <span className="hidden sm:inline">{t.register_agent}</span>
+              <span className="sm:hidden">Register</span>
+            </motion.button>
+          )}
+          <Tooltip icon content={<TooltipCard title={t.tooltip_heartbeat_title} body={t.tooltip_heartbeat_body} />} maxWidth="280px" />
+        </div>
       </motion.div>
 
       {!isConnected ? (
@@ -272,6 +287,30 @@ export function AgentDashboard() {
         </motion.div>
       ) : (
         <div className="space-y-4">
+          {/* Register CTA — shown when not yet registered */}
+          {!isRegistered && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl border border-cyan-400/20 bg-cyan-400/[0.04] p-4 flex items-center gap-4"
+            >
+              <div className="w-10 h-10 rounded-xl bg-cyan-400/10 border border-cyan-400/20 flex items-center justify-center shrink-0">
+                <UserPlus size={18} className="text-cyan-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm text-cyan-200 leading-none mb-1">{t.register_agent}</p>
+                <p className="text-xs text-slate-500 leading-relaxed">{t.register_agent_subtitle}</p>
+              </div>
+              <motion.button
+                whileTap={{ scale: 0.96 }}
+                onClick={() => setShowRegister(true)}
+                className="shrink-0 h-9 px-4 rounded-xl bg-cyan-400/15 border border-cyan-400/30 text-cyan-300 text-xs font-semibold hover:bg-cyan-400/25 transition-colors"
+              >
+                {t.register_submit}
+              </motion.button>
+            </motion.div>
+          )}
+
           {/* Score card */}
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -392,6 +431,16 @@ export function AgentDashboard() {
           </div>
         </div>
       )}
+
+      {/* Register agent modal */}
+      <AnimatePresence>
+        {showRegister && (
+          <RegisterAgentModal
+            onClose={() => setShowRegister(false)}
+            isRegistered={isRegistered}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
