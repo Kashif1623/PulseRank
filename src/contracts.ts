@@ -223,7 +223,7 @@ export const USDC_ADDRESS: Address = '0x3600000000000000000000000000000000000000
 // These will be replaced by real addresses after deploy + bun run contracts:export
 // For now they point to zero address — the app shows a "Not deployed" banner
 export const REGISTRY_ADDRESS: Address = '0xbA4D726B3f9B32F7A1008708b905a9CC1AF02472'
-export const SCORE_ADDRESS: Address = '0x0000000000000000000000000000000000000000'
+export const SCORE_ADDRESS: Address = '0xd05c32ebb8904fe2f1debf7da17bb8cebc0cd32a'
 export const STREAM_ADDRESS: Address = '0x0000000000000000000000000000000000000000'
 
 export const CONTRACTS_DEPLOYED =
