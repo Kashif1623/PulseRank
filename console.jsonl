@@ -83,3 +83,54 @@
 {"level":"debug","message":"[vite] connected.","timestamp":1792224593065}
 {"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792225505544}
 {"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792225585154}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792225680894}
+{"level":"debug","message":"[vite] connected.","timestamp":1792225700418}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792225867100}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792226149814}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792226349040}
+{"level":"debug","message":"[vite] connected.","timestamp":1792226423979}
+{"level":"error","message":"[vite] Failed to reload /src/components/Leaderboard.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)","timestamp":1792227851150}
+{"level":"error","message":"[vite] Failed to reload /src/components/AgentDashboard.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)","timestamp":1792227851152}
+{"level":"error","message":"[vite] Failed to reload /src/components/ui/Countdown.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)","timestamp":1792227851154}
+{"level":"error","message":"[vite] Failed to reload /src/components/RegisterAgentModal.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)","timestamp":1792227851157}
+{"level":"error","message":"[vite] Failed to reload /src/components/FunderDashboard.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)","timestamp":1792227854987}
+{"level":"error","message":"[vite] Failed to reload /src/components/ui/StatusPill.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)","timestamp":1792227854996}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792227854997}
+{"level":"debug","message":"[vite] hot updated: /src/components/Leaderboard.tsx","timestamp":1792227855000}
+{"level":"debug","message":"[vite] hot updated: /src/components/AgentDashboard.tsx","timestamp":1792227855004}
+{"level":"debug","message":"[vite] hot updated: /src/components/FunderDashboard.tsx","timestamp":1792227855008}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/Countdown.tsx","timestamp":1792227855009}
+{"level":"debug","message":"[vite] hot updated: /src/components/ui/StatusPill.tsx","timestamp":1792227855010}
+{"level":"debug","message":"[vite] hot updated: /src/components/RegisterAgentModal.tsx","timestamp":1792227855013}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792227855014}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792228069431}
+{"level":"debug","message":"[vite] connected.","timestamp":1792229883972}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1792229898490}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792229898491}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792230181596}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792230415518}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792230416100}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792230416104}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792231107049}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792231108165}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792231108168}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792232160390}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792232160722}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792232160726}
+{"level":"debug","message":"[vite] connected.","timestamp":1792232293976}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792232545966}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792232545976}
+{"level":"debug","message":"[vite] connected.","timestamp":1792232577274}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792232871980}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792232871987}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792233194643}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792233194653}
+{"level":"debug","message":"[vite] connected.","timestamp":1792233230583}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792233404625}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792233404647}
+{"level":"debug","message":"[vite] connected.","timestamp":1792233568066}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792233867986}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792234009688}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792234324972}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792235549266}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792235733128}

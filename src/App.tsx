@@ -146,7 +146,15 @@ export default function App() {
         </main>
 
         {/* ── Mobile bottom nav ────────────────────────────────────────────── */}
-        <nav className="sm:hidden fixed bottom-0 inset-x-0 z-40 border-t border-white/[0.09] bg-black/50 backdrop-blur-xl safe-bottom">
+        {/* z-[10000] keeps this above the Arc Studio watermark (z-9999) */}
+        <nav
+          className="sm:hidden fixed bottom-0 inset-x-0 border-t border-white/[0.09] backdrop-blur-xl"
+          style={{
+            zIndex: 10000,
+            background: 'rgba(10, 13, 20, 0.92)',
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 4px)',
+          }}
+        >
           <div className="flex">
             {TABS.map(({ id, labelKey, icon: Icon }) => {
               const active = tab === id
@@ -156,7 +164,7 @@ export default function App() {
                   onClick={() => setTab(id)}
                   className={cn(
                     'flex-1 flex flex-col items-center gap-1 py-3 text-[10px] font-medium transition-colors',
-                    active ? 'text-emerald-400' : 'text-slate-600 active:text-slate-400',
+                    active ? 'text-emerald-400' : 'text-slate-500 active:text-slate-300',
                   )}
                 >
                   <div className="relative">
