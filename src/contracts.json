@@ -2,7 +2,7 @@
   "_comment": "Deploy contracts first: forge script contracts/script/DeployPulseRank.s.sol --rpc-url https://rpc.mainnet.arc.io --broadcast --chain-id 5042, then run: bun run contracts:export",
   "chainId": 5042,
   "PulseRegistry": {
-    "address": "0x0000000000000000000000000000000000000000",
+    "address": "0xbA4D726B3f9B32F7A1008708b905a9CC1AF02472",
     "abi": []
   },
   "PulseScore": {

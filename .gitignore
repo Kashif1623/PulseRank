@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+out/
+
+# Foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+
+# Environment — never commit secrets
+.env
+.env.*
+!.env.example
+
+# Arc Studio / sandbox internals
+console.jsonl
+traces.jsonl
+node_modules/.tmp/
+
+# Circle credentials
+.circle/
+
+# OS
+.DS_Store
+Thumbs.db
