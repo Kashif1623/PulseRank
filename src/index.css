@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Arc Dark tokens (obsidian variant per user spec) ─────────────────── */
+:root {
+  --bg:            #0B0F17;
+  --bg-gradient:   linear-gradient(180deg, #0B0F17 0%, #0d1422 60%, #111827 100%);
+  --surface:       rgba(255, 255, 255, 0.055);
+  --surface-strong:rgba(255, 255, 255, 0.09);
+  --surface-muted: #111827;
+  --ink:           #FFFFFF;
+  --ink-2:         #e2e8f0;
+  --muted:         #cbd5e1;
+  --subtle:        #94A3B8;
+  --border:        rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(203, 219, 242, 0.40);
+  --accent:        #60a5fa;
+  --accent-hover:  #93c5fd;
+  --accent-active: #38bdf8;
+  --success:       #4ade80;
+  --danger:        #f87171;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.display { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.03em; }
+.mono    { font-family: 'JetBrains Mono', Menlo, monospace; }
+
+/* Glass surface utility */
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.glass-strong {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}

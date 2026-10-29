@@ -1,0 +1,25 @@
+{
+  "network": "Arc Mainnet",
+  "chainId": 5042,
+  "deployedAt": "2026-10-29T11:08:59.957Z",
+  "deployer": "0x1bc3e8b8bd8724d13dae6de9602f9e4dd1a682e8",
+  "usdc": "0x3600000000000000000000000000000000000000",
+  "contracts": {
+    "PulseRegistryV2": {
+      "address": "0x43d74ECe631598746E137CC43a81dFE5C8565aD1",
+      "txHash": "0xda3ffa178d37e2de760b7216a2a602f3bb514c073dc8ee3532e03403091ed599"
+    },
+    "PulseScoreV2": {
+      "address": "0x374D9d2B6cA2557D24FA49603dcfdEd4905AB683",
+      "txHash": "0x25280b030dbb4e1a4a3af98da2538e1c97960e6e52e82115877490c1b504a8a9"
+    },
+    "PulseTaskV2": {
+      "address": "0x389880420C90E7Efd4ed970C2530b4dce995601A",
+      "txHash": "0xc9b705a4e8b513e2cab62465f4d889dc087c370c1a84e0c770793f421b1b8316"
+    },
+    "PulseStreamV2": {
+      "address": "0x75636CF6a8F890E96D1b01B2832d0BFE19Aa9347",
+      "txHash": "0xbcb91df98c8054f1c6802ca100c7cdd47ea7278a61013a31a8b0f226d2c85e57"
+    }
+  }
+}
