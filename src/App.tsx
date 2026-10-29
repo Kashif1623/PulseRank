@@ -3,7 +3,7 @@ import { useReadContract, useReadContracts } from "wagmi";
 import { ConnectKitButton } from "connectkit";
 import {
   Trophy, Zap, User, Globe, ChevronDown,
-  ExternalLink, TrendingUp, Clock, Shield, Activity,
+  ExternalLink, TrendingUp, Clock, Shield, Activity, Wallet,
 } from "lucide-react";
 import contractsJson from "./contracts.json";
 
@@ -281,7 +281,7 @@ function TabBar({ active, setActive }: { active: Tab; setActive: (t: Tab) => voi
 
 // ── Leaderboard panel ─────────────────────────────────────────────────────────
 
-function LeaderboardPanel() {
+function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
   // Fetch total agent count
   const { data: agentCountRaw, isLoading: countLoading } = useReadContract({
     address: CONTRACTS.registry,
@@ -414,10 +414,27 @@ function LeaderboardPanel() {
 
         {/* Empty state */}
         {!isLoading && rows.length === 0 && (
-          <div className="px-4 py-10 text-center">
-            <Shield size={28} className="mx-auto mb-3 text-slate-600" />
-            <p className="text-sm font-semibold text-slate-400 mb-1">No agents registered yet</p>
-            <p className="text-xs text-slate-600">Be the first to register and top the leaderboard.</p>
+          <div className="px-4 py-10 text-center flex flex-col items-center">
+            {/* Glowing cyan shield */}
+            <div className="relative mb-4">
+              <div style={{
+                position: "absolute", inset: -10, borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(34,211,238,0.22) 0%, transparent 70%)",
+              }} />
+              <Shield size={36} style={{ color: "#22d3ee", filter: "drop-shadow(0 0 10px rgba(34,211,238,0.7))" }} />
+            </div>
+            <p className="text-sm font-semibold text-white mb-1">No agents registered yet</p>
+            <p className="text-xs mb-5" style={{ color: "#64748b" }}>
+              Be the first to register and top the leaderboard.
+            </p>
+            <button
+              onClick={() => setTab("agent")}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:brightness-110 active:scale-[0.97]"
+              style={{ background: "linear-gradient(135deg,#60a5fa 0%,#38bdf8 100%)", color: "#0B0F17" }}
+            >
+              <User size={14} />
+              Register Agent Now
+            </button>
           </div>
         )}
 
@@ -706,11 +723,12 @@ export default function App() {
               <ConnectKitButton.Custom>
                 {({ isConnected, show, address }) => (
                   <button onClick={show}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all hover:brightness-110 active:scale-95 shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all hover:brightness-110 active:scale-95 shrink-0 whitespace-nowrap"
                     style={{ background: "linear-gradient(135deg,#60a5fa 0%,#38bdf8 100%)", color: "#0B0F17" }}>
+                    <Wallet size={12} strokeWidth={2.5} />
                     {isConnected && address
-                      ? <><span className="hidden sm:inline">{address.slice(0,6)}…{address.slice(-4)}</span><span className="sm:hidden">●</span></>
-                      : <><span className="hidden sm:inline">Connect Wallet</span><span className="sm:hidden">Connect</span></>}
+                      ? <span>{address.slice(0,6)}…{address.slice(-4)}</span>
+                      : <span>Connect</span>}
                   </button>
                 )}
               </ConnectKitButton.Custom>
@@ -724,7 +742,7 @@ export default function App() {
 
         {/* Page content */}
         <main className="flex-1 px-4 py-5 max-w-4xl mx-auto w-full">
-          {tab === "leaderboard" && <LeaderboardPanel />}
+          {tab === "leaderboard" && <LeaderboardPanel setTab={setTab} />}
           {tab === "funder"      && <FunderPanel />}
           {tab === "agent"       && <AgentPanel />}
         </main>
