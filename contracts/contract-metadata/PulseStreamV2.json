@@ -1,0 +1,20 @@
+{
+  "contractAddress": "0x75636CF6a8F890E96D1b01B2832d0BFE19Aa9347",
+  "network": "ARC",
+  "deployerWalletId": "95db8cf1-cfed-5301-92ab-f562aa2d284b",
+  "deployerAddress": "0x1bc3e8b8bd8724d13dae6de9602f9e4dd1a682e8",
+  "contract_code_path": "/home/user/app/contracts/PulseStreamV2.sol",
+  "contract_compiled_code_path": "/home/user/app/contracts/out/PulseStreamV2.sol/PulseStreamV2.json",
+  "contract_network_and_links": {
+    "Arc": "0x75636CF6a8F890E96D1b01B2832d0BFE19Aa9347"
+  },
+  "contract_deployments": [
+    {
+      "chain": "Arc",
+      "address": "0x75636CF6a8F890E96D1b01B2832d0BFE19Aa9347",
+      "explorerUrl": "0x75636CF6a8F890E96D1b01B2832d0BFE19Aa9347",
+      "txHash": "0xbcb91df98c8054f1c6802ca100c7cdd47ea7278a61013a31a8b0f226d2c85e57",
+      "deployedAt": "2026-10-29T11:08:59.957Z"
+    }
+  ]
+}

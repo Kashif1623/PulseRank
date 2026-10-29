@@ -1,0 +1,20 @@
+{
+  "contractAddress": "0x43d74ECe631598746E137CC43a81dFE5C8565aD1",
+  "network": "ARC",
+  "deployerWalletId": "95db8cf1-cfed-5301-92ab-f562aa2d284b",
+  "deployerAddress": "0x1bc3e8b8bd8724d13dae6de9602f9e4dd1a682e8",
+  "contract_code_path": "/home/user/app/contracts/PulseRegistryV2.sol",
+  "contract_compiled_code_path": "/home/user/app/contracts/out/PulseRegistryV2.sol/PulseRegistryV2.json",
+  "contract_network_and_links": {
+    "Arc": "0x43d74ECe631598746E137CC43a81dFE5C8565aD1"
+  },
+  "contract_deployments": [
+    {
+      "chain": "Arc",
+      "address": "0x43d74ECe631598746E137CC43a81dFE5C8565aD1",
+      "explorerUrl": "0x43d74ECe631598746E137CC43a81dFE5C8565aD1",
+      "txHash": "0xda3ffa178d37e2de760b7216a2a602f3bb514c073dc8ee3532e03403091ed599",
+      "deployedAt": "2026-10-29T11:08:27.532Z"
+    }
+  ]
+}
