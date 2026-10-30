@@ -21,6 +21,8 @@ contract PulseStreamV2 is ReentrancyGuard, Ownable, IPulseStreamV2 {
     uint256 public constant KEEPER_FEE_BPS = 100;
     uint256 public constant MAX_GRACE_MISSED = 3;
     uint256 public constant AUTHORITY_CHANGE_DELAY = 2 days;
+    uint256 public constant PENALTY_BPS = 500;
+    uint256 public constant AUTHORITY_CHANGE_DELAY_TREASURY = 2 days;
 
     address public immutable USDC;
 
@@ -71,6 +73,10 @@ contract PulseStreamV2 is ReentrancyGuard, Ownable, IPulseStreamV2 {
     address public pendingDisputeContract;
     uint256 public disputeContractEffectiveAt;
 
+    address public treasury;
+    address public pendingTreasury;
+    uint256 public pendingTreasuryEffectiveAt;
+
     error AgentNotRegistered();
     error AmountTooLow();
     error InvalidDuration();
@@ -88,6 +94,8 @@ contract PulseStreamV2 is ReentrancyGuard, Ownable, IPulseStreamV2 {
     error ZeroAddress();
     error NotAuthorized();
     error TimelockNotExpired();
+    error StreamNotTimedOut();
+    error TreasuryNotSet();
 
     event StreamProposed(uint256 indexed streamId, address indexed funder, address indexed agent, uint256 totalAmount, uint256 durationSecs, uint8 mode, uint256 taskId);
     event StreamActivated(uint256 indexed streamId, uint256 startTime);
@@ -101,6 +109,9 @@ contract PulseStreamV2 is ReentrancyGuard, Ownable, IPulseStreamV2 {
     event PayoutClaimed(address indexed recipient, uint256 amount);
     event DisputeContractSet(address indexed disputeContract);
     event DisputeContractProposed(address indexed pending, uint256 effectiveAt);
+    event TreasurySet(address indexed treasury);
+    event TreasuryProposed(address indexed pending, uint256 effectiveAt);
+    event StreamTimedOut(uint256 indexed streamId, address indexed keeper, uint256 agentEarned, uint256 penalty, uint256 funderRefund);
     event ModeConfigUpdated(uint8 indexed mode, uint256 heartbeatInterval, uint256 gracePeriod);
     event DisputeCallbackExecuted(uint256 indexed disputeId, bool agentWon);
 
@@ -141,6 +152,22 @@ contract PulseStreamV2 is ReentrancyGuard, Ownable, IPulseStreamV2 {
         pendingDisputeContract = address(0);
         disputeContractEffectiveAt = 0;
         emit DisputeContractSet(disputeContract);
+    }
+
+    function proposeTreasury(address t) external onlyOwner nonReentrant {
+        if (t == address(0)) revert ZeroAddress();
+        pendingTreasury = t;
+        pendingTreasuryEffectiveAt = block.timestamp + AUTHORITY_CHANGE_DELAY_TREASURY;
+        emit TreasuryProposed(t, pendingTreasuryEffectiveAt);
+    }
+
+    function commitTreasury() external onlyOwner nonReentrant {
+        if (block.timestamp < pendingTreasuryEffectiveAt) revert TimelockNotExpired();
+        if (pendingTreasury == address(0)) revert TreasuryNotSet();
+        treasury = pendingTreasury;
+        pendingTreasury = address(0);
+        pendingTreasuryEffectiveAt = 0;
+        emit TreasurySet(treasury);
     }
 
     function setModeConfig(uint8 mode, uint256 heartbeatInterval_, uint256 gracePeriod_) external onlyOwner {
@@ -244,6 +271,7 @@ contract PulseStreamV2 is ReentrancyGuard, Ownable, IPulseStreamV2 {
 
     function triggerReclaim(uint256 streamId) external nonReentrant {
         Stream storage s = streams[streamId];
+        if (msg.sender != s.funder && msg.sender != s.agent) revert NotParticipant();
         if (s.status != StreamStatus.Active && s.status != StreamStatus.Paused) revert WrongStatus();
         (, , uint256 earned) = _snapshot(s, block.timestamp);
         earned = _applyTaskCap(s, earned);
@@ -253,6 +281,45 @@ contract PulseStreamV2 is ReentrancyGuard, Ownable, IPulseStreamV2 {
         pendingPayouts[s.funder] += unearned;
         s.status = StreamStatus.Reclaimed;
         emit StreamReclaimed(streamId, msg.sender, earned, 0, unearned);
+    }
+
+    /// @notice Permissionless. Terminates a stream whose agent has gone silent.
+    /// @dev    Eligible when: stream is Active or Paused, AND
+    ///         block.timestamp > lastHeartbeat + heartbeatInterval + gracePeriod
+    ///         (uses the ModeConfig for the stream's mode).
+    ///         Distributes funds:
+    ///           - agent earns up to earned amount (via _computeEarnedFromSnapshot)
+    ///           - 5% penalty taken from UNEARNED remainder, sent to treasury
+    ///           - remainder after penalty refunded to funder
+    ///         Slashes agent score via scoreContract.recordHardReclaim(agent).
+    ///         Marks stream status = Reclaimed.
+    function cancelTimedOutStream(uint256 streamId) external nonReentrant {
+        Stream storage s = streams[streamId];
+        if (s.status != StreamStatus.Active) revert WrongStatus();
+
+        ModeConfig memory cfg = _modes[s.mode];
+        if (block.timestamp <= s.lastHeartbeat + cfg.heartbeatInterval + cfg.gracePeriod) revert StreamNotTimedOut();
+
+        uint256 agentEarned = _computeEarnedFromSnapshot(s, block.timestamp);
+        agentEarned = _applyTaskCap(s, agentEarned);
+        uint256 unearned = s.totalAmount - agentEarned;
+        uint256 penalty = (unearned * PENALTY_BPS) / 10_000;
+        uint256 funderRefund = unearned - penalty;
+
+        s.earnedAmount = agentEarned;
+        pendingPayouts[s.agent] += agentEarned;
+
+        if (treasury == address(0)) {
+            funderRefund += penalty;
+        } else {
+            IERC20(USDC).safeTransfer(treasury, penalty);
+        }
+
+        pendingPayouts[s.funder] += funderRefund;
+        s.status = StreamStatus.Reclaimed;
+        scoreContract.recordHardReclaim(s.agent);
+
+        emit StreamTimedOut(streamId, msg.sender, agentEarned, penalty, funderRefund);
     }
 
     function settleStream(uint256 streamId) external nonReentrant {
@@ -292,6 +359,14 @@ contract PulseStreamV2 is ReentrancyGuard, Ownable, IPulseStreamV2 {
     function getStreamParties(uint256 streamId) external view override returns (address funder, address agent) {
         Stream storage s = streams[streamId];
         return (s.funder, s.agent);
+    }
+
+    /// @notice Returns true when a stream is eligible for cancelTimedOutStream.
+    function isTimedOut(uint256 streamId) external view returns (bool) {
+        Stream storage s = streams[streamId];
+        if (s.status != StreamStatus.Active) return false;
+        ModeConfig memory cfg = _modes[s.mode];
+        return block.timestamp > s.lastHeartbeat + cfg.heartbeatInterval + cfg.gracePeriod;
     }
 
     function getModeConfig(uint8 mode) external view returns (uint256 heartbeatInterval, uint256 gracePeriod) {

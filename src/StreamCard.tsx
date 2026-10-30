@@ -1,6 +1,36 @@
 import { formatUnits } from "viem";
+import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { Loader2, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
+import contractsJson from "./contracts.json";
 
-// Stream status enum matches PulseStreamV2.StreamStatus
+const ARC_MAINNET_ID = 5042;
+const STREAM_CONTRACT = contractsJson.contracts.PulseStreamV2.address as `0x${string}`;
+
+// ── ABIs ─────────────────────────────────────────────────────────────────────
+
+const IS_TIMED_OUT_ABI = [
+  {
+    name: "isTimedOut",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "streamId", type: "uint256" }],
+    outputs: [{ type: "bool" }],
+  },
+] as const;
+
+const CANCEL_TIMED_OUT_ABI = [
+  {
+    name: "cancelTimedOutStream",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "streamId", type: "uint256" }],
+    outputs: [],
+  },
+] as const;
+
+// ── Stream status ─────────────────────────────────────────────────────────────
+
 const STATUS_LABEL: Record<number, string> = {
   0: "Proposed",
   1: "Active",
@@ -18,24 +48,23 @@ const STATUS_COLOR: Record<number, string> = {
   5: "#94a3b8",
 };
 
-// Matches the Stream struct tuple from getStream / agentStreams mapping
 export interface StreamData {
-  streamId:         number;
-  funder:           string;
-  agent:            string;
-  totalAmount:      bigint;
-  durationSecs:     bigint;
-  ratePerSecX18:    bigint;
-  startTime:        bigint;
-  lastHeartbeat:    bigint;
-  earnedAmount:     bigint;
-  pausedAt:         bigint;
-  pausedDuration:   bigint;
-  missedHeartbeats: bigint;
+  streamId:           number;
+  funder:             string;
+  agent:              string;
+  totalAmount:        bigint;
+  durationSecs:       bigint;
+  ratePerSecX18:      bigint;
+  startTime:          bigint;
+  lastHeartbeat:      bigint;
+  earnedAmount:       bigint;
+  pausedAt:           bigint;
+  pausedDuration:     bigint;
+  missedHeartbeats:   bigint;
   lastMissCheckpoint: bigint;
-  taskId:           bigint;
-  mode:             number;
-  status:           number;
+  taskId:             bigint;
+  mode:               number;
+  status:             number;
 }
 
 const MODE_LABEL: Record<number, string> = { 1: "Strict", 2: "Normal", 3: "Relaxed" };
@@ -62,6 +91,65 @@ const T = {
   surface: "rgba(255,255,255,0.70)",
 };
 
+// ── Reclaim button (funder-only) ───────────────────────────────────────────────
+
+function ReclaimButton({ streamId }: { streamId: number }) {
+  const { data: timedOut, isLoading: checking } = useReadContract({
+    address: STREAM_CONTRACT,
+    abi: IS_TIMED_OUT_ABI,
+    functionName: "isTimedOut",
+    args: [BigInt(streamId)],
+    chainId: ARC_MAINNET_ID,
+    query: { refetchInterval: 15_000 },
+  });
+
+  const { writeContract: cancel, data: txHash, isPending: cancelling } = useWriteContract();
+  const { isLoading: confirming } = useWaitForTransactionReceipt({ hash: txHash });
+
+  if (checking) return null;
+  if (!timedOut) return null;
+
+  const busy = cancelling || confirming;
+
+  function handleReclaim() {
+    cancel(
+      {
+        address: STREAM_CONTRACT,
+        abi: CANCEL_TIMED_OUT_ABI,
+        functionName: "cancelTimedOutStream",
+        args: [BigInt(streamId)],
+        chainId: ARC_MAINNET_ID,
+      },
+      {
+        onError: (e) => toast.error(`Reclaim failed: ${e.message.slice(0, 100)}`),
+        onSuccess: () => toast.success("Unspent USDC reclaimed. Payout queued to your wallet."),
+      }
+    );
+  }
+
+  return (
+    <button
+      onClick={handleReclaim}
+      disabled={busy}
+      className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+      style={{
+        background: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
+        color: "#fff",
+        boxShadow: "0 3px 12px rgba(220,38,38,0.30)",
+      }}
+    >
+      {busy ? (
+        <Loader2 size={13} className="animate-spin" />
+      ) : (
+        <AlertTriangle size={13} />
+      )}
+      {cancelling ? "Waiting for wallet…" : confirming ? "Confirming…" : "Reclaim Unspent USDC"}
+    </button>
+  );
+}
+
+// ── StreamCard ─────────────────────────────────────────────────────────────────
+
 export function StreamCard({ stream, role }: { stream: StreamData; role: "funder" | "agent" }) {
   const statusLabel = STATUS_LABEL[stream.status] ?? "Unknown";
   const statusColor = STATUS_COLOR[stream.status] ?? "#94a3b8";
@@ -69,6 +157,7 @@ export function StreamCard({ stream, role }: { stream: StreamData; role: "funder
     ? Math.round(Number((stream.earnedAmount * 100n) / stream.totalAmount))
     : 0;
   const counterpart = role === "funder" ? stream.agent : stream.funder;
+  const isActive    = stream.status === 1; // Active
 
   return (
     <div className="rounded-2xl p-4 space-y-3"
@@ -121,6 +210,11 @@ export function StreamCard({ stream, role }: { stream: StreamData; role: "funder
         <span>Mode: <span className="font-semibold" style={{ color: T.accent }}>{MODE_LABEL[stream.mode] ?? stream.mode}</span></span>
         <span>Missed: <span className="font-semibold" style={{ color: stream.missedHeartbeats > 0n ? "#ef4444" : T.muted }}>{stream.missedHeartbeats.toString()}</span></span>
       </div>
+
+      {/* Reclaim button — only for funders on active streams */}
+      {role === "funder" && isActive && (
+        <ReclaimButton streamId={stream.streamId} />
+      )}
     </div>
   );
 }
