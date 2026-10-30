@@ -35,23 +35,32 @@ bun install
 bun run dev
 ```
 
-## Deployed Contracts — Arc Mainnet (Chain ID 5042)
+## Deployed Contracts — Arc Mainnet (Chain ID 5042) — v2.1 (CURRENT)
 
-Deployed: 2026-10-29. Deployer wallet: `0x1bc3e8b8bd8724d13dae6de9602f9e4dd1a682e8`
+Redeployed: 2026-10-30. Deployer wallet: `0x1bc3e8b8bd8724d13dae6de9602f9e4dd1a682e8`
 
-| Contract | Address |
+| Contract | Address | Version |
+|---|---|---|
+| PulseRegistryV2 | `0x43d74ECe631598746E137CC43a81dFE5C8565aD1` | v2 (unchanged) |
+| PulseScoreV2 | `0xCBAa6A61A5960Af31A52bcbc32c1EC99a344F1Ed` | v2.1 |
+| PulseTaskV2 | `0x4FDF4B96D1d4e3788f33a64dC53e5e2c389Ac1d5` | v2.1 |
+| PulseStreamV2 | `0x1C8DB2fD6ED9d9Caea9e04B157DdE031C28e66F8` | v2.1 |
+| USDC (Arc Mainnet) | `0x3600000000000000000000000000000000000000` | — |
+
+Deploy tx hashes (v2.1):
+- PulseScoreV2:    `0xc817445c8b946d99617ba9a08724d837f3470f72f928b2af917ef3a4a4655fea`
+- PulseTaskV2:     `0xc3272aec8dd8870531c0627d14820cf195e06f46e6e27fbe8e37d51b82e1e073`
+- PulseStreamV2:   `0xd9c3a452c9742637d552b7aaf768324b2aa3142b752a5a894179289d16096145`
+
+Post-deploy linking:
+- `setPulseStream(0x1C8DB2fD6ED9d9Caea9e04B157DdE031C28e66F8)` called on PulseScoreV2: tx `0x` (COMPLETE)
+- `setPulseStream(0x1C8DB2fD6ED9d9Caea9e04B157DdE031C28e66F8)` called on PulseTaskV2: tx `0xb21189514c42537955c66c7556e0462d6bf91e7fbd62cac5ce2dd03250aafec0` (COMPLETE)
+
+PulseStreamV2 v2.1 changes: `cancelTimedOutStream`, `isTimedOut`, treasury timelock (`proposeTreasury`/`commitTreasury`), `triggerReclaim` restricted to funder/agent only.
+
+## Deprecated Addresses (do not use)
+| Contract | Old Address |
 |---|---|
-| PulseRegistryV2 | `0x43d74ECe631598746E137CC43a81dFE5C8565aD1` |
-| PulseScoreV2 | `0x374D9d2B6cA2557D24FA49603dcfdEd4905AB683` |
-| PulseTaskV2 | `0x389880420C90E7Efd4ed970C2530b4dce995601A` |
-| PulseStreamV2 | `0x75636CF6a8F890E96D1b01B2832d0BFE19Aa9347` |
-| USDC (Arc Mainnet) | `0x3600000000000000000000000000000000000000` |
-| Create2Factory | `0xa637740bfd87e8025123f2b66ae843fb9e75079f` |
-
-Deploy tx hashes:
-- PulseRegistryV2: `0xda3ffa178d37e2de760b7216a2a602f3bb514c073dc8ee3532e03403091ed599`
-- PulseScoreV2:    `0x25280b030dbb4e1a4a3af98da2538e1c97960e6e52e82115877490c1b504a8a9`
-- PulseTaskV2:     `0xc9b705a4e8b513e2cab62465f4d889dc087c370c1a84e0c770793f421b1b8316`
-- PulseStreamV2:   `0xbcb91df98c8054f1c6802ca100c7cdd47ea7278a61013a31a8b0f226d2c85e57`
-
-Post-deploy: `setPulseStream(PulseStreamV2)` called on PulseScoreV2 and PulseTaskV2.
+| PulseScoreV2 v2 | `0x374D9d2B6cA2557D24FA49603dcfdEd4905AB683` |
+| PulseTaskV2 v2 | `0x389880420C90E7Efd4ed970C2530b4dce995601A` |
+| PulseStreamV2 v2 | `0x75636CF6a8F890E96D1b01B2832d0BFE19Aa9347` |
