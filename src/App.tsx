@@ -14,6 +14,9 @@ import {
   ExternalLink, TrendingUp, Clock, Shield, Activity, Wallet, Loader2,
 } from "lucide-react";
 import contractsJson from "./contracts.json";
+import { StreamCard, type StreamData } from "./StreamCard";
+import { ActivityFeed } from "./ActivityFeed";
+import { ActivityChart } from "./ActivityChart";
 
 // ── Chain / contract constants ─────────────────────────────────────────────────
 
@@ -109,6 +112,54 @@ const ERC20_APPROVE_ABI = [
       { name: "amount",  type: "uint256" },
     ],
     outputs: [{ name: "", type: "bool" }],
+  },
+] as const;
+
+const STREAM_LIST_ABI = [
+  {
+    name: "agentStreams",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "agent", type: "address" }, { name: "idx", type: "uint256" }],
+    outputs: [{ type: "uint256" }],
+  },
+  {
+    name: "funderStreams",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "funder", type: "address" }, { name: "idx", type: "uint256" }],
+    outputs: [{ type: "uint256" }],
+  },
+] as const;
+
+const STREAM_GET_ABI = [
+  {
+    name: "getStream",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "streamId", type: "uint256" }],
+    outputs: [
+      {
+        type: "tuple",
+        components: [
+          { name: "funder",             type: "address" },
+          { name: "agent",              type: "address" },
+          { name: "totalAmount",        type: "uint256" },
+          { name: "durationSecs",       type: "uint256" },
+          { name: "ratePerSecX18",      type: "uint256" },
+          { name: "startTime",          type: "uint256" },
+          { name: "lastHeartbeat",      type: "uint256" },
+          { name: "earnedAmount",       type: "uint256" },
+          { name: "pausedAt",           type: "uint256" },
+          { name: "pausedDuration",     type: "uint256" },
+          { name: "missedHeartbeats",   type: "uint256" },
+          { name: "lastMissCheckpoint", type: "uint256" },
+          { name: "taskId",             type: "uint256" },
+          { name: "mode",               type: "uint8"   },
+          { name: "status",             type: "uint8"   },
+        ],
+      },
+    ],
   },
 ] as const;
 
@@ -436,7 +487,7 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
           </div>
         )}
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" style={{ minHeight: rows.length === 0 ? 0 : undefined }}>
           {rows.map((a, i) => (
             <div key={a.agentId}
               className="grid items-center gap-2 px-4 py-3 transition-colors"
@@ -468,6 +519,32 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Activity chart */}
+      <div className="glass rounded-2xl p-4 sm:p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <TrendingUp size={13} style={{ color: T.accent }} />
+          <span className="display text-sm font-bold" style={{ color: T.ink }}>Protocol Activity</span>
+          <span className="ml-auto text-xs mono px-2 py-0.5 rounded-full"
+                style={{ background: "rgba(34,197,94,0.12)", color: "#16a34a" }}>
+            LIVE
+          </span>
+        </div>
+        <ActivityChart />
+      </div>
+
+      {/* Live event feed */}
+      <div className="glass rounded-2xl p-4 sm:p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <Activity size={13} style={{ color: T.accentLight }} />
+          <span className="display text-sm font-bold" style={{ color: T.ink }}>Live Event Feed</span>
+          <span className="ml-auto text-xs mono px-2 py-0.5 rounded-full"
+                style={{ background: "rgba(14,165,233,0.12)", color: T.accent }}>
+            WATCHING
+          </span>
+        </div>
+        <ActivityFeed />
       </div>
     </div>
   );
@@ -659,10 +736,83 @@ function FunderPanel() {
         <h3 className="display text-sm font-bold mb-3 flex items-center gap-2" style={{ color: T.ink }}>
           <Clock size={13} style={{ color: T.accent }} /> Your Active Streams
         </h3>
-        <div className="text-sm text-center py-6" style={{ color: T.placeholder }}>
-          {isConnected ? `Wallet: ${shortAddr(address!)} — stream history coming soon.` : "Connect your wallet to view active streams."}
-        </div>
+        {isConnected && address
+          ? <FunderStreamList address={address} />
+          : <div className="text-sm text-center py-6" style={{ color: T.placeholder }}>
+              Connect your wallet to view active streams.
+            </div>}
       </div>
+    </div>
+  );
+}
+
+// Reads up to 10 stream IDs for a funder then fetches each struct
+function FunderStreamList({ address }: { address: `0x${string}` }) {
+  const MAX = 10;
+  const idxCalls = Array.from({ length: MAX }, (_, i) => ({
+    address: CONTRACTS.stream, abi: STREAM_LIST_ABI,
+    functionName: "funderStreams" as const,
+    args: [address, BigInt(i)] as [`0x${string}`, bigint],
+    chainId: ARC_MAINNET_ID,
+  }));
+  const { data: idxResults, isLoading: idxLoading } = useReadContracts({ contracts: idxCalls });
+
+  const streamIds: bigint[] = [];
+  if (idxResults) {
+    for (const r of idxResults) {
+      if (r.status === "success" && r.result) {
+        const id = r.result;
+        if (id > 0n) streamIds.push(id);
+        else break;
+      } else break;
+    }
+  }
+
+  const streamCalls = streamIds.map(id => ({
+    address: CONTRACTS.stream, abi: STREAM_GET_ABI,
+    functionName: "getStream" as const, args: [id] as [bigint],
+    chainId: ARC_MAINNET_ID,
+  }));
+  const { data: streamResults, isLoading: streamsLoading } = useReadContracts({
+    contracts: streamCalls, query: { enabled: streamIds.length > 0 },
+  });
+
+  if (idxLoading || streamsLoading) {
+    return <div className="text-sm text-center py-6 flex items-center justify-center gap-2" style={{ color: T.subtle }}>
+      <Loader2 size={14} className="animate-spin" style={{ color: T.accent }} /> Loading streams…
+    </div>;
+  }
+  if (streamIds.length === 0) {
+    return <div className="text-sm text-center py-6" style={{ color: T.placeholder }}>No streams found for this wallet.</div>;
+  }
+
+  const streams: StreamData[] = [];
+  streamResults?.forEach((r, i) => {
+    if (r.status !== "success" || !r.result) return;
+    const t = r.result as Record<string, unknown>;
+    streams.push({
+      streamId: Number(streamIds[i]),
+      funder:   t.funder as string,
+      agent:    t.agent  as string,
+      totalAmount:        t.totalAmount        as bigint,
+      durationSecs:       t.durationSecs       as bigint,
+      ratePerSecX18:      t.ratePerSecX18      as bigint,
+      startTime:          t.startTime          as bigint,
+      lastHeartbeat:      t.lastHeartbeat      as bigint,
+      earnedAmount:       t.earnedAmount       as bigint,
+      pausedAt:           t.pausedAt           as bigint,
+      pausedDuration:     t.pausedDuration     as bigint,
+      missedHeartbeats:   t.missedHeartbeats   as bigint,
+      lastMissCheckpoint: t.lastMissCheckpoint as bigint,
+      taskId:             t.taskId             as bigint,
+      mode:               Number(t.mode),
+      status:             Number(t.status),
+    });
+  });
+
+  return (
+    <div className="space-y-2">
+      {streams.map(s => <StreamCard key={s.streamId} stream={s} role="funder" />)}
     </div>
   );
 }
@@ -836,12 +986,92 @@ function AgentPanel() {
         <h3 className="display text-sm font-bold mb-3 flex items-center gap-2" style={{ color: T.ink }}>
           <Zap size={13} style={{ color: T.accent }} /> Incoming Streams
         </h3>
-        <div className="text-sm text-center py-6" style={{ color: T.placeholder }}>
-          {isConnected
-            ? `Wallet ${shortAddr(address!)} — incoming streams coming soon.`
-            : "Connect your wallet to view and accept streams."}
-        </div>
+        {isConnected && address
+          ? <AgentStreamList address={address} />
+          : <div className="text-sm text-center py-6" style={{ color: T.placeholder }}>
+              Connect your wallet to view and accept streams.
+            </div>}
       </div>
+
+      {/* Live work feed */}
+      <div className="glass rounded-2xl p-5">
+        <h3 className="display text-sm font-bold mb-3 flex items-center gap-2" style={{ color: T.ink }}>
+          <Activity size={13} style={{ color: T.accentLight }} /> Live Work & Activity Feed
+          <span className="ml-auto text-xs mono px-2 py-0.5 rounded-full"
+                style={{ background: "rgba(14,165,233,0.12)", color: T.accent }}>WATCHING</span>
+        </h3>
+        <ActivityFeed />
+      </div>
+    </div>
+  );
+}
+
+function AgentStreamList({ address }: { address: `0x${string}` }) {
+  const MAX = 10;
+  const idxCalls = Array.from({ length: MAX }, (_, i) => ({
+    address: CONTRACTS.stream, abi: STREAM_LIST_ABI,
+    functionName: "agentStreams" as const,
+    args: [address, BigInt(i)] as [`0x${string}`, bigint],
+    chainId: ARC_MAINNET_ID,
+  }));
+  const { data: idxResults, isLoading: idxLoading } = useReadContracts({ contracts: idxCalls });
+
+  const streamIds: bigint[] = [];
+  if (idxResults) {
+    for (const r of idxResults) {
+      if (r.status === "success" && r.result) {
+        const id = r.result;
+        if (id > 0n) streamIds.push(id);
+        else break;
+      } else break;
+    }
+  }
+
+  const streamCalls = streamIds.map(id => ({
+    address: CONTRACTS.stream, abi: STREAM_GET_ABI,
+    functionName: "getStream" as const, args: [id] as [bigint],
+    chainId: ARC_MAINNET_ID,
+  }));
+  const { data: streamResults, isLoading: streamsLoading } = useReadContracts({
+    contracts: streamCalls, query: { enabled: streamIds.length > 0 },
+  });
+
+  if (idxLoading || streamsLoading) {
+    return <div className="text-sm text-center py-6 flex items-center justify-center gap-2" style={{ color: T.subtle }}>
+      <Loader2 size={14} className="animate-spin" style={{ color: T.accent }} /> Loading streams…
+    </div>;
+  }
+  if (streamIds.length === 0) {
+    return <div className="text-sm text-center py-6" style={{ color: T.placeholder }}>No incoming streams yet for this wallet.</div>;
+  }
+
+  const streams: StreamData[] = [];
+  streamResults?.forEach((r, i) => {
+    if (r.status !== "success" || !r.result) return;
+    const t = r.result as Record<string, unknown>;
+    streams.push({
+      streamId: Number(streamIds[i]),
+      funder:   t.funder as string,
+      agent:    t.agent  as string,
+      totalAmount:        t.totalAmount        as bigint,
+      durationSecs:       t.durationSecs       as bigint,
+      ratePerSecX18:      t.ratePerSecX18      as bigint,
+      startTime:          t.startTime          as bigint,
+      lastHeartbeat:      t.lastHeartbeat      as bigint,
+      earnedAmount:       t.earnedAmount       as bigint,
+      pausedAt:           t.pausedAt           as bigint,
+      pausedDuration:     t.pausedDuration     as bigint,
+      missedHeartbeats:   t.missedHeartbeats   as bigint,
+      lastMissCheckpoint: t.lastMissCheckpoint as bigint,
+      taskId:             t.taskId             as bigint,
+      mode:               Number(t.mode),
+      status:             Number(t.status),
+    });
+  });
+
+  return (
+    <div className="space-y-2">
+      {streams.map(s => <StreamCard key={s.streamId} stream={s} role="agent" />)}
     </div>
   );
 }
