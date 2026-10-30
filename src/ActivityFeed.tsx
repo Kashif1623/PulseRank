@@ -138,7 +138,7 @@ interface Props {
 
 export function ActivityFeed({ onEvent }: Props) {
   const [events, setEvents]     = useState<FeedEvent[]>([]);
-  const [loading, setLoading]   = useState(true);
+  const [loading, setLoading]   = useState(false); // never block UI — history loads in background
   const client = usePublicClient({ chainId: ARC_MAINNET_ID });
 
   const push = useCallback((ev: FeedEvent) => {

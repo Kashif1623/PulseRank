@@ -309,20 +309,25 @@ function AgentStatusBadge({ agentOwner, agentId: _agentId }: { agentOwner: strin
   });
 
   // Derive local timeout: now - lastHeartbeat > mode buffer
+  // Status values: 0=Proposed, 1=Active, 2=Paused, 3=Completed, 4=Reclaimed, 5=Cancelled
+  // We flag dead for any non-terminal stream (not Completed/Reclaimed/Cancelled) where
+  // lastHeartbeat > 0 and the grace window has been exceeded.
   let localTimedOut = false;
   if (streamRaw) {
     type SFields = { lastHeartbeat: bigint; mode: number; status: number };
-    const s         = (streamRaw as unknown) as SFields;
-    const lastHb    = Number(s.lastHeartbeat);
-    const mode      = Number(s.mode);
-    const status    = Number(s.status); // 1 = Active
-    const buffer    = MODE_BUFFER[mode] ?? 1800 + 1800;
-    if (status === 1 && lastHb > 0 && nowSec - lastHb > buffer) {
+    const s      = (streamRaw as unknown) as SFields;
+    const lastHb = Number(s.lastHeartbeat);
+    const mode   = Number(s.mode);
+    const status = Number(s.status);
+    const buffer = MODE_BUFFER[mode] ?? 1800 + 1800;
+    // Terminal statuses (Completed=3, Reclaimed=4, Cancelled=5) — do not flag
+    const isTerminal = status >= 3;
+    if (!isTerminal && lastHb > 0 && nowSec - lastHb > buffer) {
       localTimedOut = true;
     }
   }
 
-  // Either condition forces red
+  // Either condition forces red; no data yet (no stream) → default green
   const isDead = contractTimedOut === true || localTimedOut;
 
   return (
