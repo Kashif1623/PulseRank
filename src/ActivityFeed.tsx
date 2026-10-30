@@ -155,10 +155,20 @@ export function ActivityFeed({ onEvent }: Props) {
     if (!client) return;
     let cancelled = false;
 
+    // 3-second hard timeout — if the RPC hangs we bail and show live feed
+    function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+      return Promise.race([
+        promise,
+        new Promise<T>((_, reject) =>
+          setTimeout(() => reject(new Error(`Timeout after ${ms}ms`)), ms)
+        ),
+      ]);
+    }
+
     async function fetchHistory() {
       if (!client) return;
       try {
-        const latestBlock = await client.getBlockNumber();
+        const latestBlock = await withTimeout(client.getBlockNumber(), 3000);
         const fromBlock   = DEPLOY_BLOCK > latestBlock ? latestBlock : DEPLOY_BLOCK;
 
         const historicalEvents: FeedEvent[] = [];
@@ -261,7 +271,11 @@ export function ActivityFeed({ onEvent }: Props) {
         // notify chart of each historical event
         unique.forEach(e => onEvent?.(e));
       } catch (err) {
-        console.error("ActivityFeed: history fetch failed", err);
+        // Timeout or RPC failure — silently fall back to live-only mode
+        const msg = err instanceof Error ? err.message : String(err);
+        if (!msg.includes("Timeout")) {
+          console.warn("ActivityFeed: history fetch failed", err);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -354,7 +368,7 @@ export function ActivityFeed({ onEvent }: Props) {
     return (
       <div className="text-sm text-center py-6" style={{ color: T.subtle }}>
         <Activity size={18} className="mx-auto mb-2 opacity-40" style={{ color: T.accent }} />
-        No on-chain events found yet — watching for new activity…
+        Listening for live events…
       </div>
     );
   }

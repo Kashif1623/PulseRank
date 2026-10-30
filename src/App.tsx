@@ -173,6 +173,37 @@ const IS_TIMED_OUT_ABI = [
   },
 ] as const;
 
+const STREAM_DETAIL_ABI = [
+  {
+    name: "getStream",
+    type: "function",
+    stateMutability: "view",
+    inputs:  [{ name: "streamId", type: "uint256" }],
+    outputs: [{
+      type: "tuple",
+      components: [
+        { name: "funder",             type: "address" },
+        { name: "agent",              type: "address" },
+        { name: "totalAmount",        type: "uint256" },
+        { name: "durationSecs",       type: "uint256" },
+        { name: "ratePerSecX18",      type: "uint256" },
+        { name: "startTime",          type: "uint256" },
+        { name: "lastHeartbeat",      type: "uint256" },
+        { name: "earnedAmount",       type: "uint256" },
+        { name: "pausedAt",           type: "uint256" },
+        { name: "pausedDuration",     type: "uint256" },
+        { name: "missedHeartbeats",   type: "uint256" },
+        { name: "lastMissCheckpoint", type: "uint256" },
+        { name: "taskId",             type: "uint256" },
+        { name: "mode",               type: "uint8"   },
+        { name: "status",             type: "uint8"   },
+      ],
+    }],
+  },
+  // Mode 1=Strict(300s/600s), 2=Normal(1800s/1800s), 3=Relaxed(3600s/7200s)
+  // Hard-coded defaults — owner can change via setModeConfig but these are the deploy defaults
+] as const;
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 type Tab  = "leaderboard" | "funder" | "agent";
@@ -229,15 +260,25 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
 
 // ── Agent alive/dead status badge ─────────────────────────────────────────────
 
+// Mode heartbeat+grace defaults (seconds) — matches PulseStreamV2 constructor
+const MODE_BUFFER: Record<number, number> = { 1: 300 + 600, 2: 1800 + 1800, 3: 3600 + 7200 };
+
 /**
- * Reads isTimedOut for the most recent stream belonging to `agentOwner`.
- * Shows green "Alive" when no active stream is timed out,
- * red "Timed Out" when any active stream has exceeded its heartbeat + grace window.
+ * Dual-check alive/dead status:
+ * 1. contract isTimedOut(streamId) — authoritative on-chain state
+ * 2. local timestamp check: now - lastHeartbeat > heartbeatInterval + gracePeriod
+ * Either condition flips the badge to red immediately.
  */
-function AgentStatusBadge({ agentOwner, agentId }: { agentOwner: string; agentId: number }) {
-  // Fetch the agent's most recent stream id (index 0 = most-recently-pushed, but
-  // agentStreams is a push array so index 0 is oldest — use a reasonably high idx and
-  // fall back gracefully when out of range).
+function AgentStatusBadge({ agentOwner, agentId: _agentId }: { agentOwner: string; agentId: number }) {
+  const [nowSec, setNowSec] = useState(() => Math.floor(Date.now() / 1000));
+
+  // Tick every 10 seconds so the local timestamp check stays fresh
+  useEffect(() => {
+    const id = setInterval(() => setNowSec(Math.floor(Date.now() / 1000)), 10_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // 1. Fetch most recent stream id for this agent (index 0 = first ever, enough to check)
   const { data: streamId0 } = useReadContract({
     address: CONTRACTS.stream,
     abi: STREAM_LIST_ABI,
@@ -247,7 +288,8 @@ function AgentStatusBadge({ agentOwner, agentId }: { agentOwner: string; agentId
     query: { enabled: !!agentOwner, refetchInterval: 15_000 },
   });
 
-  const { data: timedOut } = useReadContract({
+  // 2. Contract-side timeout check
+  const { data: contractTimedOut } = useReadContract({
     address: CONTRACTS.stream,
     abi: IS_TIMED_OUT_ABI,
     functionName: "isTimedOut",
@@ -256,27 +298,46 @@ function AgentStatusBadge({ agentOwner, agentId }: { agentOwner: string; agentId
     query: { enabled: !!streamId0, refetchInterval: 15_000 },
   });
 
-  // No stream yet → show Alive (newly registered agents default green)
-  const isDead = timedOut === true;
+  // 3. Full stream data for local timestamp precision check
+  const { data: streamRaw } = useReadContract({
+    address: CONTRACTS.stream,
+    abi: STREAM_DETAIL_ABI,
+    functionName: "getStream",
+    args: [streamId0 as bigint ?? 0n],
+    chainId: ARC_MAINNET_ID,
+    query: { enabled: !!streamId0, refetchInterval: 15_000 },
+  });
+
+  // Derive local timeout: now - lastHeartbeat > mode buffer
+  let localTimedOut = false;
+  if (streamRaw) {
+    type SFields = { lastHeartbeat: bigint; mode: number; status: number };
+    const s         = (streamRaw as unknown) as SFields;
+    const lastHb    = Number(s.lastHeartbeat);
+    const mode      = Number(s.mode);
+    const status    = Number(s.status); // 1 = Active
+    const buffer    = MODE_BUFFER[mode] ?? 1800 + 1800;
+    if (status === 1 && lastHb > 0 && nowSec - lastHb > buffer) {
+      localTimedOut = true;
+    }
+  }
+
+  // Either condition forces red
+  const isDead = contractTimedOut === true || localTimedOut;
 
   return (
     <span className="shrink-0 flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
           style={{
             background: isDead ? "rgba(239,68,68,0.12)" : "rgba(34,197,94,0.12)",
-            color: isDead ? "#ef4444" : "#16a34a",
+            color:      isDead ? "#ef4444" : "#16a34a",
           }}>
-      {/* Glowing dot */}
       <span style={{
         display: "inline-block", width: 6, height: 6, borderRadius: "50%",
         background: isDead ? "#ef4444" : "#22c55e",
-        boxShadow: isDead
-          ? "0 0 6px 2px rgba(239,68,68,0.55)"
-          : "0 0 6px 2px rgba(34,197,94,0.55)",
-        animation: isDead ? "none" : "pulse-glow 2s ease-in-out infinite",
+        boxShadow:  isDead ? "0 0 6px 2px rgba(239,68,68,0.55)" : "0 0 6px 2px rgba(34,197,94,0.55)",
+        animation:  isDead ? "none" : "pulse-glow 2s ease-in-out infinite",
       }} />
       {isDead ? "Timed Out" : "Alive"}
-      {/* suppress unused agentId lint */}
-      <span style={{ display: "none" }}>{agentId}</span>
     </span>
   );
 }
