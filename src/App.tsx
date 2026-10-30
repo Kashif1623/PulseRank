@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   useAccount,
   useReadContract,
@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import contractsJson from "./contracts.json";
 import { StreamCard, type StreamData } from "./StreamCard";
-import { ActivityFeed } from "./ActivityFeed";
+import { ActivityFeed, type FeedEvent } from "./ActivityFeed";
 import { ActivityChart } from "./ActivityChart";
 
 // ── Chain / contract constants ─────────────────────────────────────────────────
@@ -163,6 +163,16 @@ const STREAM_GET_ABI = [
   },
 ] as const;
 
+const IS_TIMED_OUT_ABI = [
+  {
+    name: "isTimedOut",
+    type: "function",
+    stateMutability: "view",
+    inputs:  [{ name: "streamId", type: "uint256" }],
+    outputs: [{ type: "bool" }],
+  },
+] as const;
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 type Tab  = "leaderboard" | "funder" | "agent";
@@ -216,6 +226,60 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "funder",      label: "Funder",      icon: <Zap     size={13} /> },
   { id: "agent",       label: "Agent",       icon: <User    size={13} /> },
 ];
+
+// ── Agent alive/dead status badge ─────────────────────────────────────────────
+
+/**
+ * Reads isTimedOut for the most recent stream belonging to `agentOwner`.
+ * Shows green "Alive" when no active stream is timed out,
+ * red "Timed Out" when any active stream has exceeded its heartbeat + grace window.
+ */
+function AgentStatusBadge({ agentOwner, agentId }: { agentOwner: string; agentId: number }) {
+  // Fetch the agent's most recent stream id (index 0 = most-recently-pushed, but
+  // agentStreams is a push array so index 0 is oldest — use a reasonably high idx and
+  // fall back gracefully when out of range).
+  const { data: streamId0 } = useReadContract({
+    address: CONTRACTS.stream,
+    abi: STREAM_LIST_ABI,
+    functionName: "agentStreams",
+    args: [agentOwner as `0x${string}`, 0n],
+    chainId: ARC_MAINNET_ID,
+    query: { enabled: !!agentOwner, refetchInterval: 15_000 },
+  });
+
+  const { data: timedOut } = useReadContract({
+    address: CONTRACTS.stream,
+    abi: IS_TIMED_OUT_ABI,
+    functionName: "isTimedOut",
+    args: [streamId0 as bigint ?? 0n],
+    chainId: ARC_MAINNET_ID,
+    query: { enabled: !!streamId0, refetchInterval: 15_000 },
+  });
+
+  // No stream yet → show Alive (newly registered agents default green)
+  const isDead = timedOut === true;
+
+  return (
+    <span className="shrink-0 flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+          style={{
+            background: isDead ? "rgba(239,68,68,0.12)" : "rgba(34,197,94,0.12)",
+            color: isDead ? "#ef4444" : "#16a34a",
+          }}>
+      {/* Glowing dot */}
+      <span style={{
+        display: "inline-block", width: 6, height: 6, borderRadius: "50%",
+        background: isDead ? "#ef4444" : "#22c55e",
+        boxShadow: isDead
+          ? "0 0 6px 2px rgba(239,68,68,0.55)"
+          : "0 0 6px 2px rgba(34,197,94,0.55)",
+        animation: isDead ? "none" : "pulse-glow 2s ease-in-out infinite",
+      }} />
+      {isDead ? "Timed Out" : "Alive"}
+      {/* suppress unused agentId lint */}
+      <span style={{ display: "none" }}>{agentId}</span>
+    </span>
+  );
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -375,6 +439,14 @@ const inputCls = "w-full rounded-xl px-4 py-3 text-sm outline-none transition-al
 // ── Leaderboard panel ──────────────────────────────────────────────────────────
 
 function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
+  const [feedEvents, setFeedEvents] = useState<FeedEvent[]>([]);
+  const handleEvent = useCallback((ev: FeedEvent) => {
+    setFeedEvents(prev => {
+      if (prev.some(e => e.id === ev.id)) return prev;
+      return [ev, ...prev].slice(0, 80);
+    });
+  }, []);
+
   const { data: agentCountRaw, isLoading: countLoading } = useReadContract({
     address: CONTRACTS.registry, abi: REGISTRY_READ_ABI,
     functionName: "agentCount", chainId: ARC_MAINNET_ID,
@@ -511,6 +583,7 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
                 <span className="text-xs font-bold shrink-0 ml-1" style={{ color: TIER_COLOR[a.tier] ?? T.subtle }}>
                   {a.tier}
                 </span>
+                <AgentStatusBadge agentOwner={a.owner} agentId={a.agentId} />
               </div>
               <span className="mono text-sm font-bold tabular-nums" style={{ color: T.ink }}>{a.score}</span>
               <span className="mono text-xs tabular-nums" style={{ color: T.accentMid }}>
@@ -531,7 +604,7 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
             LIVE
           </span>
         </div>
-        <ActivityChart />
+        <ActivityChart events={feedEvents} streamCount={streamCount} />
       </div>
 
       {/* Live event feed */}
@@ -544,7 +617,7 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
             WATCHING
           </span>
         </div>
-        <ActivityFeed />
+        <ActivityFeed onEvent={handleEvent} />
       </div>
     </div>
   );

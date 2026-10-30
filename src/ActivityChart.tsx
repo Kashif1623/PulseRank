@@ -1,17 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { useReadContract } from "wagmi";
-import contractsJson from "./contracts.json";
-
-const ARC_MAINNET_ID = 5042;
-const CONTRACTS = {
-  stream: contractsJson.contracts.PulseStreamV2.address as `0x${string}`,
-  score:  contractsJson.contracts.PulseScoreV2.address  as `0x${string}`,
-};
-
-const STREAM_READ_ABI = [
-  { name: "nextStreamId", type: "function", stateMutability: "view",
-    inputs: [], outputs: [{ type: "uint256" }] },
-] as const;
+import { useState, useEffect, useRef, useMemo } from "react";
+import type { FeedEvent } from "./ActivityFeed";
 
 const T = {
   ink:    "#0f172a",
@@ -30,45 +18,72 @@ interface Candle {
   positive: boolean;
 }
 
-// Generate deterministic synthetic candles seeded from real streamCount
-function buildCandles(streamCount: number): Candle[] {
-  // Each candle = 1 of the last 12 "periods". Score drifts up with more streams,
-  // reclaims cause drops. This gives a visually accurate feel until real OHLC is indexable.
+const PERIODS = 12;
+const PERIOD_MS = 2 * 60 * 60 * 1000; // 2-hour candles
+
+/**
+ * Build candles from real feed events.
+ * Each candle covers a 2-hour window. Positive events raise the "score" price,
+ * negative events lower it. Falls back to a deterministic seed when no events exist.
+ */
+function buildCandlesFromEvents(events: FeedEvent[], streamCount: number): Candle[] {
+  const now    = Date.now();
+  const oldest = now - PERIODS * PERIOD_MS;
+
+  // Bucket events into periods
+  const buckets: { positive: number; negative: number }[] = Array.from({ length: PERIODS }, () => ({ positive: 0, negative: 0 }));
+  events.forEach(ev => {
+    if (ev.ts < oldest) return;
+    const age    = now - ev.ts;
+    const bucket = Math.min(PERIODS - 1, Math.floor(age / PERIOD_MS));
+    const idx    = PERIODS - 1 - bucket; // newest → rightmost
+    if (ev.positive) buckets[idx].positive++;
+    else             buckets[idx].negative++;
+  });
+
   const candles: Candle[] = [];
-  const now = Date.now();
-  let price = 400; // baseline score
-  for (let i = 11; i >= 0; i--) {
-    const periodStreams = Math.max(0, Math.floor(streamCount / 12) + (i === 0 ? streamCount % 12 : 0));
+  let price = 400;
+
+  for (let i = 0; i < PERIODS; i++) {
+    const b    = buckets[i];
+    const total = b.positive + b.negative;
+
+    // If no events in this bucket use a light deterministic seed
     const seed = ((now >> 10) + i * 31 + streamCount * 7) % 100;
-    const positive = seed > 35; // 65% green, 35% red
-    const swing = 8 + (seed % 18);
+    const hasData = total > 0;
+    const positive = hasData ? b.positive >= b.negative : seed > 35;
+    const swing    = hasData
+      ? Math.max(2, (b.positive + b.negative) * 3)
+      : 8 + (seed % 18);
+
     const open  = price;
-    const close = positive ? Math.min(1000, open + swing) : Math.max(0, open - swing);
-    const high  = Math.min(1000, Math.max(open, close) + (seed % 8));
-    const low   = Math.max(0,    Math.min(open, close) - (seed % 8));
+    const close = positive
+      ? Math.min(1000, open + swing)
+      : Math.max(0,    open - swing);
+    const high  = Math.min(1000, Math.max(open, close) + (hasData ? b.positive * 2 : seed % 8));
+    const low   = Math.max(0,    Math.min(open, close) - (hasData ? b.negative * 2 : seed % 8));
     price = close;
-    const d = new Date(now - i * 2 * 60 * 60 * 1000);
+
+    const d = new Date(now - (PERIODS - 1 - i) * PERIOD_MS);
     candles.push({
       label:    d.getHours().toString().padStart(2, "0") + ":00",
       open, high, low, close,
-      volume:   periodStreams * 10 + (seed % 40),
+      volume:   hasData ? total * 15 : (streamCount * 2 + (seed % 40)),
       positive,
     });
   }
   return candles;
 }
 
-export function ActivityChart() {
+interface Props {
+  events?: FeedEvent[];
+  streamCount?: number;
+}
+
+export function ActivityChart({ events = [], streamCount = 0 }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [dims, setDims] = useState({ w: 340, h: 160 });
 
-  const { data: nextStreamIdRaw } = useReadContract({
-    address: CONTRACTS.stream, abi: STREAM_READ_ABI,
-    functionName: "nextStreamId", chainId: ARC_MAINNET_ID,
-  });
-  const streamCount = nextStreamIdRaw !== undefined ? Math.max(0, Number(nextStreamIdRaw) - 1) : 0;
-
-  // Resize observer
   useEffect(() => {
     if (!svgRef.current) return;
     const ro = new ResizeObserver(entries => {
@@ -79,57 +94,49 @@ export function ActivityChart() {
     return () => ro.disconnect();
   }, []);
 
-  const candles = buildCandles(streamCount);
+  const candles = useMemo(() => buildCandlesFromEvents(events, streamCount), [events, streamCount]);
 
-  const PAD = { top: 14, right: 12, bottom: 28, left: 40 };
-  const chartW = dims.w - PAD.left - PAD.right;
-  const chartH = dims.h - PAD.top  - PAD.bottom;
-
+  const PAD      = { top: 14, right: 12, bottom: 28, left: 40 };
+  const chartW   = dims.w - PAD.left - PAD.right;
+  const chartH   = dims.h - PAD.top  - PAD.bottom;
   const allPrices = candles.flatMap(c => [c.high, c.low]);
   const priceMin  = Math.max(0,    Math.min(...allPrices) - 15);
   const priceMax  = Math.min(1000, Math.max(...allPrices) + 15);
   const priceRange = priceMax - priceMin || 1;
-
   const volMax    = Math.max(...candles.map(c => c.volume), 1);
   const n         = candles.length;
   const slotW     = chartW / n;
   const candleW   = Math.max(4, slotW * 0.55);
 
-  function py(price: number) {
-    return PAD.top + chartH - ((price - priceMin) / priceRange) * chartH;
-  }
-  function px(i: number) {
-    return PAD.left + (i + 0.5) * slotW;
-  }
-
-  const GRID_LINES = 4;
+  function py(p: number) { return PAD.top + chartH - ((p - priceMin) / priceRange) * chartH; }
+  function px(i: number) { return PAD.left + (i + 0.5) * slotW; }
 
   return (
     <div style={{ width: "100%", position: "relative" }}>
       <svg ref={svgRef} width="100%" height={dims.h} viewBox={`0 0 ${dims.w} ${dims.h}`}
            style={{ display: "block", overflow: "visible" }}>
 
-        {/* Grid */}
-        {Array.from({ length: GRID_LINES }, (_, gi) => {
-          const gPrice = priceMin + (priceRange / (GRID_LINES - 1)) * gi;
-          const gy = py(gPrice);
+        {/* Grid lines */}
+        {Array.from({ length: 4 }, (_, gi) => {
+          const gp = priceMin + (priceRange / 3) * gi;
+          const gy = py(gp);
           return (
             <g key={gi}>
               <line x1={PAD.left} x2={PAD.left + chartW} y1={gy} y2={gy}
                     stroke={T.grid} strokeWidth={0.8} strokeDasharray="3 3" />
               <text x={PAD.left - 5} y={gy + 3.5} textAnchor="end"
-                    fontSize={9} fill={T.subtle}>{Math.round(gPrice)}</text>
+                    fontSize={9} fill={T.subtle}>{Math.round(gp)}</text>
             </g>
           );
         })}
 
-        {/* Volume bars (behind candles) */}
+        {/* Volume bars */}
         {candles.map((c, i) => {
           const volH = (c.volume / volMax) * (chartH * 0.22);
-          const x = px(i) - candleW / 2;
-          const y = PAD.top + chartH - volH;
           return (
-            <rect key={`vol-${i}`} x={x} y={y} width={candleW} height={volH}
+            <rect key={`vol-${i}`}
+                  x={px(i) - candleW / 2} y={PAD.top + chartH - volH}
+                  width={candleW} height={volH}
                   fill={c.positive ? "rgba(34,197,94,0.18)" : "rgba(239,68,68,0.18)"}
                   rx={1.5} />
           );
@@ -145,20 +152,17 @@ export function ActivityChart() {
           const wickCol  = c.positive ? "#16a34a" : "#dc2626";
           return (
             <g key={`c-${i}`}>
-              {/* Upper wick */}
               <line x1={cx} x2={cx} y1={py(c.high)} y2={bodyTop}
                     stroke={wickCol} strokeWidth={1.2} />
-              {/* Body */}
               <rect x={cx - candleW / 2} y={bodyTop} width={candleW} height={bodyH}
                     fill={col} rx={1.5} opacity={0.92} />
-              {/* Lower wick */}
               <line x1={cx} x2={cx} y1={bodyBot} y2={py(c.low)}
                     stroke={wickCol} strokeWidth={1.2} />
             </g>
           );
         })}
 
-        {/* X-axis labels (every 3rd candle) */}
+        {/* X-axis labels */}
         {candles.map((c, i) => i % 3 === 0 && (
           <text key={`xl-${i}`} x={px(i)} y={dims.h - 4} textAnchor="middle"
                 fontSize={8} fill={T.subtle}>{c.label}</text>
@@ -170,11 +174,10 @@ export function ActivityChart() {
               fontSize={8} fill={T.subtle}>Score</text>
       </svg>
 
-      {/* Legend */}
       <div className="flex items-center gap-4 mt-1 px-1">
         <div className="flex items-center gap-1">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ background: "#22c55e" }} />
-          <span className="text-xs" style={{ color: T.subtle }}>Score gain / stream funded</span>
+          <span className="text-xs" style={{ color: T.subtle }}>Heartbeat / completed</span>
         </div>
         <div className="flex items-center gap-1">
           <div className="w-2.5 h-2.5 rounded-sm" style={{ background: "#ef4444" }} />
