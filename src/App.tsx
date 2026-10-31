@@ -11,10 +11,11 @@ import { ConnectKitButton } from "connectkit";
 import { Toaster, toast } from "sonner";
 import {
   Trophy, Zap, User, Globe, ChevronDown,
-  ExternalLink, TrendingUp, Clock, Shield, Activity, Wallet, Loader2,
+  ExternalLink, TrendingUp, Clock, Shield, Activity, Wallet, Loader2, BookOpen,
 } from "lucide-react";
 import contractsJson from "./contracts.json";
 import { StreamCard, type StreamData } from "./StreamCard";
+import { DocsPanel } from "./Docs";
 import { ActivityFeed, type FeedEvent } from "./ActivityFeed";
 import { ActivityChart } from "./ActivityChart";
 
@@ -206,7 +207,7 @@ const STREAM_DETAIL_ABI = [
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-type Tab  = "leaderboard" | "funder" | "agent";
+type Tab  = "leaderboard" | "funder" | "agent" | "docs";
 type Lang = "EN" | "ZH" | "ES";
 
 interface AgentRow {
@@ -253,9 +254,10 @@ const TIER_BG: Record<string, string> = {
 };
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-  { id: "leaderboard", label: "Leaderboard", icon: <Trophy  size={13} /> },
-  { id: "funder",      label: "Funder",      icon: <Zap     size={13} /> },
-  { id: "agent",       label: "Agent",       icon: <User    size={13} /> },
+  { id: "leaderboard", label: "Leaderboard", icon: <Trophy   size={13} /> },
+  { id: "funder",      label: "Funder",      icon: <Zap      size={13} /> },
+  { id: "agent",       label: "Agent",       icon: <User     size={13} /> },
+  { id: "docs",        label: "Docs",        icon: <BookOpen size={13} /> },
 ];
 
 // ── Agent alive/dead status badge ─────────────────────────────────────────────
@@ -1296,6 +1298,7 @@ export default function App() {
           {tab === "leaderboard" && <LeaderboardPanel setTab={setTab} />}
           {tab === "funder"      && <FunderPanel />}
           {tab === "agent"       && <AgentPanel />}
+          {tab === "docs"        && <DocsPanel />}
         </main>
 
         <ContractBar />
