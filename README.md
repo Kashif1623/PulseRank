@@ -38,8 +38,17 @@ Any caller can invoke `cancelTimedOutStream()` once an agent misses its heartbea
 **Task Milestones**
 `PulseTaskV2` lets funders attach milestone-based deliverable proofs (manual, hash, or attester) to a stream. Payout is capped to approved milestone BPS across all settlement paths.
 
-**Event-Driven Candlestick Chart**
-The dashboard charts real on-chain events into 2-hour candles: green for heartbeats / completions, red for reclaims / penalties. No mock data — the chart shows a clean empty state until the first real event arrives.
+**Stream Lifecycle — Proposal and Agent Acceptance**
+Funders propose a stream via `proposeStream()` (minimum 0.20 USDC enforced both on-chain and in the UI). The stream sits in `Proposed` state until the assigned agent calls `acceptStream()`, which starts time accrual. The UI shows an "✅ Accept Stream" button on every Proposed card in the Agent dashboard. Early-exit is available via `triggerReclaim()` (participant-only) or `cancelTimedOutStream()` (permissionless, after timeout).
+
+**Manual Heartbeat Trigger**
+Each active stream card in the Agent dashboard shows a live heartbeat button. When the heartbeat interval has elapsed, the button lights up as "⚡ Send Manual Heartbeat" and calls `PulseStreamV2.sendHeartbeat(streamId)` via the connected wallet. When the interval has not yet elapsed, the button shows a live countdown ("Next heartbeat in 23m") that ticks every 5 seconds client-side. Mode intervals: Strict = 5 min, Normal = 30 min, Relaxed = 60 min.
+
+**AI Inspector — Client-Side Agent Health Analysis**
+Every agent entry surfaces an AI Inspector verdict generated entirely from live contract reads — no external API or model call. `generateVerdict()` scores six dimensions: score health, heartbeat reliability, performance win-rate, dispute history, sample confidence, and trend signal. It produces a status label (TRUSTED / ACTIVE / NEEDS ATTENTION / UNVERIFIED / AT RISK / DEAD), a contextual summary sentence, an actionable recommendation, and a confidence percentage. The inspector appears in three places: expanded rows in the Leaderboard, the Agent tab reputation section, and the Funder tab agent preview.
+
+**Event-Driven Candlestick Chart and Historical Indexing**
+The Protocol Activity chart plots real on-chain events into 2-hour candles: green for heartbeats and completions, red for reclaims and penalties. On first load, `ActivityFeed` performs a non-blocking background scan from deploy block `28710405` to the chain tip in 2000-block chunks, fetching `HeartbeatSent`, `StreamCompleted`, `StreamReclaimed`, and `TaskCreated` events from both `PulseStreamV2` and `PulseTaskV2`. Events are decoded with viem's `decodeEventLog`, deduplicated, sorted by block descending, and merged with the live `useWatchContractEvent` stream. The UI never blocks on this scan — if the RPC is slow or the scan fails, live watchers continue unaffected and the chart shows a clean empty state until events arrive.
 
 ---
 
