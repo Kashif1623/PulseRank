@@ -156,10 +156,11 @@ function HeartbeatButton({
     return () => clearInterval(id);
   }, []);
 
-  const interval  = MODE_INTERVAL[mode] ?? 1800;
-  const nextAt    = Number(lastHeartbeat) + interval;
-  const secsLeft  = Math.max(0, nextAt - nowSec);
-  const canSend   = secsLeft === 0 && Number(lastHeartbeat) > 0;
+  const interval = MODE_INTERVAL[mode] ?? 1800;
+  const nextAt   = Number(lastHeartbeat) + interval;
+  const secsLeft = Math.max(0, nextAt - nowSec);
+  // Always show active button — contract enforces HeartbeatTooEarly on-chain.
+  // Show countdown as a secondary hint only; never disable the button for timing.
 
   const { writeContract, isPending: sending } = useWriteContract();
 
@@ -175,13 +176,13 @@ function HeartbeatButton({
       {
         onError: (e) => {
           const msg = e.message.includes("HeartbeatTooEarly")
-            ? "Heartbeat sent too early — wait for the next interval."
+            ? `Too early — next heartbeat in ${fmtCountdown(secsLeft)}.`
             : `Heartbeat failed: ${e.message.slice(0, 100)}`;
           toast.error(msg);
         },
         onSuccess: () => {
           toast.success(`⚡ Heartbeat sent for stream #${streamId}!`);
-          onSent?.(); // fire immediately on wallet sign — no receipt wait
+          onSent?.();
         },
       }
     );
@@ -190,20 +191,22 @@ function HeartbeatButton({
   return (
     <button
       onClick={handleHeartbeat}
-      disabled={sending || !canSend}
-      title={secsLeft > 0 ? `Next heartbeat available in ${fmtCountdown(secsLeft)}` : "Send heartbeat now"}
+      disabled={sending}
+      title={secsLeft > 0 ? `Next interval in ${fmtCountdown(secsLeft)} — contract will enforce` : "Send heartbeat now"}
       className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
       style={{
-        background:  canSend && !sending ? "linear-gradient(135deg,#0284c7,#06b6d4)" : "rgba(186,230,253,0.35)",
-        color:       canSend && !sending ? "#fff" : "#64748b",
-        boxShadow:   canSend && !sending ? "0 3px 12px rgba(2,132,199,0.30)" : "none",
-        border:      "1px solid rgba(186,230,253,0.70)",
+        background: "linear-gradient(135deg,#0284c7,#06b6d4)",
+        color:      "#fff",
+        boxShadow:  "0 3px 12px rgba(2,132,199,0.30)",
+        border:     "1px solid rgba(186,230,253,0.70)",
       }}
     >
       {sending ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
-      {sending  ? "Waiting for wallet…"
-       : canSend ? "⚡ Send Manual Heartbeat"
-       : `Next heartbeat in ${fmtCountdown(secsLeft)}`}
+      {sending
+        ? "Waiting for wallet…"
+        : secsLeft > 0
+          ? `⚡ Send Heartbeat (next in ${fmtCountdown(secsLeft)})`
+          : "⚡ Send Manual Heartbeat"}
     </button>
   );
 }

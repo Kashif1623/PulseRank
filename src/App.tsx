@@ -532,10 +532,12 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
   const { data: agentCountRaw, isLoading: countLoading } = useReadContract({
     address: CONTRACTS.registry, abi: REGISTRY_READ_ABI,
     functionName: "agentCount", chainId: ARC_MAINNET_ID,
+    query: { retry: 5, retryDelay: 1500, staleTime: 15_000 },
   });
   const { data: nextStreamIdRaw } = useReadContract({
     address: CONTRACTS.stream, abi: STREAM_READ_ABI,
     functionName: "nextStreamId", chainId: ARC_MAINNET_ID,
+    query: { retry: 5, retryDelay: 1500, staleTime: 15_000 },
   });
 
   const agentCount  = agentCountRaw  !== undefined ? Number(agentCountRaw)  : 0;
@@ -548,7 +550,7 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
   }));
 
   const { data: agentProfiles, isLoading: profilesLoading } = useReadContracts({
-    contracts: agentCalls, query: { enabled: MAX_FETCH > 0 },
+    contracts: agentCalls, query: { enabled: MAX_FETCH > 0, retry: 4, retryDelay: 1500, staleTime: 15_000 },
   });
 
   const ownerAddresses: `0x${string}`[] = (agentProfiles ?? [])
@@ -595,7 +597,7 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
     <div className="space-y-3">
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {[
-          { label: "Agents",   value: countLoading ? "—" : agentCount.toLocaleString(), icon: <User     size={13} style={{ color: T.accent }} /> },
+          { label: "Agents",   value: agentCountRaw !== undefined ? agentCount.toLocaleString() : "…", icon: <User size={13} style={{ color: T.accent }} /> },
           { label: "Streams",  value: streamCount > 0 ? streamCount.toLocaleString() : "0",            icon: <Zap      size={13} style={{ color: T.accentLight }} /> },
           { label: "Protocol", value: "Arc",                                                            icon: <Activity size={13} style={{ color: T.accentMid  }} /> },
         ].map(s => (
@@ -624,7 +626,7 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
           </div>
         )}
 
-        {!isLoading && rows.length === 0 && (
+        {!isLoading && rows.length === 0 && agentCountRaw !== undefined && (
           <div className="px-4 py-10 flex flex-col items-center text-center">
             <div className="relative mb-4">
               <div style={{ position: "absolute", inset: -10, borderRadius: "50%",
