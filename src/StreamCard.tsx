@@ -92,6 +92,16 @@ const T = {
   surface: "rgba(255,255,255,0.70)",
 };
 
+const ACCEPT_STREAM_ABI = [
+  {
+    name: "acceptStream",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "streamId", type: "uint256" }],
+    outputs: [],
+  },
+] as const;
+
 const SEND_HEARTBEAT_ABI = [
   {
     name: "sendHeartbeat",
@@ -179,6 +189,46 @@ function HeartbeatButton({ streamId, lastHeartbeat, mode }: {
        : confirming ? "Confirming on-chain…"
        : canSend   ? "⚡ Send Manual Heartbeat"
        : `Next heartbeat in ${fmtCountdown(secsLeft)}`}
+    </button>
+  );
+}
+
+// ── Accept button (agent-only, Proposed status) ───────────────────────────────
+
+function AcceptButton({ streamId }: { streamId: number }) {
+  const { writeContract, data: txHash, isPending: accepting } = useWriteContract();
+  const { isLoading: confirming } = useWaitForTransactionReceipt({ hash: txHash });
+  const busy = accepting || confirming;
+
+  function handle() {
+    writeContract(
+      {
+        address: STREAM_CONTRACT,
+        abi: ACCEPT_STREAM_ABI,
+        functionName: "acceptStream",
+        args: [BigInt(streamId)],
+        chainId: ARC_MAINNET_ID,
+      },
+      {
+        onError: (e) => toast.error(`Accept failed: ${e.message.slice(0, 100)}`),
+        onSuccess: () => toast.success(`Stream #${streamId} accepted — now Active!`),
+      }
+    );
+  }
+
+  return (
+    <button
+      onClick={handle}
+      disabled={busy}
+      className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+      style={{
+        background: "linear-gradient(135deg, #0284c7 0%, #06b6d4 100%)",
+        color: "#fff",
+        boxShadow: "0 3px 12px rgba(2,132,199,0.30)",
+      }}
+    >
+      {busy ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
+      {accepting ? "Waiting for wallet…" : confirming ? "Confirming…" : "✅ Accept Stream"}
     </button>
   );
 }
@@ -302,6 +352,11 @@ export function StreamCard({ stream, role }: { stream: StreamData; role: "funder
         <span>Mode: <span className="font-semibold" style={{ color: T.accent }}>{MODE_LABEL[stream.mode] ?? stream.mode}</span></span>
         <span>Missed: <span className="font-semibold" style={{ color: stream.missedHeartbeats > 0n ? "#ef4444" : T.muted }}>{stream.missedHeartbeats.toString()}</span></span>
       </div>
+
+      {/* Accept button — only for agents on proposed streams */}
+      {role === "agent" && stream.status === 0 && (
+        <AcceptButton streamId={stream.streamId} />
+      )}
 
       {/* Heartbeat button — only for agents on active streams */}
       {role === "agent" && isActive && (

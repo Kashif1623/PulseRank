@@ -1,14 +1,19 @@
-import { useState, useCallback } from "react";
-import { useWatchContractEvent } from "wagmi";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { decodeEventLog } from "viem";
+import { usePublicClient, useWatchContractEvent } from "wagmi";
 import { Activity, Zap, CheckCircle, AlertTriangle } from "lucide-react";
 import contractsJson from "./contracts.json";
 
-const ARC_MAINNET_ID = 5042;
+const ARC_MAINNET_ID  = 5042;
+const DEPLOY_BLOCK    = 28710405n; // PulseStreamV2 v2.1 deploy block
+const CHUNK           = 2000n;     // blocks per getLogs chunk
 
 const CONTRACTS = {
   task:   contractsJson.contracts.PulseTaskV2.address   as `0x${string}`,
   stream: contractsJson.contracts.PulseStreamV2.address as `0x${string}`,
 };
+
+// ── ABIs ─────────────────────────────────────────────────────────────────────
 
 const TASK_EVENTS_ABI = [
   {
@@ -52,6 +57,8 @@ const STREAM_EVENTS_ABI = [
   },
 ] as const;
 
+// ── Types ─────────────────────────────────────────────────────────────────────
+
 export type FeedEvent = {
   id:       string;
   kind:     "heartbeat" | "task" | "completed" | "reclaimed";
@@ -80,22 +87,136 @@ function KindIcon({ kind, positive }: { kind: FeedEvent["kind"]; positive: boole
   return                           <AlertTriangle size={13} style={{ color: col }} />;
 }
 
+// ── Props ─────────────────────────────────────────────────────────────────────
+
 interface Props {
   onEvent?: (ev: FeedEvent) => void;
 }
 
-export function ActivityFeed({ onEvent }: Props) {
-  const [events, setEvents] = useState<FeedEvent[]>([]);
+// ── Component ─────────────────────────────────────────────────────────────────
 
+export function ActivityFeed({ onEvent }: Props) {
+  const [events, setEvents]           = useState<FeedEvent[]>([]);
+  const [histStatus, setHistStatus]   = useState<"idle" | "loading" | "done" | "failed">("idle");
+  const fetchedRef                    = useRef(false);
+  const client                        = usePublicClient({ chainId: ARC_MAINNET_ID })!;
+
+  // Stable push: deduplicates by id, caps at 200 entries, newest first
   const push = useCallback((ev: FeedEvent) => {
     setEvents(prev => {
       if (prev.some(e => e.id === ev.id)) return prev;
-      return [ev, ...prev].slice(0, 80);
+      return [ev, ...prev].slice(0, 200);
     });
     onEvent?.(ev);
   }, [onEvent]);
 
-  // ── Live watchers ────────────────────────────────────────────────────────────
+  // ── Historical fetch (non-blocking, runs once after mount) ──────────────────
+  useEffect(() => {
+    if (fetchedRef.current || !client) return;
+    fetchedRef.current = true;
+
+    setHistStatus("loading");
+
+    void (async () => {
+      try {
+        const latest = await Promise.race([
+          client.getBlockNumber(),
+          new Promise<never>((_, rej) => setTimeout(() => rej(new Error("timeout")), 4000)),
+        ]);
+
+        const collected: FeedEvent[] = [];
+
+        // Scan all raw logs for an address in CHUNK-sized slices, decode with viem
+        async function scanAddress(address: `0x${string}`, isStream: boolean) {
+          let from = DEPLOY_BLOCK;
+          while (from <= latest) {
+            const to = from + CHUNK - 1n < latest ? from + CHUNK - 1n : latest;
+            try {
+              const logs = await client.getLogs({ address, fromBlock: from, toBlock: to });
+              for (const log of logs) {
+                try {
+                  const decoded = decodeEventLog({
+                    abi:   isStream ? STREAM_EVENTS_ABI : TASK_EVENTS_ABI,
+                    data:  log.data,
+                    topics: log.topics,
+                  });
+                  const txId = log.transactionHash ?? "x";
+                  const bn   = log.blockNumber ?? undefined;
+                  const args = decoded.args as Record<string, unknown>;
+
+                  if (decoded.eventName === "HeartbeatSent") {
+                    collected.push({
+                      id:       `hb-${txId}-${log.logIndex}`,
+                      kind:     "heartbeat",
+                      positive: true,
+                      label:    `Heartbeat OK — Stream #${(args.streamId as bigint | undefined)?.toString() ?? "?"}`,
+                      detail:   `Missed: ${(args.missedHeartbeats as bigint | undefined)?.toString() ?? "0"}`,
+                      ts:       Number((args.timestamp as bigint | undefined) ?? 0n) * 1000 || Date.now(),
+                      blockNumber: bn,
+                    });
+                  } else if (decoded.eventName === "StreamCompleted") {
+                    collected.push({
+                      id:       `sc-${txId}-${log.logIndex}`,
+                      kind:     "completed",
+                      positive: true,
+                      label:    `Stream #${(args.streamId as bigint | undefined)?.toString() ?? "?"} Completed`,
+                      detail:   "All funds settled",
+                      ts:       Date.now(),
+                      blockNumber: bn,
+                    });
+                  } else if (decoded.eventName === "StreamReclaimed") {
+                    collected.push({
+                      id:       `sr-${txId}-${log.logIndex}`,
+                      kind:     "reclaimed",
+                      positive: false,
+                      label:    `Stream #${(args.streamId as bigint | undefined)?.toString() ?? "?"} Reclaimed`,
+                      detail:   `Keeper: ${args.keeper ? shortAddr(args.keeper as string) : "?"}`,
+                      ts:       Date.now(),
+                      blockNumber: bn,
+                    });
+                  } else if (decoded.eventName === "TaskCreated") {
+                    collected.push({
+                      id:       `tc-${txId}-${log.logIndex}`,
+                      kind:     "task",
+                      positive: true,
+                      label:    `Task #${(args.taskId as bigint | undefined)?.toString() ?? "?"} Created`,
+                      detail:   `Agent ${args.agent ? shortAddr(args.agent as string) : "?"}`,
+                      ts:       Date.now(),
+                      blockNumber: bn,
+                    });
+                  }
+                } catch {
+                  // unrecognised event topic — skip
+                }
+              }
+            } catch {
+              // skip chunk on RPC error, continue
+            }
+            from = to + 1n;
+          }
+        }
+
+        await scanAddress(CONTRACTS.stream, true);
+        await scanAddress(CONTRACTS.task,   false);
+
+        // Sort by block number descending, push all at once
+        collected.sort((a, b) =>
+          Number((b.blockNumber ?? 0n) - (a.blockNumber ?? 0n))
+        );
+        setEvents(prev => {
+          const merged = [...collected, ...prev];
+          const seen   = new Set<string>();
+          return merged.filter(e => seen.has(e.id) ? false : (seen.add(e.id), true)).slice(0, 200);
+        });
+        setHistStatus("done");
+      } catch {
+        // Silently fall back — live watchers still work
+        setHistStatus("failed");
+      }
+    })();
+  }, [client, push]);
+
+  // ── Live watchers ─────────────────────────────────────────────────────────────
 
   useWatchContractEvent({
     address:   CONTRACTS.stream,
@@ -104,14 +225,14 @@ export function ActivityFeed({ onEvent }: Props) {
     chainId:   ARC_MAINNET_ID,
     onLogs(logs) {
       logs.forEach(log => {
-        const { streamId, missedHeartbeats } = log.args;
+        const { streamId, missedHeartbeats, timestamp } = log.args;
         push({
           id:       `hb-${log.transactionHash}-${log.logIndex}`,
           kind:     "heartbeat",
           positive: true,
           label:    `Heartbeat OK — Stream #${streamId?.toString() ?? "?"}`,
           detail:   `Missed: ${missedHeartbeats?.toString() ?? "0"}`,
-          ts:       Date.now(),
+          ts:       Number(timestamp ?? 0n) * 1000 || Date.now(),
           blockNumber: log.blockNumber ?? undefined,
         });
       });
@@ -181,36 +302,49 @@ export function ActivityFeed({ onEvent }: Props) {
     },
   });
 
-  // ── Render ───────────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────────
 
   if (events.length === 0) {
     return (
       <div className="text-sm text-center py-6" style={{ color: T.subtle }}>
         <Activity size={18} className="mx-auto mb-2 opacity-40" style={{ color: T.accent }} />
-        <p className="font-medium" style={{ color: T.muted }}>Watching for live on-chain events…</p>
-        <p className="text-xs mt-0.5">Events appear here as they are confirmed on Arc Mainnet</p>
+        <p className="font-medium" style={{ color: T.muted }}>
+          {histStatus === "loading" ? "Loading historical events…" : "Watching for live on-chain events…"}
+        </p>
+        <p className="text-xs mt-0.5">
+          {histStatus === "loading"
+            ? "Scanning Arc Mainnet blocks since contract deploy"
+            : "Events appear here as they are confirmed on Arc Mainnet"}
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
-      {events.map(ev => (
-        <div key={ev.id}
-             className="flex items-start gap-2.5 px-3 py-2 rounded-xl transition-colors"
-             style={{ background: "rgba(186,230,253,0.15)", border: `1px solid ${T.border}` }}>
-          <div className="mt-0.5 shrink-0">
-            <KindIcon kind={ev.kind} positive={ev.positive} />
+    <div>
+      {histStatus === "loading" && (
+        <p className="text-xs text-center mb-2 pb-2 border-b" style={{ color: T.subtle, borderColor: T.border }}>
+          Scanning historical blocks…
+        </p>
+      )}
+      <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+        {events.map(ev => (
+          <div key={ev.id}
+               className="flex items-start gap-2.5 px-3 py-2 rounded-xl transition-colors"
+               style={{ background: "rgba(186,230,253,0.15)", border: `1px solid ${T.border}` }}>
+            <div className="mt-0.5 shrink-0">
+              <KindIcon kind={ev.kind} positive={ev.positive} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-semibold truncate" style={{ color: T.ink }}>{ev.label}</div>
+              <div className="text-xs truncate"               style={{ color: T.subtle }}>{ev.detail}</div>
+            </div>
+            <div className="text-xs shrink-0 tabular-nums" style={{ color: T.subtle }}>
+              {new Date(ev.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-xs font-semibold truncate" style={{ color: T.ink }}>{ev.label}</div>
-            <div className="text-xs truncate"               style={{ color: T.subtle }}>{ev.detail}</div>
-          </div>
-          <div className="text-xs shrink-0 tabular-nums" style={{ color: T.subtle }}>
-            {new Date(ev.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
