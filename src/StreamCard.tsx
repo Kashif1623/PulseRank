@@ -1,6 +1,6 @@
 import { formatUnits } from "viem";
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Loader2, AlertTriangle, Zap } from "lucide-react";
 import { toast } from "sonner";
 import contractsJson from "./contracts.json";
@@ -9,6 +9,32 @@ const ARC_MAINNET_ID = 5042;
 const STREAM_CONTRACT = contractsJson.contracts.PulseStreamV2.address as `0x${string}`;
 
 // ── ABIs ─────────────────────────────────────────────────────────────────────
+
+const STREAM_GET_ABI = [
+  {
+    name: "getStream",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "streamId", type: "uint256" }],
+    outputs: [
+      { name: "funder",             type: "address" },
+      { name: "agent",              type: "address" },
+      { name: "totalAmount",        type: "uint256" },
+      { name: "durationSecs",       type: "uint256" },
+      { name: "ratePerSecX18",      type: "uint256" },
+      { name: "startTime",          type: "uint256" },
+      { name: "lastHeartbeat",      type: "uint256" },
+      { name: "earnedAmount",       type: "uint256" },
+      { name: "pausedAt",           type: "uint256" },
+      { name: "pausedDuration",     type: "uint256" },
+      { name: "missedHeartbeats",   type: "uint256" },
+      { name: "lastMissCheckpoint", type: "uint256" },
+      { name: "taskId",             type: "uint256" },
+      { name: "mode",               type: "uint8"   },
+      { name: "status",             type: "uint8"   },
+    ],
+  },
+] as const;
 
 const IS_TIMED_OUT_ABI = [
   {
@@ -30,68 +56,6 @@ const CANCEL_TIMED_OUT_ABI = [
   },
 ] as const;
 
-// ── Stream status ─────────────────────────────────────────────────────────────
-
-const STATUS_LABEL: Record<number, string> = {
-  0: "Proposed",
-  1: "Active",
-  2: "Paused",
-  3: "Completed",
-  4: "Reclaimed",
-  5: "Cancelled",
-};
-const STATUS_COLOR: Record<number, string> = {
-  0: "#0ea5e9",
-  1: "#22c55e",
-  2: "#f59e0b",
-  3: "#64748b",
-  4: "#ef4444",
-  5: "#94a3b8",
-};
-
-export interface StreamData {
-  streamId:           number;
-  funder:             string;
-  agent:              string;
-  totalAmount:        bigint;
-  durationSecs:       bigint;
-  ratePerSecX18:      bigint;
-  startTime:          bigint;
-  lastHeartbeat:      bigint;
-  earnedAmount:       bigint;
-  pausedAt:           bigint;
-  pausedDuration:     bigint;
-  missedHeartbeats:   bigint;
-  lastMissCheckpoint: bigint;
-  taskId:             bigint;
-  mode:               number;
-  status:             number;
-}
-
-const MODE_LABEL: Record<number, string> = { 1: "Strict", 2: "Normal", 3: "Relaxed" };
-
-function shortAddr(a: string) { return `${a.slice(0,6)}…${a.slice(-4)}`; }
-
-function fmtUsdc(n: bigint) {
-  return `$${Number(formatUnits(n, 6)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
-function fmtDuration(secs: bigint) {
-  const s = Number(secs);
-  if (s >= 86400) return `${(s / 86400).toFixed(1)}d`;
-  if (s >= 3600)  return `${(s / 3600).toFixed(1)}h`;
-  return `${s}s`;
-}
-
-const T = {
-  ink:     "#0f172a",
-  muted:   "#334155",
-  subtle:  "#64748b",
-  border:  "rgba(186,230,253,0.80)",
-  accent:  "#0284c7",
-  surface: "rgba(255,255,255,0.70)",
-};
-
 const ACCEPT_STREAM_ABI = [
   {
     name: "acceptStream",
@@ -112,9 +76,60 @@ const SEND_HEARTBEAT_ABI = [
   },
 ] as const;
 
-// heartbeatInterval per mode (seconds) — matches PulseStreamV2 constructor defaults
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+const STATUS_LABEL: Record<number, string> = {
+  0: "Proposed", 1: "Active", 2: "Paused",
+  3: "Completed", 4: "Reclaimed", 5: "Cancelled",
+};
+const STATUS_COLOR: Record<number, string> = {
+  0: "#0ea5e9", 1: "#22c55e", 2: "#f59e0b",
+  3: "#64748b", 4: "#ef4444", 5: "#94a3b8",
+};
+const MODE_LABEL: Record<number, string> = { 1: "Strict", 2: "Normal", 3: "Relaxed" };
+// heartbeatInterval per mode (seconds) — mirrors PulseStreamV2 constructor defaults
 const MODE_INTERVAL: Record<number, number> = { 1: 300, 2: 1800, 3: 3600 };
 
+export interface StreamData {
+  streamId:           number;
+  funder:             string;
+  agent:              string;
+  totalAmount:        bigint;
+  durationSecs:       bigint;
+  ratePerSecX18:      bigint;
+  startTime:          bigint;
+  lastHeartbeat:      bigint;
+  earnedAmount:       bigint;
+  pausedAt:           bigint;
+  pausedDuration:     bigint;
+  missedHeartbeats:   bigint;
+  lastMissCheckpoint: bigint;
+  taskId:             bigint;
+  mode:               number;
+  status:             number;
+}
+
+const T = {
+  ink:     "#0f172a",
+  muted:   "#334155",
+  subtle:  "#64748b",
+  border:  "rgba(186,230,253,0.80)",
+  accent:  "#0284c7",
+  surface: "rgba(255,255,255,0.70)",
+};
+
+function shortAddr(a: string) { return `${a.slice(0, 6)}…${a.slice(-4)}`; }
+function fmtUsdc(n: bigint) {
+  return `$${Number(formatUnits(n, 6)).toLocaleString(undefined, {
+    minimumFractionDigits: 2, maximumFractionDigits: 2,
+  })}`;
+}
+function fmtDuration(secs: bigint) {
+  const s = Number(secs);
+  if (s >= 86400) return `${(s / 86400).toFixed(1)}d`;
+  if (s >= 3600)  return `${(s / 3600).toFixed(1)}h`;
+  return `${s}s`;
+}
 function fmtCountdown(secs: number): string {
   if (secs <= 0) return "";
   if (secs < 60) return `${secs}s`;
@@ -122,16 +137,17 @@ function fmtCountdown(secs: number): string {
   return `${(secs / 3600).toFixed(1)}h`;
 }
 
-// ── Heartbeat button (agent-only) ──────────────────────────────────────────────
+// ── HeartbeatButton ───────────────────────────────────────────────────────────
 
-function HeartbeatButton({ streamId, lastHeartbeat, mode }: {
+function HeartbeatButton({
+  streamId, lastHeartbeat, mode, onSent,
+}: {
   streamId: number;
   lastHeartbeat: bigint;
   mode: number;
+  onSent?: () => void;
 }) {
   const [nowSec, setNowSec] = useState(() => Math.floor(Date.now() / 1000));
-
-  // Tick every 5 seconds to keep the countdown fresh
   useEffect(() => {
     const id = setInterval(() => setNowSec(Math.floor(Date.now() / 1000)), 5_000);
     return () => clearInterval(id);
@@ -142,12 +158,18 @@ function HeartbeatButton({ streamId, lastHeartbeat, mode }: {
   const secsLeft  = Math.max(0, nextAt - nowSec);
   const canSend   = secsLeft === 0 && Number(lastHeartbeat) > 0;
 
-  const { writeContract: sendHb, data: txHash, isPending: sending } = useWriteContract();
-  const { isLoading: confirming } = useWaitForTransactionReceipt({ hash: txHash });
+  const { writeContract, data: txHash, isPending: sending } = useWriteContract();
+  const { isLoading: confirming, isSuccess: confirmed } = useWaitForTransactionReceipt({ hash: txHash });
+
+  // Fire parent callback the moment the tx receipt is confirmed
+  useEffect(() => {
+    if (confirmed) onSent?.();
+  }, [confirmed, onSent]);
+
   const busy = sending || confirming;
 
   function handleHeartbeat() {
-    sendHb(
+    writeContract(
       {
         address: STREAM_CONTRACT,
         abi: SEND_HEARTBEAT_ABI,
@@ -174,30 +196,32 @@ function HeartbeatButton({ streamId, lastHeartbeat, mode }: {
       title={secsLeft > 0 ? `Next heartbeat available in ${fmtCountdown(secsLeft)}` : "Send heartbeat now"}
       className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
       style={{
-        background: canSend && !busy
-          ? "linear-gradient(135deg, #0284c7 0%, #06b6d4 100%)"
-          : "rgba(186,230,253,0.35)",
-        color: canSend && !busy ? "#fff" : "#64748b",
-        boxShadow: canSend && !busy ? "0 3px 12px rgba(2,132,199,0.30)" : "none",
-        border: "1px solid rgba(186,230,253,0.70)",
+        background:  canSend && !busy ? "linear-gradient(135deg,#0284c7,#06b6d4)" : "rgba(186,230,253,0.35)",
+        color:       canSend && !busy ? "#fff" : "#64748b",
+        boxShadow:   canSend && !busy ? "0 3px 12px rgba(2,132,199,0.30)" : "none",
+        border:      "1px solid rgba(186,230,253,0.70)",
       }}
     >
-      {busy
-        ? <Loader2 size={13} className="animate-spin" />
-        : <Zap size={13} />}
-      {sending   ? "Waiting for wallet…"
+      {busy ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
+      {sending    ? "Waiting for wallet…"
        : confirming ? "Confirming on-chain…"
-       : canSend   ? "⚡ Send Manual Heartbeat"
+       : canSend    ? "⚡ Send Manual Heartbeat"
        : `Next heartbeat in ${fmtCountdown(secsLeft)}`}
     </button>
   );
 }
 
-// ── Accept button (agent-only, Proposed status) ───────────────────────────────
+// ── AcceptButton ──────────────────────────────────────────────────────────────
 
-function AcceptButton({ streamId }: { streamId: number }) {
+function AcceptButton({ streamId, onAccepted }: { streamId: number; onAccepted: () => void }) {
   const { writeContract, data: txHash, isPending: accepting } = useWriteContract();
-  const { isLoading: confirming } = useWaitForTransactionReceipt({ hash: txHash });
+  const { isLoading: confirming, isSuccess: confirmed } = useWaitForTransactionReceipt({ hash: txHash });
+
+  // When the receipt is in, fire parent so optimistic state is confirmed
+  useEffect(() => {
+    if (confirmed) onAccepted();
+  }, [confirmed, onAccepted]);
+
   const busy = accepting || confirming;
 
   function handle() {
@@ -222,7 +246,7 @@ function AcceptButton({ streamId }: { streamId: number }) {
       disabled={busy}
       className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
       style={{
-        background: "linear-gradient(135deg, #0284c7 0%, #06b6d4 100%)",
+        background: "linear-gradient(135deg,#0284c7,#06b6d4)",
         color: "#fff",
         boxShadow: "0 3px 12px rgba(2,132,199,0.30)",
       }}
@@ -233,9 +257,9 @@ function AcceptButton({ streamId }: { streamId: number }) {
   );
 }
 
-// ── Reclaim button (funder-only) ───────────────────────────────────────────────
+// ── ReclaimButton ─────────────────────────────────────────────────────────────
 
-function ReclaimButton({ streamId }: { streamId: number }) {
+function ReclaimButton({ streamId, onReclaimed }: { streamId: number; onReclaimed: () => void }) {
   const { data: timedOut, isLoading: checking } = useReadContract({
     address: STREAM_CONTRACT,
     abi: IS_TIMED_OUT_ABI,
@@ -246,10 +270,13 @@ function ReclaimButton({ streamId }: { streamId: number }) {
   });
 
   const { writeContract: cancel, data: txHash, isPending: cancelling } = useWriteContract();
-  const { isLoading: confirming } = useWaitForTransactionReceipt({ hash: txHash });
+  const { isLoading: confirming, isSuccess: confirmed } = useWaitForTransactionReceipt({ hash: txHash });
 
-  if (checking) return null;
-  if (!timedOut) return null;
+  useEffect(() => {
+    if (confirmed) onReclaimed();
+  }, [confirmed, onReclaimed]);
+
+  if (checking || !timedOut) return null;
 
   const busy = cancelling || confirming;
 
@@ -275,16 +302,12 @@ function ReclaimButton({ streamId }: { streamId: number }) {
       disabled={busy}
       className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
       style={{
-        background: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)",
+        background: "linear-gradient(135deg,#dc2626,#ef4444)",
         color: "#fff",
         boxShadow: "0 3px 12px rgba(220,38,38,0.30)",
       }}
     >
-      {busy ? (
-        <Loader2 size={13} className="animate-spin" />
-      ) : (
-        <AlertTriangle size={13} />
-      )}
+      {busy ? <Loader2 size={13} className="animate-spin" /> : <AlertTriangle size={13} />}
       {cancelling ? "Waiting for wallet…" : confirming ? "Confirming…" : "Reclaim Unspent USDC"}
     </button>
   );
@@ -292,20 +315,94 @@ function ReclaimButton({ streamId }: { streamId: number }) {
 
 // ── StreamCard ─────────────────────────────────────────────────────────────────
 
-export function StreamCard({ stream, role }: { stream: StreamData; role: "funder" | "agent" }) {
+export function StreamCard({
+  stream: initialStream,
+  role,
+  onEvent,
+}: {
+  stream: StreamData;
+  role: "funder" | "agent";
+  onEvent?: (type: "heartbeat" | "accept" | "reclaim") => void;
+}) {
+  // Local optimistic state: starts from the prop, can be overridden instantly
+  const [optimisticStatus, setOptimisticStatus] = useState<number | null>(null);
+  const [optimisticLastHb, setOptimisticLastHb] = useState<bigint | null>(null);
+
+  // Self-fetch: re-reads the stream from chain to confirm state after any action
+  const { data: liveRaw, refetch } = useReadContract({
+    address: STREAM_CONTRACT,
+    abi: STREAM_GET_ABI,
+    functionName: "getStream",
+    args: [BigInt(initialStream.streamId)],
+    chainId: ARC_MAINNET_ID,
+    query: { refetchInterval: 30_000, enabled: true },
+  });
+
+  // Merge live data over initial props, then apply optimistic overrides
+  const liveStream: StreamData = liveRaw
+    ? (() => {
+        const r = liveRaw as unknown as Record<string, unknown>;
+        return {
+          streamId:           initialStream.streamId,
+          funder:             r.funder             as string,
+          agent:              r.agent              as string,
+          totalAmount:        r.totalAmount        as bigint,
+          durationSecs:       r.durationSecs       as bigint,
+          ratePerSecX18:      r.ratePerSecX18      as bigint,
+          startTime:          r.startTime          as bigint,
+          lastHeartbeat:      r.lastHeartbeat      as bigint,
+          earnedAmount:       r.earnedAmount       as bigint,
+          pausedAt:           r.pausedAt           as bigint,
+          pausedDuration:     r.pausedDuration     as bigint,
+          missedHeartbeats:   r.missedHeartbeats   as bigint,
+          lastMissCheckpoint: r.lastMissCheckpoint as bigint,
+          taskId:             r.taskId             as bigint,
+          mode:               Number(r.mode),
+          status:             Number(r.status),
+        };
+      })()
+    : initialStream;
+
+  const stream: StreamData = {
+    ...liveStream,
+    status:        optimisticStatus     ?? liveStream.status,
+    lastHeartbeat: optimisticLastHb     ?? liveStream.lastHeartbeat,
+  };
+
+  // Callbacks passed to child buttons
+  const handleAccepted = useCallback(() => {
+    setOptimisticStatus(1); // Active
+    setOptimisticLastHb(BigInt(Math.floor(Date.now() / 1000)));
+    void refetch();
+    onEvent?.("accept");
+  }, [refetch, onEvent]);
+
+  const handleHeartbeatSent = useCallback(() => {
+    setOptimisticLastHb(BigInt(Math.floor(Date.now() / 1000)));
+    void refetch();
+    onEvent?.("heartbeat");
+  }, [refetch, onEvent]);
+
+  const handleReclaimed = useCallback(() => {
+    setOptimisticStatus(4); // Reclaimed
+    void refetch();
+    onEvent?.("reclaim");
+  }, [refetch, onEvent]);
+
   const statusLabel = STATUS_LABEL[stream.status] ?? "Unknown";
   const statusColor = STATUS_COLOR[stream.status] ?? "#94a3b8";
   const earnedPct   = stream.totalAmount > 0n
     ? Math.round(Number((stream.earnedAmount * 100n) / stream.totalAmount))
     : 0;
   const counterpart = role === "funder" ? stream.agent : stream.funder;
-  const isActive    = stream.status === 1; // Active
+  const isActive    = stream.status === 1;
+  const isProposed  = stream.status === 0;
 
   return (
     <div className="rounded-2xl p-4 space-y-3"
          style={{ background: T.surface, border: `1px solid ${T.border}` }}>
 
-      {/* Header row */}
+      {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <span className="mono text-xs font-bold" style={{ color: T.accent }}>#{stream.streamId}</span>
@@ -335,7 +432,7 @@ export function StreamCard({ stream, role }: { stream: StreamData; role: "funder
         </div>
       </div>
 
-      {/* Progress bar */}
+      {/* Progress */}
       <div>
         <div className="flex justify-between text-xs mb-1" style={{ color: T.subtle }}>
           <span>Earned</span>
@@ -353,23 +450,22 @@ export function StreamCard({ stream, role }: { stream: StreamData; role: "funder
         <span>Missed: <span className="font-semibold" style={{ color: stream.missedHeartbeats > 0n ? "#ef4444" : T.muted }}>{stream.missedHeartbeats.toString()}</span></span>
       </div>
 
-      {/* Accept button — only for agents on proposed streams */}
-      {role === "agent" && stream.status === 0 && (
-        <AcceptButton streamId={stream.streamId} />
+      {/* Agent actions */}
+      {role === "agent" && isProposed && (
+        <AcceptButton streamId={stream.streamId} onAccepted={handleAccepted} />
       )}
-
-      {/* Heartbeat button — only for agents on active streams */}
       {role === "agent" && isActive && (
         <HeartbeatButton
           streamId={stream.streamId}
           lastHeartbeat={stream.lastHeartbeat}
           mode={stream.mode}
+          onSent={handleHeartbeatSent}
         />
       )}
 
-      {/* Reclaim button — only for funders on active streams */}
+      {/* Funder actions */}
       {role === "funder" && isActive && (
-        <ReclaimButton streamId={stream.streamId} />
+        <ReclaimButton streamId={stream.streamId} onReclaimed={handleReclaimed} />
       )}
     </div>
   );

@@ -517,6 +517,18 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
     });
   }, []);
 
+  // Bridge from StreamCard action type → FeedEvent so stream actions
+  // instantly appear in the activity feed and candlestick chart.
+  const handleStreamEvent = useCallback((type: "heartbeat" | "accept" | "reclaim") => {
+    const now = Date.now();
+    const events: Record<typeof type, FeedEvent> = {
+      heartbeat: { id: `hb-${now}`,     kind: "heartbeat",  label: "⚡ Heartbeat sent",           detail: "Manual heartbeat confirmed", ts: now, positive: true  },
+      accept:    { id: `acc-${now}`,    kind: "task",       label: "✅ Stream accepted (Active)",  detail: "Stream now earning",         ts: now, positive: true  },
+      reclaim:   { id: `rcl-${now}`,   kind: "reclaimed",  label: "⚠ Stream reclaimed",           detail: "Unspent USDC returned",      ts: now, positive: false },
+    };
+    handleEvent(events[type]);
+  }, [handleEvent]);
+
   const { data: agentCountRaw, isLoading: countLoading } = useReadContract({
     address: CONTRACTS.registry, abi: REGISTRY_READ_ABI,
     functionName: "agentCount", chainId: ARC_MAINNET_ID,
@@ -703,7 +715,7 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
         <h3 className="display text-sm font-bold mb-3 flex items-center gap-2" style={{ color: T.ink }}>
           <Clock size={13} style={{ color: T.accent }} /> All Protocol Streams
         </h3>
-        <GlobalStreamList />
+        <GlobalStreamList onEvent={handleStreamEvent} />
       </div>
     </div>
   );
@@ -926,7 +938,10 @@ function FunderPanel() {
 
 const MAX_GLOBAL = 50;
 
-function GlobalStreamList({ highlightAddress }: { highlightAddress?: string }) {
+function GlobalStreamList({ highlightAddress, onEvent }: {
+  highlightAddress?: string;
+  onEvent?: (type: "heartbeat" | "accept" | "reclaim") => void;
+}) {
   const { data: nextRaw, isLoading: nextLoading } = useReadContract({
     address: CONTRACTS.stream, abi: STREAM_READ_ABI,
     functionName: "nextStreamId", chainId: ARC_MAINNET_ID,
@@ -1007,7 +1022,7 @@ function GlobalStreamList({ highlightAddress }: { highlightAddress?: string }) {
         return (
           <div key={s.streamId}
                style={isOwn ? { outline: `2px solid rgba(2,132,199,0.45)`, borderRadius: 16 } : {}}>
-            <StreamCard stream={s} role={role} />
+            <StreamCard stream={s} role={role} onEvent={onEvent} />
           </div>
         );
       })}
