@@ -811,10 +811,20 @@ function FunderPanel() {
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: T.subtle }}>
-                Total Amount (USDC)
+                Total Amount (USDC) <span style={{ color: T.accent, fontWeight: 400 }}>— min 0.20 USDC</span>
               </label>
               <input className={inputCls} style={inputStyle} type="number" min="0.20" step="0.01" placeholder="e.g. 100.00"
                      value={amount} onChange={e => setAmount(e.target.value)} />
+              {amount && parseFloat(amount) > 0 && parseFloat(amount) < 0.20 && (
+                <p className="text-xs mt-1" style={{ color: "#ef4444" }}>
+                  Amount too low — minimum is 0.20 USDC on-chain.
+                </p>
+              )}
+              {(!amount || parseFloat(amount) === 0) && (
+                <p className="text-xs mt-1" style={{ color: T.subtle }}>
+                  On-chain minimum: 0.20 USDC (200,000 units)
+                </p>
+              )}
             </div>
 
             {/* Duration picker */}
