@@ -697,6 +697,14 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
         </div>
         <ActivityFeed onEvent={handleEvent} />
       </div>
+
+      {/* All protocol streams on leaderboard */}
+      <div className="glass rounded-2xl p-5">
+        <h3 className="display text-sm font-bold mb-3 flex items-center gap-2" style={{ color: T.ink }}>
+          <Clock size={13} style={{ color: T.accent }} /> All Protocol Streams
+        </h3>
+        <GlobalStreamList />
+      </div>
     </div>
   );
 }
@@ -901,56 +909,52 @@ function FunderPanel() {
 
       <div className="glass rounded-2xl p-5">
         <h3 className="display text-sm font-bold mb-3 flex items-center gap-2" style={{ color: T.ink }}>
-          <Clock size={13} style={{ color: T.accent }} /> Your Active Streams
+          <Clock size={13} style={{ color: T.accent }} /> All Protocol Streams
+          {isConnected && <span className="ml-1 text-xs font-normal" style={{ color: T.subtle }}>· your streams highlighted</span>}
         </h3>
-        {isConnected && address
-          ? <FunderStreamList address={address} />
-          : <div className="text-sm text-center py-6" style={{ color: T.placeholder }}>
-              Connect your wallet to view active streams.
-            </div>}
+        <GlobalStreamList highlightAddress={address} />
       </div>
     </div>
   );
 }
 
-// Reads up to 10 stream IDs for a funder then fetches each struct
-function FunderStreamList({ address }: { address: `0x${string}` }) {
-  const MAX = 10;
-  const idxCalls = Array.from({ length: MAX }, (_, i) => ({
-    address: CONTRACTS.stream, abi: STREAM_LIST_ABI,
-    functionName: "funderStreams" as const,
-    args: [address, BigInt(i)] as [`0x${string}`, bigint],
-    chainId: ARC_MAINNET_ID,
-  }));
-  const { data: idxResults, isLoading: idxLoading } = useReadContracts({ contracts: idxCalls });
+// ── GlobalStreamList ────────────────────────────────────────────────────────
+// Iterates ALL stream IDs (1 … nextStreamId-1) and renders every stream.
+// Pass `highlightAddress` to visually highlight the user's own streams.
+// The StreamCard internally shows Accept / Heartbeat / Reclaim buttons
+// only when the connected wallet matches the assigned role.
 
-  const streamIds: bigint[] = [];
-  if (idxResults) {
-    for (const r of idxResults) {
-      if (r.status === "success" && r.result) {
-        const id = r.result;
-        if (id > 0n) streamIds.push(id);
-        else break;
-      } else break;
-    }
-  }
+const MAX_GLOBAL = 50;
 
-  const streamCalls = streamIds.map(id => ({
-    address: CONTRACTS.stream, abi: STREAM_GET_ABI,
-    functionName: "getStream" as const, args: [id] as [bigint],
-    chainId: ARC_MAINNET_ID,
-  }));
-  const { data: streamResults, isLoading: streamsLoading } = useReadContracts({
-    contracts: streamCalls, query: { enabled: streamIds.length > 0 },
+function GlobalStreamList({ highlightAddress }: { highlightAddress?: string }) {
+  const { data: nextRaw, isLoading: nextLoading } = useReadContract({
+    address: CONTRACTS.stream, abi: STREAM_READ_ABI,
+    functionName: "nextStreamId", chainId: ARC_MAINNET_ID,
   });
 
-  if (idxLoading || streamsLoading) {
+  const total = nextRaw !== undefined ? Math.max(0, Number(nextRaw) - 1) : 0;
+  const fetchCount = Math.min(total, MAX_GLOBAL);
+
+  const streamCalls = Array.from({ length: fetchCount }, (_, i) => ({
+    address: CONTRACTS.stream, abi: STREAM_GET_ABI,
+    functionName: "getStream" as const, args: [BigInt(i + 1)] as [bigint],
+    chainId: ARC_MAINNET_ID,
+  }));
+
+  const { data: streamResults, isLoading: streamsLoading } = useReadContracts({
+    contracts: streamCalls, query: { enabled: fetchCount > 0 },
+  });
+
+  if (nextLoading || streamsLoading) {
     return <div className="text-sm text-center py-6 flex items-center justify-center gap-2" style={{ color: T.subtle }}>
-      <Loader2 size={14} className="animate-spin" style={{ color: T.accent }} /> Loading streams…
+      <Loader2 size={14} className="animate-spin" style={{ color: T.accent }} /> Loading all streams…
     </div>;
   }
-  if (streamIds.length === 0) {
-    return <div className="text-sm text-center py-6" style={{ color: T.placeholder }}>No streams found for this wallet.</div>;
+
+  if (fetchCount === 0) {
+    return <div className="text-sm text-center py-6" style={{ color: T.placeholder }}>
+      No streams have been created yet.
+    </div>;
   }
 
   const streams: StreamData[] = [];
@@ -958,9 +962,9 @@ function FunderStreamList({ address }: { address: `0x${string}` }) {
     if (r.status !== "success" || !r.result) return;
     const t = r.result as Record<string, unknown>;
     streams.push({
-      streamId: Number(streamIds[i]),
-      funder:   t.funder as string,
-      agent:    t.agent  as string,
+      streamId:           i + 1,
+      funder:             t.funder             as string,
+      agent:              t.agent              as string,
       totalAmount:        t.totalAmount        as bigint,
       durationSecs:       t.durationSecs       as bigint,
       ratePerSecX18:      t.ratePerSecX18      as bigint,
@@ -977,9 +981,36 @@ function FunderStreamList({ address }: { address: `0x${string}` }) {
     });
   });
 
+  // Sort: active first, then proposed, then rest by streamId desc
+  const sorted = [...streams].sort((a, b) => {
+    const order = (s: number) => s === 1 ? 0 : s === 0 ? 1 : 2;
+    const diff = order(a.status) - order(b.status);
+    return diff !== 0 ? diff : b.streamId - a.streamId;
+  });
+
+  const hi = highlightAddress?.toLowerCase();
+
   return (
-    <div className="space-y-2">
-      {streams.map(s => <StreamCard key={s.streamId} stream={s} role="funder" />)}
+    <div className="space-y-3">
+      {total > MAX_GLOBAL && (
+        <p className="text-xs text-center" style={{ color: T.subtle }}>
+          Showing latest {MAX_GLOBAL} of {total} streams
+        </p>
+      )}
+      {sorted.map(s => {
+        const isOwn = hi && (
+          s.funder.toLowerCase() === hi || s.agent.toLowerCase() === hi
+        );
+        // Determine role for StreamCard button logic
+        const role: "funder" | "agent" = hi && s.agent.toLowerCase() === hi
+          ? "agent" : "funder";
+        return (
+          <div key={s.streamId}
+               style={isOwn ? { outline: `2px solid rgba(2,132,199,0.45)`, borderRadius: 16 } : {}}>
+            <StreamCard stream={s} role={role} />
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -1156,13 +1187,10 @@ function AgentPanel() {
       {/* Incoming streams */}
       <div className="glass rounded-2xl p-5">
         <h3 className="display text-sm font-bold mb-3 flex items-center gap-2" style={{ color: T.ink }}>
-          <Zap size={13} style={{ color: T.accent }} /> Incoming Streams
+          <Zap size={13} style={{ color: T.accent }} /> All Protocol Streams
+          {isConnected && <span className="ml-1 text-xs font-normal" style={{ color: T.subtle }}>· your streams highlighted</span>}
         </h3>
-        {isConnected && address
-          ? <AgentStreamList address={address} />
-          : <div className="text-sm text-center py-6" style={{ color: T.placeholder }}>
-              Connect your wallet to view and accept streams.
-            </div>}
+        <GlobalStreamList highlightAddress={address} />
       </div>
 
       {/* Live work feed */}
@@ -1174,76 +1202,6 @@ function AgentPanel() {
         </h3>
         <ActivityFeed />
       </div>
-    </div>
-  );
-}
-
-function AgentStreamList({ address }: { address: `0x${string}` }) {
-  const MAX = 10;
-  const idxCalls = Array.from({ length: MAX }, (_, i) => ({
-    address: CONTRACTS.stream, abi: STREAM_LIST_ABI,
-    functionName: "agentStreams" as const,
-    args: [address, BigInt(i)] as [`0x${string}`, bigint],
-    chainId: ARC_MAINNET_ID,
-  }));
-  const { data: idxResults, isLoading: idxLoading } = useReadContracts({ contracts: idxCalls });
-
-  const streamIds: bigint[] = [];
-  if (idxResults) {
-    for (const r of idxResults) {
-      if (r.status === "success" && r.result) {
-        const id = r.result;
-        if (id > 0n) streamIds.push(id);
-        else break;
-      } else break;
-    }
-  }
-
-  const streamCalls = streamIds.map(id => ({
-    address: CONTRACTS.stream, abi: STREAM_GET_ABI,
-    functionName: "getStream" as const, args: [id] as [bigint],
-    chainId: ARC_MAINNET_ID,
-  }));
-  const { data: streamResults, isLoading: streamsLoading } = useReadContracts({
-    contracts: streamCalls, query: { enabled: streamIds.length > 0 },
-  });
-
-  if (idxLoading || streamsLoading) {
-    return <div className="text-sm text-center py-6 flex items-center justify-center gap-2" style={{ color: T.subtle }}>
-      <Loader2 size={14} className="animate-spin" style={{ color: T.accent }} /> Loading streams…
-    </div>;
-  }
-  if (streamIds.length === 0) {
-    return <div className="text-sm text-center py-6" style={{ color: T.placeholder }}>No incoming streams yet for this wallet.</div>;
-  }
-
-  const streams: StreamData[] = [];
-  streamResults?.forEach((r, i) => {
-    if (r.status !== "success" || !r.result) return;
-    const t = r.result as Record<string, unknown>;
-    streams.push({
-      streamId: Number(streamIds[i]),
-      funder:   t.funder as string,
-      agent:    t.agent  as string,
-      totalAmount:        t.totalAmount        as bigint,
-      durationSecs:       t.durationSecs       as bigint,
-      ratePerSecX18:      t.ratePerSecX18      as bigint,
-      startTime:          t.startTime          as bigint,
-      lastHeartbeat:      t.lastHeartbeat      as bigint,
-      earnedAmount:       t.earnedAmount       as bigint,
-      pausedAt:           t.pausedAt           as bigint,
-      pausedDuration:     t.pausedDuration     as bigint,
-      missedHeartbeats:   t.missedHeartbeats   as bigint,
-      lastMissCheckpoint: t.lastMissCheckpoint as bigint,
-      taskId:             t.taskId             as bigint,
-      mode:               Number(t.mode),
-      status:             Number(t.status),
-    });
-  });
-
-  return (
-    <div className="space-y-2">
-      {streams.map(s => <StreamCard key={s.streamId} stream={s} role="agent" />)}
     </div>
   );
 }
