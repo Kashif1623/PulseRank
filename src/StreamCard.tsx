@@ -326,7 +326,7 @@ export function StreamCard({
     functionName: "getStream",
     args: [BigInt(initialStream.streamId)],
     chainId: ARC_MAINNET_ID,
-    query: { refetchInterval: 30_000, enabled: true },
+    query: { refetchInterval: 10_000, enabled: true },
   });
 
   // Merge live data over initial props, then apply optimistic overrides.
@@ -392,9 +392,15 @@ export function StreamCard({
   const earnedPct   = stream.totalAmount > 0n
     ? Math.round(Number((stream.earnedAmount * 100n) / stream.totalAmount))
     : 0;
-  const counterpart = role === "funder" ? stream.agent : stream.funder;
+  const isSelfStream = stream.funder.toLowerCase() === stream.agent.toLowerCase();
+  const counterpart  = isSelfStream
+    ? `self (stream #${stream.streamId})`
+    : role === "funder" ? stream.agent : stream.funder;
   const isActive    = stream.status === 1;
   const isProposed  = stream.status === 0;
+  // Self-streams: show both agent actions (heartbeat/accept) and funder actions (reclaim)
+  const showAgentActions  = role === "agent"  || isSelfStream;
+  const showFunderActions = role === "funder" || isSelfStream;
 
   return (
     <div className="rounded-2xl p-4 space-y-3"
@@ -405,7 +411,11 @@ export function StreamCard({
         <div className="flex items-center gap-2 min-w-0">
           <span className="mono text-xs font-bold" style={{ color: T.accent }}>#{stream.streamId}</span>
           <span className="text-xs font-medium truncate mono" style={{ color: T.muted }}>
-            {role === "funder" ? "→ Agent" : "← Funder"} {shortAddr(counterpart)}
+            {isSelfStream
+              ? "Self-stream"
+              : role === "funder"
+                ? `→ Agent ${shortAddr(counterpart)}`
+                : `← Funder ${shortAddr(counterpart)}`}
           </span>
         </div>
         <span className="shrink-0 text-xs font-bold px-2 py-0.5 rounded-full"
@@ -448,11 +458,11 @@ export function StreamCard({
         <span>Missed: <span className="font-semibold" style={{ color: stream.missedHeartbeats > 0n ? "#ef4444" : T.muted }}>{stream.missedHeartbeats.toString()}</span></span>
       </div>
 
-      {/* Agent actions */}
-      {role === "agent" && isProposed && (
+      {/* Agent actions — shown when role===agent OR same wallet is both funder+agent */}
+      {showAgentActions && isProposed && (
         <AcceptButton streamId={stream.streamId} onAccepted={handleAccepted} />
       )}
-      {role === "agent" && isActive && (
+      {showAgentActions && isActive && (
         <HeartbeatButton
           streamId={stream.streamId}
           lastHeartbeat={stream.lastHeartbeat}
@@ -461,8 +471,8 @@ export function StreamCard({
         />
       )}
 
-      {/* Funder actions */}
-      {role === "funder" && isActive && (
+      {/* Funder actions — shown when role===funder OR same wallet is both funder+agent */}
+      {showFunderActions && isActive && (
         <ReclaimButton streamId={stream.streamId} onReclaimed={handleReclaimed} />
       )}
     </div>
