@@ -64,14 +64,20 @@ function buildCandlesFromEvents(events: FeedEvent[]): Candle[] | null {
         volume: 0, positive: true,
       });
     } else {
-      const positive = b.positive >= b.negative;
-      const swing    = Math.max(2, total * 3);
-      const open     = price;
-      const close    = positive
+      const positive  = b.positive >= b.negative;
+      // Minimum body swing of 20 price units so a single event renders as a
+      // clearly visible candle body — not a flat line or dot.
+      const swing     = Math.max(20, total * 8);
+      const open      = price;
+      const close     = positive
         ? Math.min(1000, open + swing)
         : Math.max(0,    open - swing);
-      const high     = Math.min(1000, Math.max(open, close) + b.positive * 2);
-      const low      = Math.max(0,    Math.min(open, close) - b.negative * 2);
+      // Wicks: at least 10 price units above the body top and below the body
+      // bottom so they are always visible as distinct lines.
+      const bodyTop   = Math.max(open, close);
+      const bodyBot   = Math.min(open, close);
+      const high      = Math.min(1000, bodyTop + Math.max(10, b.positive * 4));
+      const low       = Math.max(0,    bodyBot - Math.max(10, b.negative * 4));
       price = close;
 
       const d = new Date(now - (PERIODS - 1 - i) * PERIOD_MS);
@@ -155,8 +161,13 @@ export function ActivityChart({ events = [] }: Props) {
   const chartW    = dims.w - PAD.left - PAD.right;
   const chartH    = dims.h - PAD.top  - PAD.bottom;
   const allPrices = candles.flatMap(c => [c.high, c.low]);
-  const priceMin  = Math.max(0,    Math.min(...allPrices) - 15);
-  const priceMax  = Math.min(1000, Math.max(...allPrices) + 15);
+  // Pad Y axis by at least 30 units on each side so even a single candle
+  // with a 20-unit body never touches the chart edges.
+  const rawMin    = Math.min(...allPrices);
+  const rawMax    = Math.max(...allPrices);
+  const pad       = Math.max(30, (rawMax - rawMin) * 0.18);
+  const priceMin  = Math.max(0,    rawMin - pad);
+  const priceMax  = Math.min(1000, rawMax + pad);
   const priceRange = priceMax - priceMin || 1;
   const volMax    = Math.max(...candles.map(c => c.volume), 1);
   const n         = candles.length;
