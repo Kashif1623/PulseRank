@@ -16,6 +16,7 @@ import {
 import contractsJson from "./contracts.json";
 import { StreamCard, type StreamData } from "./StreamCard";
 import { DocsPanel } from "./Docs";
+import { AiInspector } from "./AiInspector";
 import { ActivityFeed, type FeedEvent } from "./ActivityFeed";
 import { ActivityChart } from "./ActivityChart";
 
@@ -508,6 +509,7 @@ const inputCls = "w-full rounded-xl px-4 py-3 text-sm outline-none transition-al
 
 function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
   const [feedEvents, setFeedEvents] = useState<FeedEvent[]>([]);
+  const [expandedRow, setExpandedRow] = useState<number | null>(null);
   const handleEvent = useCallback((ev: FeedEvent) => {
     setFeedEvents(prev => {
       if (prev.some(e => e.id === ev.id)) return prev;
@@ -629,34 +631,42 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
 
         <div className="overflow-x-auto" style={{ minHeight: rows.length === 0 ? 0 : undefined }}>
           {rows.map((a, i) => (
-            <div key={a.agentId}
-              className="grid items-center gap-2 px-4 py-3 transition-colors"
-              style={{ gridTemplateColumns: "1.5rem minmax(0,1fr) 4rem 4rem",
-                       borderBottom: i < rows.length - 1 ? `1px solid ${T.border}` : undefined }}
-              onMouseEnter={ev => (ev.currentTarget.style.background = "rgba(186,230,253,0.25)")}
-              onMouseLeave={ev => (ev.currentTarget.style.background = "transparent")}>
-              <span className="mono text-xs font-bold tabular-nums"
-                    style={{ color: i === 0 ? "#b45309" : i === 1 ? "#64748b" : i === 2 ? "#c2410c" : T.placeholder }}>
-                {i + 1}
-              </span>
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                     style={{ background: TIER_BG[a.tier] ?? "rgba(14,165,233,0.12)", color: T.accent }}>
-                  {a.name[0]?.toUpperCase() ?? "?"}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold truncate" style={{ color: T.ink }}>{a.name}</div>
-                  <div className="mono text-xs truncate" style={{ color: T.placeholder }}>{shortAddr(a.owner)}</div>
-                </div>
-                <span className="text-xs font-bold shrink-0 ml-1" style={{ color: TIER_COLOR[a.tier] ?? T.subtle }}>
-                  {a.tier}
+            <div key={a.agentId}>
+              <div
+                className="grid items-center gap-2 px-4 py-3 transition-colors cursor-pointer"
+                style={{ gridTemplateColumns: "1.5rem minmax(0,1fr) 4rem 4rem",
+                         borderBottom: `1px solid ${T.border}` }}
+                onClick={() => setExpandedRow(expandedRow === a.agentId ? null : a.agentId)}
+                onMouseEnter={ev => (ev.currentTarget.style.background = "rgba(186,230,253,0.25)")}
+                onMouseLeave={ev => (ev.currentTarget.style.background = "transparent")}>
+                <span className="mono text-xs font-bold tabular-nums"
+                      style={{ color: i === 0 ? "#b45309" : i === 1 ? "#64748b" : i === 2 ? "#c2410c" : T.placeholder }}>
+                  {i + 1}
                 </span>
-                <AgentStatusBadge agentOwner={a.owner} agentId={a.agentId} />
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                       style={{ background: TIER_BG[a.tier] ?? "rgba(14,165,233,0.12)", color: T.accent }}>
+                    {a.name[0]?.toUpperCase() ?? "?"}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold truncate" style={{ color: T.ink }}>{a.name}</div>
+                    <div className="mono text-xs truncate" style={{ color: T.placeholder }}>{shortAddr(a.owner)}</div>
+                  </div>
+                  <span className="text-xs font-bold shrink-0 ml-1" style={{ color: TIER_COLOR[a.tier] ?? T.subtle }}>
+                    {a.tier}
+                  </span>
+                  <AgentStatusBadge agentOwner={a.owner} agentId={a.agentId} />
+                </div>
+                <span className="mono text-sm font-bold tabular-nums" style={{ color: T.ink }}>{a.score}</span>
+                <span className="mono text-xs tabular-nums" style={{ color: T.accentMid }}>
+                  {a.success + a.failed > 0 ? `${((a.success / (a.success + a.failed)) * 100).toFixed(0)}%` : "—"}
+                </span>
               </div>
-              <span className="mono text-sm font-bold tabular-nums" style={{ color: T.ink }}>{a.score}</span>
-              <span className="mono text-xs tabular-nums" style={{ color: T.accentMid }}>
-                {a.success + a.failed > 0 ? `${((a.success / (a.success + a.failed)) * 100).toFixed(0)}%` : "—"}
-              </span>
+              {expandedRow === a.agentId && (
+                <div className="px-4 pb-3 pt-1" style={{ borderBottom: `1px solid ${T.border}` }}>
+                  <AiInspector agentOwner={a.owner} agentName={a.name} compact />
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -793,6 +803,12 @@ function FunderPanel() {
               <input className={inputCls} style={inputStyle} placeholder="0x…"
                      value={agentAddr} onChange={e => setAgentAddr(e.target.value)} />
             </div>
+
+            {/* AI Inspector preview for the target agent */}
+            {/^0x[0-9a-fA-F]{40}$/.test(agentAddr) && (
+              <AiInspector agentOwner={agentAddr} agentName="Target Agent" compact />
+            )}
+
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: T.subtle }}>
                 Total Amount (USDC)
@@ -1121,6 +1137,11 @@ function AgentPanel() {
           </div>
         )}
       </div>
+
+      {/* AI Inspector — full view for connected wallet's agent */}
+      {isConnected && address && (
+        <AiInspector agentOwner={address} agentName="Your Agent" />
+      )}
 
       {/* Incoming streams */}
       <div className="glass rounded-2xl p-5">
