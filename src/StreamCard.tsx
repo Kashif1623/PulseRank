@@ -118,7 +118,10 @@ const T = {
   surface: "rgba(255,255,255,0.70)",
 };
 
-function shortAddr(a: string) { return `${a.slice(0, 6)}…${a.slice(-4)}`; }
+function shortAddr(a: string | undefined) {
+  if (!a || a.length < 10) return a ?? "0x???";
+  return `${a.slice(0, 6)}…${a.slice(-4)}`;
+}
 function fmtUsdc(n: bigint) {
   return `$${Number(formatUnits(n, 6)).toLocaleString(undefined, {
     minimumFractionDigits: 2, maximumFractionDigits: 2,
@@ -338,30 +341,37 @@ export function StreamCard({
     query: { refetchInterval: 30_000, enabled: true },
   });
 
-  // Merge live data over initial props, then apply optimistic overrides
-  const liveStream: StreamData = liveRaw
-    ? (() => {
-        const r = liveRaw as unknown as Record<string, unknown>;
-        return {
-          streamId:           initialStream.streamId,
-          funder:             r.funder             as string,
-          agent:              r.agent              as string,
-          totalAmount:        r.totalAmount        as bigint,
-          durationSecs:       r.durationSecs       as bigint,
-          ratePerSecX18:      r.ratePerSecX18      as bigint,
-          startTime:          r.startTime          as bigint,
-          lastHeartbeat:      r.lastHeartbeat      as bigint,
-          earnedAmount:       r.earnedAmount       as bigint,
-          pausedAt:           r.pausedAt           as bigint,
-          pausedDuration:     r.pausedDuration     as bigint,
-          missedHeartbeats:   r.missedHeartbeats   as bigint,
-          lastMissCheckpoint: r.lastMissCheckpoint as bigint,
-          taskId:             r.taskId             as bigint,
-          mode:               Number(r.mode),
-          status:             Number(r.status),
-        };
-      })()
-    : initialStream;
+  // Merge live data over initial props, then apply optimistic overrides.
+  // viem may return either a named object or a positional tuple depending on
+  // wagmi version / ABI shape — handle both by trying named fields first,
+  // then falling back to array indices, then falling back to initialStream.
+  const liveStream: StreamData = (() => {
+    if (!liveRaw) return initialStream;
+    // Try named-field access (wagmi v2 with named ABI outputs)
+    const r = liveRaw as unknown as Record<string, unknown>;
+    const funder  = (r.funder  as string | undefined) ?? (liveRaw as unknown as readonly unknown[])[0] as string | undefined;
+    const agent   = (r.agent   as string | undefined) ?? (liveRaw as unknown as readonly unknown[])[1] as string | undefined;
+    // If addresses are still missing or malformed, bail to initialStream
+    if (!funder || !agent || typeof funder !== "string" || funder.length < 10) return initialStream;
+    return {
+      streamId:           initialStream.streamId,
+      funder,
+      agent,
+      totalAmount:        (r.totalAmount        ?? (liveRaw as unknown as readonly unknown[])[2])  as bigint,
+      durationSecs:       (r.durationSecs       ?? (liveRaw as unknown as readonly unknown[])[3])  as bigint,
+      ratePerSecX18:      (r.ratePerSecX18      ?? (liveRaw as unknown as readonly unknown[])[4])  as bigint,
+      startTime:          (r.startTime          ?? (liveRaw as unknown as readonly unknown[])[5])  as bigint,
+      lastHeartbeat:      (r.lastHeartbeat      ?? (liveRaw as unknown as readonly unknown[])[6])  as bigint,
+      earnedAmount:       (r.earnedAmount       ?? (liveRaw as unknown as readonly unknown[])[7])  as bigint,
+      pausedAt:           (r.pausedAt           ?? (liveRaw as unknown as readonly unknown[])[8])  as bigint,
+      pausedDuration:     (r.pausedDuration     ?? (liveRaw as unknown as readonly unknown[])[9])  as bigint,
+      missedHeartbeats:   (r.missedHeartbeats   ?? (liveRaw as unknown as readonly unknown[])[10]) as bigint,
+      lastMissCheckpoint: (r.lastMissCheckpoint ?? (liveRaw as unknown as readonly unknown[])[11]) as bigint,
+      taskId:             (r.taskId             ?? (liveRaw as unknown as readonly unknown[])[12]) as bigint,
+      mode:               Number(r.mode   ?? (liveRaw as unknown as readonly unknown[])[13]),
+      status:             Number(r.status ?? (liveRaw as unknown as readonly unknown[])[14]),
+    };
+  })();
 
   const stream: StreamData = {
     ...liveStream,
