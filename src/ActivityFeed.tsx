@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { decodeEventLog } from "viem";
 import { usePublicClient, useWatchContractEvent } from "wagmi";
 import { Activity, Zap, CheckCircle, AlertTriangle } from "lucide-react";
@@ -93,9 +93,13 @@ interface Props {
   onEvent?: (ev: FeedEvent) => void;
 }
 
+export interface ActivityFeedHandle {
+  push: (ev: FeedEvent) => void;
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function ActivityFeed({ onEvent }: Props) {
+export const ActivityFeed = forwardRef<ActivityFeedHandle, Props>(function ActivityFeed({ onEvent }, ref) {
   const [events, setEvents]           = useState<FeedEvent[]>([]);
   const [histStatus, setHistStatus]   = useState<"idle" | "loading" | "done" | "failed">("idle");
   const fetchedRef                    = useRef(false);
@@ -109,6 +113,9 @@ export function ActivityFeed({ onEvent }: Props) {
     });
     onEvent?.(ev);
   }, [onEvent]);
+
+  // Expose push imperatively so parent can inject events directly (e.g. from heartbeat tx)
+  useImperativeHandle(ref, () => ({ push }), [push]);
 
   // ── Historical fetch (non-blocking, runs once after mount) ──────────────────
   useEffect(() => {
@@ -347,4 +354,4 @@ export function ActivityFeed({ onEvent }: Props) {
       </div>
     </div>
   );
-}
+});

@@ -18,8 +18,8 @@ interface Candle {
   positive: boolean;
 }
 
-const PERIODS   = 12;
-const PERIOD_MS = 2 * 60 * 60 * 1000; // 2-hour candles
+const PERIODS   = 30;
+const PERIOD_MS = 24 * 60 * 60 * 1000; // 1-day candles (covers 30 days of history)
 
 /**
  * Build candles purely from real feed events.
@@ -59,7 +59,7 @@ function buildCandlesFromEvents(events: FeedEvent[]): Candle[] | null {
       // Empty bucket: flat doji candle at current price
       const d = new Date(now - (PERIODS - 1 - i) * PERIOD_MS);
       candles.push({
-        label:    d.getHours().toString().padStart(2, "0") + ":00",
+        label:    `${d.getMonth()+1}/${d.getDate()}`,
         open: price, high: price, low: price, close: price,
         volume: 0, positive: true,
       });
@@ -82,7 +82,7 @@ function buildCandlesFromEvents(events: FeedEvent[]): Candle[] | null {
 
       const d = new Date(now - (PERIODS - 1 - i) * PERIOD_MS);
       candles.push({
-        label:    d.getHours().toString().padStart(2, "0") + ":00",
+        label:    `${d.getMonth()+1}/${d.getDate()}`,
         open, high, low, close,
         volume:   total * 15,
         positive,

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   useAccount,
   useReadContract,
@@ -17,7 +17,7 @@ import contractsJson from "./contracts.json";
 import { StreamCard, type StreamData } from "./StreamCard";
 import { DocsPanel } from "./Docs";
 import { AiInspector } from "./AiInspector";
-import { ActivityFeed, type FeedEvent } from "./ActivityFeed";
+import { ActivityFeed, type FeedEvent, type ActivityFeedHandle } from "./ActivityFeed";
 import { ActivityChart } from "./ActivityChart";
 
 // ── Chain / contract constants ─────────────────────────────────────────────────
@@ -509,6 +509,7 @@ const inputCls = "w-full rounded-xl px-4 py-3 text-sm outline-none transition-al
 
 function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
   const [feedEvents, setFeedEvents] = useState<FeedEvent[]>([]);
+  const feedRef = useRef<ActivityFeedHandle>(null);
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
   const handleEvent = useCallback((ev: FeedEvent) => {
     setFeedEvents(prev => {
@@ -519,14 +520,17 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
 
   // Bridge from StreamCard action type → FeedEvent so stream actions
   // instantly appear in the activity feed and candlestick chart.
-  const handleStreamEvent = useCallback((type: "heartbeat" | "accept" | "reclaim") => {
+  const handleStreamEvent = useCallback((type: "heartbeat" | "accept" | "reclaim", streamId?: number) => {
     const now = Date.now();
+    const sid = streamId ? ` #${streamId}` : "";
     const events: Record<typeof type, FeedEvent> = {
-      heartbeat: { id: `hb-${now}`,     kind: "heartbeat",  label: "⚡ Heartbeat sent",           detail: "Manual heartbeat confirmed", ts: now, positive: true  },
-      accept:    { id: `acc-${now}`,    kind: "task",       label: "✅ Stream accepted (Active)",  detail: "Stream now earning",         ts: now, positive: true  },
-      reclaim:   { id: `rcl-${now}`,   kind: "reclaimed",  label: "⚠ Stream reclaimed",           detail: "Unspent USDC returned",      ts: now, positive: false },
+      heartbeat: { id: `hb-${now}`,  kind: "heartbeat",  label: `⚡ Heartbeat sent — Stream${sid}`,  detail: "Manual heartbeat confirmed", ts: now, positive: true  },
+      accept:    { id: `acc-${now}`, kind: "task",       label: `✅ Stream${sid} accepted (Active)`, detail: "Stream now earning",         ts: now, positive: true  },
+      reclaim:   { id: `rcl-${now}`, kind: "reclaimed",  label: `⚠ Stream${sid} reclaimed`,          detail: "Unspent USDC returned",      ts: now, positive: false },
     };
-    handleEvent(events[type]);
+    const ev = events[type];
+    handleEvent(ev);           // → chart
+    feedRef.current?.push(ev); // → feed internal state (instant, no RPC wait)
   }, [handleEvent]);
 
   const { data: agentCountRaw, isLoading: countLoading } = useReadContract({
@@ -709,7 +713,7 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
             WATCHING
           </span>
         </div>
-        <ActivityFeed onEvent={handleEvent} />
+        <ActivityFeed ref={feedRef} onEvent={handleEvent} />
       </div>
 
       {/* All protocol streams on leaderboard */}
@@ -942,7 +946,7 @@ const MAX_GLOBAL = 50;
 
 function GlobalStreamList({ highlightAddress, onEvent }: {
   highlightAddress?: string;
-  onEvent?: (type: "heartbeat" | "accept" | "reclaim") => void;
+  onEvent?: (type: "heartbeat" | "accept" | "reclaim", streamId?: number) => void;
 }) {
   const { data: nextRaw, isLoading: nextLoading } = useReadContract({
     address: CONTRACTS.stream, abi: STREAM_READ_ABI,
@@ -1034,7 +1038,7 @@ function GlobalStreamList({ highlightAddress, onEvent }: {
         return (
           <div key={s.streamId}
                style={isOwn ? { outline: `2px solid rgba(2,132,199,0.45)`, borderRadius: 16 } : {}}>
-            <StreamCard stream={s} role={role} onEvent={onEvent} />
+            <StreamCard stream={s} role={role} onEvent={(type) => onEvent?.(type, s.streamId)} />
           </div>
         );
       })}
