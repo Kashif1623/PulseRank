@@ -996,8 +996,18 @@ function GlobalStreamList({ highlightAddress, onEvent }: {
     });
   });
 
+  // Dedup: for each funder+agent pair keep the highest-streamId entry
+  // (preserves the most recent stream per relationship)
+  const dedupMap = new Map<string, StreamData>();
+  for (const s of streams) {
+    const key = `${s.funder.toLowerCase()}:${s.agent.toLowerCase()}`;
+    const existing = dedupMap.get(key);
+    if (!existing || s.streamId > existing.streamId) dedupMap.set(key, s);
+  }
+  const deduped = Array.from(dedupMap.values());
+
   // Sort: active first, then proposed, then rest by streamId desc
-  const sorted = [...streams].sort((a, b) => {
+  const sorted = [...deduped].sort((a, b) => {
     const order = (s: number) => s === 1 ? 0 : s === 0 ? 1 : 2;
     const diff = order(a.status) - order(b.status);
     return diff !== 0 ? diff : b.streamId - a.streamId;

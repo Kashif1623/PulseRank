@@ -1,5 +1,5 @@
 import { formatUnits } from "viem";
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useReadContract, useWriteContract } from "wagmi";
 import { useState, useEffect, useCallback } from "react";
 import { Loader2, AlertTriangle, Zap } from "lucide-react";
 import { toast } from "sonner";
@@ -161,15 +161,7 @@ function HeartbeatButton({
   const secsLeft  = Math.max(0, nextAt - nowSec);
   const canSend   = secsLeft === 0 && Number(lastHeartbeat) > 0;
 
-  const { writeContract, data: txHash, isPending: sending } = useWriteContract();
-  const { isLoading: confirming, isSuccess: confirmed } = useWaitForTransactionReceipt({ hash: txHash });
-
-  // Fire parent callback the moment the tx receipt is confirmed
-  useEffect(() => {
-    if (confirmed) onSent?.();
-  }, [confirmed, onSent]);
-
-  const busy = sending || confirming;
+  const { writeContract, isPending: sending } = useWriteContract();
 
   function handleHeartbeat() {
     writeContract(
@@ -187,7 +179,10 @@ function HeartbeatButton({
             : `Heartbeat failed: ${e.message.slice(0, 100)}`;
           toast.error(msg);
         },
-        onSuccess: () => toast.success(`⚡ Heartbeat sent for stream #${streamId}!`),
+        onSuccess: () => {
+          toast.success(`⚡ Heartbeat sent for stream #${streamId}!`);
+          onSent?.(); // fire immediately on wallet sign — no receipt wait
+        },
       }
     );
   }
@@ -195,20 +190,19 @@ function HeartbeatButton({
   return (
     <button
       onClick={handleHeartbeat}
-      disabled={busy || !canSend}
+      disabled={sending || !canSend}
       title={secsLeft > 0 ? `Next heartbeat available in ${fmtCountdown(secsLeft)}` : "Send heartbeat now"}
       className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
       style={{
-        background:  canSend && !busy ? "linear-gradient(135deg,#0284c7,#06b6d4)" : "rgba(186,230,253,0.35)",
-        color:       canSend && !busy ? "#fff" : "#64748b",
-        boxShadow:   canSend && !busy ? "0 3px 12px rgba(2,132,199,0.30)" : "none",
+        background:  canSend && !sending ? "linear-gradient(135deg,#0284c7,#06b6d4)" : "rgba(186,230,253,0.35)",
+        color:       canSend && !sending ? "#fff" : "#64748b",
+        boxShadow:   canSend && !sending ? "0 3px 12px rgba(2,132,199,0.30)" : "none",
         border:      "1px solid rgba(186,230,253,0.70)",
       }}
     >
-      {busy ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
-      {sending    ? "Waiting for wallet…"
-       : confirming ? "Confirming on-chain…"
-       : canSend    ? "⚡ Send Manual Heartbeat"
+      {sending ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
+      {sending  ? "Waiting for wallet…"
+       : canSend ? "⚡ Send Manual Heartbeat"
        : `Next heartbeat in ${fmtCountdown(secsLeft)}`}
     </button>
   );
@@ -217,15 +211,7 @@ function HeartbeatButton({
 // ── AcceptButton ──────────────────────────────────────────────────────────────
 
 function AcceptButton({ streamId, onAccepted }: { streamId: number; onAccepted: () => void }) {
-  const { writeContract, data: txHash, isPending: accepting } = useWriteContract();
-  const { isLoading: confirming, isSuccess: confirmed } = useWaitForTransactionReceipt({ hash: txHash });
-
-  // When the receipt is in, fire parent so optimistic state is confirmed
-  useEffect(() => {
-    if (confirmed) onAccepted();
-  }, [confirmed, onAccepted]);
-
-  const busy = accepting || confirming;
+  const { writeContract, isPending: accepting } = useWriteContract();
 
   function handle() {
     writeContract(
@@ -238,7 +224,10 @@ function AcceptButton({ streamId, onAccepted }: { streamId: number; onAccepted: 
       },
       {
         onError: (e) => toast.error(`Accept failed: ${e.message.slice(0, 100)}`),
-        onSuccess: () => toast.success(`Stream #${streamId} accepted — now Active!`),
+        onSuccess: () => {
+          toast.success(`Stream #${streamId} accepted — now Active!`);
+          onAccepted(); // fire immediately on wallet sign — no receipt wait
+        },
       }
     );
   }
@@ -246,7 +235,7 @@ function AcceptButton({ streamId, onAccepted }: { streamId: number; onAccepted: 
   return (
     <button
       onClick={handle}
-      disabled={busy}
+      disabled={accepting}
       className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
       style={{
         background: "linear-gradient(135deg,#0284c7,#06b6d4)",
@@ -254,8 +243,8 @@ function AcceptButton({ streamId, onAccepted }: { streamId: number; onAccepted: 
         boxShadow: "0 3px 12px rgba(2,132,199,0.30)",
       }}
     >
-      {busy ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
-      {accepting ? "Waiting for wallet…" : confirming ? "Confirming…" : "✅ Accept Stream"}
+      {accepting ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
+      {accepting ? "Waiting for wallet…" : "✅ Accept Stream"}
     </button>
   );
 }
@@ -272,16 +261,9 @@ function ReclaimButton({ streamId, onReclaimed }: { streamId: number; onReclaime
     query: { refetchInterval: 15_000 },
   });
 
-  const { writeContract: cancel, data: txHash, isPending: cancelling } = useWriteContract();
-  const { isLoading: confirming, isSuccess: confirmed } = useWaitForTransactionReceipt({ hash: txHash });
-
-  useEffect(() => {
-    if (confirmed) onReclaimed();
-  }, [confirmed, onReclaimed]);
+  const { writeContract: cancel, isPending: cancelling } = useWriteContract();
 
   if (checking || !timedOut) return null;
-
-  const busy = cancelling || confirming;
 
   function handleReclaim() {
     cancel(
@@ -294,7 +276,10 @@ function ReclaimButton({ streamId, onReclaimed }: { streamId: number; onReclaime
       },
       {
         onError: (e) => toast.error(`Reclaim failed: ${e.message.slice(0, 100)}`),
-        onSuccess: () => toast.success("Unspent USDC reclaimed. Payout queued to your wallet."),
+        onSuccess: () => {
+          toast.success("Unspent USDC reclaimed. Payout queued to your wallet.");
+          onReclaimed(); // fire immediately on wallet sign
+        },
       }
     );
   }
@@ -302,7 +287,7 @@ function ReclaimButton({ streamId, onReclaimed }: { streamId: number; onReclaime
   return (
     <button
       onClick={handleReclaim}
-      disabled={busy}
+      disabled={cancelling}
       className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
       style={{
         background: "linear-gradient(135deg,#dc2626,#ef4444)",
@@ -310,8 +295,8 @@ function ReclaimButton({ streamId, onReclaimed }: { streamId: number; onReclaime
         boxShadow: "0 3px 12px rgba(220,38,38,0.30)",
       }}
     >
-      {busy ? <Loader2 size={13} className="animate-spin" /> : <AlertTriangle size={13} />}
-      {cancelling ? "Waiting for wallet…" : confirming ? "Confirming…" : "Reclaim Unspent USDC"}
+      {cancelling ? <Loader2 size={13} className="animate-spin" /> : <AlertTriangle size={13} />}
+      {cancelling ? "Waiting for wallet…" : "Reclaim Unspent USDC"}
     </button>
   );
 }
