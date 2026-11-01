@@ -18,6 +18,7 @@ import { StreamCard, type StreamData } from "./StreamCard";
 import { DocsPanel } from "./Docs";
 import { AiInspector } from "./AiInspector";
 import { ActivityFeed, type FeedEvent, type ActivityFeedHandle } from "./ActivityFeed";
+import { AiWidget } from "./AiWidget";
 import { ActivityChart } from "./ActivityChart";
 
 // ── Chain / contract constants ─────────────────────────────────────────────────
@@ -1322,6 +1323,8 @@ export default function App() {
         </main>
 
         <ContractBar />
+
+        <AiWidget />
 
         <div className="flex justify-center pb-5 pt-1">
           <a href="https://studio.arc.io" target="_blank" rel="noopener noreferrer"
