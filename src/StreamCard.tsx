@@ -1,6 +1,7 @@
 import { formatUnits } from "viem";
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Loader2, AlertTriangle, Zap } from "lucide-react";
 import { toast } from "sonner";
 import contractsJson from "./contracts.json";
 
@@ -90,6 +91,97 @@ const T = {
   accent:  "#0284c7",
   surface: "rgba(255,255,255,0.70)",
 };
+
+const SEND_HEARTBEAT_ABI = [
+  {
+    name: "sendHeartbeat",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "streamId", type: "uint256" }],
+    outputs: [],
+  },
+] as const;
+
+// heartbeatInterval per mode (seconds) — matches PulseStreamV2 constructor defaults
+const MODE_INTERVAL: Record<number, number> = { 1: 300, 2: 1800, 3: 3600 };
+
+function fmtCountdown(secs: number): string {
+  if (secs <= 0) return "";
+  if (secs < 60) return `${secs}s`;
+  if (secs < 3600) return `${Math.ceil(secs / 60)}m`;
+  return `${(secs / 3600).toFixed(1)}h`;
+}
+
+// ── Heartbeat button (agent-only) ──────────────────────────────────────────────
+
+function HeartbeatButton({ streamId, lastHeartbeat, mode }: {
+  streamId: number;
+  lastHeartbeat: bigint;
+  mode: number;
+}) {
+  const [nowSec, setNowSec] = useState(() => Math.floor(Date.now() / 1000));
+
+  // Tick every 5 seconds to keep the countdown fresh
+  useEffect(() => {
+    const id = setInterval(() => setNowSec(Math.floor(Date.now() / 1000)), 5_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const interval  = MODE_INTERVAL[mode] ?? 1800;
+  const nextAt    = Number(lastHeartbeat) + interval;
+  const secsLeft  = Math.max(0, nextAt - nowSec);
+  const canSend   = secsLeft === 0 && Number(lastHeartbeat) > 0;
+
+  const { writeContract: sendHb, data: txHash, isPending: sending } = useWriteContract();
+  const { isLoading: confirming } = useWaitForTransactionReceipt({ hash: txHash });
+  const busy = sending || confirming;
+
+  function handleHeartbeat() {
+    sendHb(
+      {
+        address: STREAM_CONTRACT,
+        abi: SEND_HEARTBEAT_ABI,
+        functionName: "sendHeartbeat",
+        args: [BigInt(streamId)],
+        chainId: ARC_MAINNET_ID,
+      },
+      {
+        onError: (e) => {
+          const msg = e.message.includes("HeartbeatTooEarly")
+            ? "Heartbeat sent too early — wait for the next interval."
+            : `Heartbeat failed: ${e.message.slice(0, 100)}`;
+          toast.error(msg);
+        },
+        onSuccess: () => toast.success(`⚡ Heartbeat sent for stream #${streamId}!`),
+      }
+    );
+  }
+
+  return (
+    <button
+      onClick={handleHeartbeat}
+      disabled={busy || !canSend}
+      title={secsLeft > 0 ? `Next heartbeat available in ${fmtCountdown(secsLeft)}` : "Send heartbeat now"}
+      className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+      style={{
+        background: canSend && !busy
+          ? "linear-gradient(135deg, #0284c7 0%, #06b6d4 100%)"
+          : "rgba(186,230,253,0.35)",
+        color: canSend && !busy ? "#fff" : "#64748b",
+        boxShadow: canSend && !busy ? "0 3px 12px rgba(2,132,199,0.30)" : "none",
+        border: "1px solid rgba(186,230,253,0.70)",
+      }}
+    >
+      {busy
+        ? <Loader2 size={13} className="animate-spin" />
+        : <Zap size={13} />}
+      {sending   ? "Waiting for wallet…"
+       : confirming ? "Confirming on-chain…"
+       : canSend   ? "⚡ Send Manual Heartbeat"
+       : `Next heartbeat in ${fmtCountdown(secsLeft)}`}
+    </button>
+  );
+}
 
 // ── Reclaim button (funder-only) ───────────────────────────────────────────────
 
@@ -210,6 +302,15 @@ export function StreamCard({ stream, role }: { stream: StreamData; role: "funder
         <span>Mode: <span className="font-semibold" style={{ color: T.accent }}>{MODE_LABEL[stream.mode] ?? stream.mode}</span></span>
         <span>Missed: <span className="font-semibold" style={{ color: stream.missedHeartbeats > 0n ? "#ef4444" : T.muted }}>{stream.missedHeartbeats.toString()}</span></span>
       </div>
+
+      {/* Heartbeat button — only for agents on active streams */}
+      {role === "agent" && isActive && (
+        <HeartbeatButton
+          streamId={stream.streamId}
+          lastHeartbeat={stream.lastHeartbeat}
+          mode={stream.mode}
+        />
+      )}
 
       {/* Reclaim button — only for funders on active streams */}
       {role === "funder" && isActive && (
