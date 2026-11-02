@@ -20,6 +20,7 @@ import { AiInspector } from "./AiInspector";
 import { ActivityFeed, type FeedEvent, type ActivityFeedHandle } from "./ActivityFeed";
 import { AiWidget } from "./AiWidget";
 import { ActivityChart } from "./ActivityChart";
+import { OnboardingTour, TourButton } from "./OnboardingTour";
 
 // ── Chain / contract constants ─────────────────────────────────────────────────
 
@@ -747,6 +748,30 @@ const DURATION_SHORTCUTS = [
   { label: "7 days",  value: "7",   unit: "days"    as const },
 ] as const;
 
+// ── WalletGuard banner ──────────────────────────────────────────────────────────
+
+function WalletGuard({ message, compact = false }: { message: string; compact?: boolean }) {
+  return (
+    <div
+      className={`flex flex-col items-center justify-center gap-3 rounded-2xl text-center ${compact ? "py-5 px-4" : "py-10 px-6"}`}
+      style={{
+        background: "linear-gradient(135deg,rgba(14,165,233,0.08),rgba(6,182,212,0.06))",
+        border: "1.5px dashed rgba(14,165,233,0.35)",
+      }}
+    >
+      <div className="w-10 h-10 rounded-full flex items-center justify-center"
+        style={{ background: "rgba(14,165,233,0.12)", boxShadow: "0 0 16px rgba(14,165,233,0.25)" }}>
+        <Wallet size={18} style={{ color: "#0284c7" }} />
+      </div>
+      <div>
+        <p className="text-sm font-semibold mb-0.5" style={{ color: "#0f172a" }}>Wallet Not Connected</p>
+        <p className="text-xs" style={{ color: "#64748b" }}>{message}</p>
+      </div>
+      <ConnectKitButton />
+    </div>
+  );
+}
+
 // ── Stream cooldown helper (module-level — outside React, so Date is not "impure render") ──
 
 const STREAM_CD_MS = 30 * 60 * 1000;
@@ -848,10 +873,7 @@ function FunderPanel() {
         <p className="text-sm mb-5" style={{ color: T.subtle }}>Escrow USDC and stream it to an agent over time.</p>
 
         {!isConnected ? (
-          <div className="text-sm text-center py-8 rounded-xl" style={{ color: T.placeholder,
-            background: "rgba(186,230,253,0.20)", border: `1px dashed ${T.border}` }}>
-            Connect your wallet to create a stream.
-          </div>
+          <WalletGuard message="Connect your wallet to propose a stream and manage escrow." />
         ) : (
           <div className="space-y-3">
             <div>
@@ -1181,10 +1203,7 @@ function AgentPanel() {
         <p className="text-sm mb-5" style={{ color: T.subtle }}>Create your on-chain identity and start earning.</p>
 
         {!isConnected ? (
-          <div className="text-sm text-center py-8 rounded-xl" style={{ color: T.placeholder,
-            background: "rgba(186,230,253,0.20)", border: `1px dashed ${T.border}` }}>
-            Connect your wallet to register as an agent.
-          </div>
+          <WalletGuard message="Connect your wallet to register as an agent and start earning." />
         ) : (
           <div className="space-y-3">
             <div>
@@ -1229,9 +1248,7 @@ function AgentPanel() {
           <Shield size={13} style={{ color: T.accentLight }} /> Reputation Score
         </h3>
         {!isConnected ? (
-          <div className="text-sm text-center py-6" style={{ color: T.placeholder }}>
-            Connect your wallet to view your score and tier.
-          </div>
+          <WalletGuard message="Connect your wallet to view your reputation score and tier." compact />
         ) : statsLoading ? (
           <div className="text-sm text-center py-6 flex items-center justify-center gap-2" style={{ color: T.subtle }}>
             <Loader2 size={14} className="animate-spin" style={{ color: T.accent }} /> Loading score…
@@ -1334,9 +1351,11 @@ function ContractBar() {
 // ── Root App ───────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [tab,    setTab]    = useState<Tab>("leaderboard");
-  const [lang,   setLang]   = useState<Lang>("EN");
-  const [splash, setSplash] = useState(true);
+  const [tab,       setTab]      = useState<Tab>("leaderboard");
+  const [lang,      setLang]     = useState<Lang>("EN");
+  const [splash,    setSplash]   = useState(true);
+  const [tourOpen,  setTourOpen] = useState(false);
+  const [tourKey,   setTourKey]  = useState(0);
 
   useEffect(() => {
     const t = setTimeout(() => setSplash(false), 2200);
@@ -1347,6 +1366,7 @@ export default function App() {
     <>
       <Toaster position="top-right" richColors closeButton />
       <SplashScreen visible={splash} />
+      <OnboardingTour key={tourKey} forceOpen={tourOpen} onClose={() => setTourOpen(false)} />
 
       <div className="min-h-dvh flex flex-col">
         <header className="sticky top-0 z-40 w-full" style={{
@@ -1359,6 +1379,7 @@ export default function App() {
           <div className="flex items-center justify-between gap-2 px-4 py-2.5 max-w-4xl mx-auto w-full">
             <PulseLogo />
             <div className="flex items-center gap-2 shrink-0">
+              <TourButton onStart={() => { setTourKey(k => k + 1); setTourOpen(true); }} />
               <LangSelector lang={lang} setLang={setLang} />
               <ConnectKitButton.Custom>
                 {({ isConnected, show, address }) => (

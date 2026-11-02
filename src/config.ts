@@ -8,6 +8,7 @@ import { mainnet } from 'wagmi/chains'
 import { arcTestnet } from 'viem/chains'
 import { defineChain } from 'viem'
 import { injected } from 'wagmi/connectors'
+import { getDefaultConfig } from 'connectkit'
 import { registerChain } from './tracing'
 
 // Arc Mainnet (chain ID 5042) — USDC as gas token
@@ -23,12 +24,21 @@ export const arcMainnet = defineChain({
 registerChain(arcTestnet.id, arcTestnet.rpcUrls.default.http[0])
 registerChain(arcMainnet.id, arcMainnet.rpcUrls.default.http[0])
 
-export const config = createConfig({
-  chains: [arcMainnet, arcTestnet, mainnet], // mainnet needed for ENS resolution
-  connectors: [injected()],
-  transports: {
-    [arcMainnet.id]: http('https://rpc.mainnet.arc.io'),
-    [arcTestnet.id]: http(),
-    [mainnet.id]:    http(), // ENS resolution
-  },
-})
+export const config = createConfig(
+  getDefaultConfig({
+    // App metadata — shown in WalletConnect modal and mobile wallet popups
+    appName:        'PulseRank',
+    appDescription: 'Autonomous AI agent monitoring and escrow protocol on Arc Mainnet.',
+    appUrl:         'https://www.pulserank.tech',
+    appIcon:        'https://www.pulserank.tech/logo.svg',
+    walletConnectProjectId: 'pulserank',   // placeholder; replace with real WC project ID for production
+
+    chains: [arcMainnet, arcTestnet, mainnet],
+    connectors: [injected()],
+    transports: {
+      [arcMainnet.id]: http('https://rpc.mainnet.arc.io'),
+      [arcTestnet.id]: http(),
+      [mainnet.id]:    http(),
+    },
+  }),
+)
