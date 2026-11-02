@@ -1,7 +1,7 @@
 {
   "network": "Arc Mainnet",
   "chainId": 5042,
-  "deployedAt": "2026-10-30T21:41:29.905Z",
+  "deployedAt": "2026-11-02T16:14:47.704Z",
   "deployer": "0x1bc3e8b8bd8724d13dae6de9602f9e4dd1a682e8",
   "usdc": "0x3600000000000000000000000000000000000000",
   "contracts": {
@@ -14,22 +14,22 @@
     "PulseScoreV2": {
       "address": "0xCBAa6A61A5960Af31A52bcbc32c1EC99a344F1Ed",
       "txHash": "0xc817445c8b946d99617ba9a08724d837f3470f72f928b2af917ef3a4a4655fea",
-      "version": "v2.1",
-      "note": "Redeployed to link to PulseStreamV2 v2.1",
+      "version": "v2.1-test",
+      "note": "Dry-run test — same addresses, verifying patch logic",
       "linkedTo": "0x1C8DB2fD6ED9d9Caea9e04B157DdE031C28e66F8"
     },
     "PulseTaskV2": {
       "address": "0x4FDF4B96D1d4e3788f33a64dC53e5e2c389Ac1d5",
       "txHash": "0xc3272aec8dd8870531c0627d14820cf195e06f46e6e27fbe8e37d51b82e1e073",
-      "version": "v2.1",
-      "note": "Redeployed to link to PulseStreamV2 v2.1",
+      "version": "v2.1-test",
+      "note": "Dry-run test — same addresses, verifying patch logic",
       "linkedTo": "0x1C8DB2fD6ED9d9Caea9e04B157DdE031C28e66F8"
     },
     "PulseStreamV2": {
       "address": "0x1C8DB2fD6ED9d9Caea9e04B157DdE031C28e66F8",
       "txHash": "0xd9c3a452c9742637d552b7aaf768324b2aa3142b752a5a894179289d16096145",
-      "version": "v2.1",
-      "note": "Adds cancelTimedOutStream, treasury timelock, triggerReclaim participant-gate",
+      "version": "v2.1-test",
+      "note": "Dry-run test — same addresses, verifying patch logic",
       "linkedScore": "0xCBAa6A61A5960Af31A52bcbc32c1EC99a344F1Ed",
       "linkedTask": "0x4FDF4B96D1d4e3788f33a64dC53e5e2c389Ac1d5",
       "linkedRegistry": "0x43d74ECe631598746E137CC43a81dFE5C8565aD1"

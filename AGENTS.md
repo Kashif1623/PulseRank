@@ -35,7 +35,7 @@ bun install
 bun run dev
 ```
 
-## Deployed Contracts — Arc Mainnet (Chain ID 5042) — v2.1 (CURRENT)
+## Deployed Contracts — Arc Mainnet (Chain ID 5042) — v2.1 (SUPERSEDED)
 
 Redeployed: 2026-10-30. Deployer wallet: `0x1bc3e8b8bd8724d13dae6de9602f9e4dd1a682e8`
 
@@ -64,3 +64,18 @@ PulseStreamV2 v2.1 changes: `cancelTimedOutStream`, `isTimedOut`, treasury timel
 | PulseScoreV2 v2 | `0x374D9d2B6cA2557D24FA49603dcfdEd4905AB683` |
 | PulseTaskV2 v2 | `0x389880420C90E7Efd4ed970C2530b4dce995601A` |
 | PulseStreamV2 v2 | `0x75636CF6a8F890E96D1b01B2832d0BFE19Aa9347` |
+
+## Deployed Contracts — Arc Mainnet (Chain ID 5042) — v2.1-test (2026-11-02)
+
+Dry-run test — same addresses, verifying patch logic
+
+Deployer wallet: `0x1bc3e8b8bd8724d13dae6de9602f9e4dd1a682e8`
+
+| Contract | Address | Version |
+|---|---|---|
+| PulseRegistryV2 | `0x43d74ECe631598746E137CC43a81dFE5C8565aD1` | unchanged |
+| PulseScoreV2    | `0xCBAa6A61A5960Af31A52bcbc32c1EC99a344F1Ed`    | v2.1-test |
+| PulseTaskV2     | `0x4FDF4B96D1d4e3788f33a64dC53e5e2c389Ac1d5`     | v2.1-test |
+| PulseStreamV2   | `0x1C8DB2fD6ED9d9Caea9e04B157DdE031C28e66F8`   | v2.1-test |
+| USDC (Arc Mainnet) | `0x3600000000000000000000000000000000000000` | — |
+
