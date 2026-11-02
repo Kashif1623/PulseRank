@@ -1,7 +1,7 @@
 import { formatUnits } from "viem";
-import { useReadContract, useWriteContract } from "wagmi";
+import { useReadContract, useWriteContract, useAccount } from "wagmi";
 import { useState, useEffect, useCallback } from "react";
-import { Loader2, AlertTriangle, Zap } from "lucide-react";
+import { Loader2, AlertTriangle, Zap, CheckCircle, DollarSign, Clock } from "lucide-react";
 import { toast } from "sonner";
 import contractsJson from "./contracts.json";
 
@@ -53,6 +53,36 @@ const CANCEL_TIMED_OUT_ABI = [
     stateMutability: "nonpayable",
     inputs: [{ name: "streamId", type: "uint256" }],
     outputs: [],
+  },
+] as const;
+
+const SETTLE_STREAM_ABI = [
+  {
+    name: "settleStream",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "streamId", type: "uint256" }],
+    outputs: [],
+  },
+] as const;
+
+const CLAIM_PAYOUT_ABI = [
+  {
+    name: "claimPayout",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [],
+    outputs: [],
+  },
+] as const;
+
+const PENDING_PAYOUTS_ABI = [
+  {
+    name: "pendingPayouts",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "account", type: "address" }],
+    outputs: [{ type: "uint256" }],
   },
 ] as const;
 
@@ -304,6 +334,132 @@ function ReclaimButton({ streamId, onReclaimed }: { streamId: number; onReclaime
   );
 }
 
+// ── SettleButton ─────────────────────────────────────────────────────────────
+
+/**
+ * Settles an expired Active stream via settleStream(streamId).
+ * Distributes earned USDC to pendingPayouts[agent] and unearned to pendingPayouts[funder].
+ * Both agent and funder can call this — labels are role-specific.
+ */
+function SettleButton({
+  streamId, role, onSettled,
+}: {
+  streamId: number;
+  role: "funder" | "agent";
+  onSettled: () => void;
+}) {
+  const { writeContract, isPending } = useWriteContract();
+
+  function handle() {
+    writeContract(
+      {
+        address: STREAM_CONTRACT,
+        abi: SETTLE_STREAM_ABI,
+        functionName: "settleStream",
+        args: [BigInt(streamId)],
+        chainId: ARC_MAINNET_ID,
+      },
+      {
+        onError: (e) => toast.error(`Settle failed: ${e.message.slice(0, 100)}`),
+        onSuccess: () => {
+          toast.success(
+            role === "agent"
+              ? `Stream #${streamId} settled — earnings added to your claimable balance.`
+              : `Stream #${streamId} settled — unearned USDC returned to your claimable balance.`
+          );
+          onSettled();
+        },
+      }
+    );
+  }
+
+  return (
+    <button
+      onClick={handle}
+      disabled={isPending}
+      className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+      style={{
+        background: role === "agent"
+          ? "linear-gradient(135deg,#16a34a,#22c55e)"
+          : "linear-gradient(135deg,#0284c7,#0ea5e9)",
+        color:     "#fff",
+        boxShadow: role === "agent"
+          ? "0 3px 12px rgba(22,163,74,0.30)"
+          : "0 3px 12px rgba(2,132,199,0.30)",
+      }}
+    >
+      {isPending ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle size={13} />}
+      {isPending
+        ? "Waiting for wallet…"
+        : role === "agent"
+          ? "Settle & Claim Earnings"
+          : "Settle & Reclaim Unspent USDC"}
+    </button>
+  );
+}
+
+// ── ClaimPayoutButton ─────────────────────────────────────────────────────────
+
+/**
+ * Calls claimPayout() to withdraw accumulated pendingPayouts[caller] to their wallet.
+ * Shows only when pendingPayouts > 0 for the connected wallet.
+ */
+function ClaimPayoutButton({ onClaimed }: { onClaimed?: () => void }) {
+  const { address } = useAccount();
+
+  const { data: pending, refetch: refetchPending } = useReadContract({
+    address: STREAM_CONTRACT,
+    abi: PENDING_PAYOUTS_ABI,
+    functionName: "pendingPayouts",
+    args: address ? [address] : undefined,
+    chainId: ARC_MAINNET_ID,
+    query: { enabled: !!address, refetchInterval: 10_000 },
+  });
+
+  const { writeContract, isPending } = useWriteContract();
+
+  const hasPending = pending !== undefined && (pending) > 0n;
+  if (!hasPending) return null;
+
+  function handle() {
+    writeContract(
+      {
+        address: STREAM_CONTRACT,
+        abi: CLAIM_PAYOUT_ABI,
+        functionName: "claimPayout",
+        args: [],
+        chainId: ARC_MAINNET_ID,
+      },
+      {
+        onError: (e) => toast.error(`Claim failed: ${e.message.slice(0, 100)}`),
+        onSuccess: () => {
+          toast.success(`${fmtUsdc(pending as bigint)} USDC withdrawn to your wallet!`);
+          void refetchPending();
+          onClaimed?.();
+        },
+      }
+    );
+  }
+
+  return (
+    <button
+      onClick={handle}
+      disabled={isPending}
+      className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+      style={{
+        background: "linear-gradient(135deg,#7c3aed,#8b5cf6)",
+        color:     "#fff",
+        boxShadow: "0 3px 12px rgba(124,58,237,0.30)",
+      }}
+    >
+      {isPending ? <Loader2 size={13} className="animate-spin" /> : <DollarSign size={13} />}
+      {isPending
+        ? "Waiting for wallet…"
+        : `Withdraw ${fmtUsdc(pending)} USDC`}
+    </button>
+  );
+}
+
 // ── StreamCard ─────────────────────────────────────────────────────────────────
 
 export function StreamCard({
@@ -313,11 +469,18 @@ export function StreamCard({
 }: {
   stream: StreamData;
   role: "funder" | "agent";
-  onEvent?: (type: "heartbeat" | "accept" | "reclaim") => void;
+  onEvent?: (type: "heartbeat" | "accept" | "reclaim" | "settle" | "claim") => void;
 }) {
   // Local optimistic state: starts from the prop, can be overridden instantly
   const [optimisticStatus, setOptimisticStatus] = useState<number | null>(null);
   const [optimisticLastHb, setOptimisticLastHb] = useState<bigint | null>(null);
+
+  // Live clock — updates every 5 s so expiry detection stays current
+  const [nowSec, setNowSec] = useState(() => Math.floor(Date.now() / 1000));
+  useEffect(() => {
+    const id = setInterval(() => setNowSec(Math.floor(Date.now() / 1000)), 5_000);
+    return () => clearInterval(id);
+  }, []);
 
   // Self-fetch: re-reads the stream from chain to confirm state after any action
   const { data: liveRaw, refetch } = useReadContract({
@@ -387,8 +550,29 @@ export function StreamCard({
     onEvent?.("reclaim");
   }, [refetch, onEvent]);
 
-  const statusLabel = STATUS_LABEL[stream.status] ?? "Unknown";
-  const statusColor = STATUS_COLOR[stream.status] ?? "#94a3b8";
+  const handleSettled = useCallback(() => {
+    setOptimisticStatus(3); // Completed
+    void refetch();
+    onEvent?.("settle");
+  }, [refetch, onEvent]);
+
+  // ── Expiry detection ─────────────────────────────────────────────────────────
+  // A stream is "expired" when it is still Active on-chain but its wall-clock
+  // duration has elapsed: block.timestamp >= startTime + durationSecs.
+  // We detect it client-side so the badge flips immediately without waiting for
+  // a chain state-change; the contract will enforce the same rule in settleStream().
+  const isChainActive  = stream.status === 1;
+  const endTimeSec     = Number(stream.startTime) + Number(stream.durationSecs);
+  const isExpired      = isChainActive && stream.startTime > 0n && nowSec >= endTimeSec;
+
+  // For display: expired active streams show a distinct "Expired" badge
+  const displayStatus = isExpired ? 99 : stream.status;
+  const STATUS_LABEL_EX: Record<number, string> = { ...STATUS_LABEL, 99: "Expired" };
+  const STATUS_COLOR_EX: Record<number, string> = { ...STATUS_COLOR, 99: "#f59e0b" };
+
+  const statusLabel = STATUS_LABEL_EX[displayStatus] ?? "Unknown";
+  const statusColor = STATUS_COLOR_EX[displayStatus] ?? "#94a3b8";
+
   const earnedPct   = stream.totalAmount > 0n
     ? Math.round(Number((stream.earnedAmount * 100n) / stream.totalAmount))
     : 0;
@@ -396,8 +580,9 @@ export function StreamCard({
   const counterpart  = isSelfStream
     ? `self (stream #${stream.streamId})`
     : role === "funder" ? stream.agent : stream.funder;
-  const isActive    = stream.status === 1;
+  const isActive    = isChainActive && !isExpired; // truly running, not yet expired
   const isProposed  = stream.status === 0;
+  const isTerminal  = stream.status >= 3;          // Completed / Reclaimed / Cancelled
   // Self-streams: show both agent actions (heartbeat/accept) and funder actions (reclaim)
   const showAgentActions  = role === "agent"  || isSelfStream;
   const showFunderActions = role === "funder" || isSelfStream;
@@ -458,10 +643,34 @@ export function StreamCard({
         <span>Missed: <span className="font-semibold" style={{ color: stream.missedHeartbeats > 0n ? "#ef4444" : T.muted }}>{stream.missedHeartbeats.toString()}</span></span>
       </div>
 
+      {/* Time remaining / expiry indicator (Active streams only) */}
+      {isChainActive && stream.startTime > 0n && !isTerminal && (
+        <div className="flex items-center gap-1.5 text-xs rounded-lg px-2.5 py-1.5"
+          style={{
+            background: isExpired
+              ? "rgba(245,158,11,0.10)" : "rgba(34,197,94,0.08)",
+            color:      isExpired ? "#b45309" : "#16a34a",
+            border:     `1px solid ${isExpired ? "rgba(245,158,11,0.25)" : "rgba(34,197,94,0.18)"}`,
+          }}>
+          <Clock size={11} />
+          {isExpired
+            ? "Duration elapsed — ready to settle"
+            : (() => {
+                const rem = endTimeSec - nowSec;
+                if (rem < 60)   return `Expires in ${rem}s`;
+                if (rem < 3600) return `Expires in ${Math.ceil(rem / 60)}m`;
+                if (rem < 86400) return `Expires in ${(rem / 3600).toFixed(1)}h`;
+                return `Expires in ${(rem / 86400).toFixed(1)}d`;
+              })()
+          }
+        </div>
+      )}
+
       {/* Agent actions — shown when role===agent OR same wallet is both funder+agent */}
       {showAgentActions && isProposed && (
         <AcceptButton streamId={stream.streamId} onAccepted={handleAccepted} />
       )}
+      {/* Heartbeat: only while truly running (Active and NOT expired) */}
       {showAgentActions && isActive && (
         <HeartbeatButton
           streamId={stream.streamId}
@@ -471,9 +680,22 @@ export function StreamCard({
         />
       )}
 
-      {/* Funder actions — shown when role===funder OR same wallet is both funder+agent */}
+      {/* Settle button: appears for BOTH funder and agent when stream has expired */}
+      {isExpired && showAgentActions && (
+        <SettleButton streamId={stream.streamId} role="agent" onSettled={handleSettled} />
+      )}
+      {isExpired && showFunderActions && !showAgentActions && (
+        <SettleButton streamId={stream.streamId} role="funder" onSettled={handleSettled} />
+      )}
+
+      {/* Funder early-reclaim: only while truly running (not expired) */}
       {showFunderActions && isActive && (
         <ReclaimButton streamId={stream.streamId} onReclaimed={handleReclaimed} />
+      )}
+
+      {/* Claim payout: shown after any terminal event (settle / reclaim / complete) */}
+      {(isTerminal || isExpired) && (
+        <ClaimPayoutButton onClaimed={() => onEvent?.("claim")} />
       )}
     </div>
   );

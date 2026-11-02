@@ -522,13 +522,15 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
 
   // Bridge from StreamCard action type → FeedEvent so stream actions
   // instantly appear in the activity feed and candlestick chart.
-  const handleStreamEvent = useCallback((type: "heartbeat" | "accept" | "reclaim", streamId?: number) => {
+  const handleStreamEvent = useCallback((type: "heartbeat" | "accept" | "reclaim" | "settle" | "claim", streamId?: number) => {
     const now = Date.now();
     const sid = streamId ? ` #${streamId}` : "";
     const events: Record<typeof type, FeedEvent> = {
-      heartbeat: { id: `hb-${now}`,  kind: "heartbeat",  label: `⚡ Heartbeat sent — Stream${sid}`,  detail: "Manual heartbeat confirmed", ts: now, positive: true  },
-      accept:    { id: `acc-${now}`, kind: "task",       label: `✅ Stream${sid} accepted (Active)`, detail: "Stream now earning",         ts: now, positive: true  },
-      reclaim:   { id: `rcl-${now}`, kind: "reclaimed",  label: `⚠ Stream${sid} reclaimed`,          detail: "Unspent USDC returned",      ts: now, positive: false },
+      heartbeat: { id: `hb-${now}`,  kind: "heartbeat",  label: `⚡ Heartbeat sent — Stream${sid}`,    detail: "Manual heartbeat confirmed",     ts: now, positive: true  },
+      accept:    { id: `acc-${now}`, kind: "task",       label: `✅ Stream${sid} accepted (Active)`,   detail: "Stream now earning",             ts: now, positive: true  },
+      reclaim:   { id: `rcl-${now}`, kind: "reclaimed",  label: `⚠ Stream${sid} reclaimed`,             detail: "Unspent USDC returned",          ts: now, positive: false },
+      settle:    { id: `stl-${now}`, kind: "task",       label: `✅ Stream${sid} settled (Completed)`, detail: "Earnings distributed on-chain",  ts: now, positive: true  },
+      claim:     { id: `clm-${now}`, kind: "heartbeat",  label: `💸 Payout claimed${sid}`,              detail: "USDC withdrawn to wallet",       ts: now, positive: true  },
     };
     const ev = events[type];
     handleEvent(ev);           // → chart
@@ -1034,7 +1036,7 @@ const MAX_GLOBAL = 50;
 
 function GlobalStreamList({ highlightAddress, onEvent }: {
   highlightAddress?: string;
-  onEvent?: (type: "heartbeat" | "accept" | "reclaim", streamId?: number) => void;
+  onEvent?: (type: "heartbeat" | "accept" | "reclaim" | "settle" | "claim", streamId?: number) => void;
 }) {
   const { data: nextRaw, isLoading: nextLoading } = useReadContract({
     address: CONTRACTS.stream, abi: STREAM_READ_ABI,
