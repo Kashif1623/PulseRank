@@ -79,3 +79,20 @@ Deployer wallet: `0x1bc3e8b8bd8724d13dae6de9602f9e4dd1a682e8`
 | PulseStreamV2   | `0x1C8DB2fD6ED9d9Caea9e04B157DdE031C28e66F8`   | v2.1-test |
 | USDC (Arc Mainnet) | `0x3600000000000000000000000000000000000000` | — |
 
+## Deployed Contracts — Arc Mainnet (Chain ID 5042) — v2.2 (2026-11-02)
+
+Updatable setPulseStream; full cross-link: Score+Task->Stream->Score all consistent
+
+Deployer wallet: `0x1bc3e8b8bd8724d13dae6de9602f9e4dd1a682e8`
+
+| Contract | Address | Version |
+|---|---|---|
+| PulseRegistryV2 | `0x43d74ECe631598746E137CC43a81dFE5C8565aD1` | unchanged |
+| PulseScoreV2    | `0x418FC1385B55Bd1b26B0c5B7094502ed094864Ce`    | v2.2 |
+| PulseTaskV2     | `0x8f893D6ad7fa39C881468C556c279b56306C193B`     | v2.2 |
+| PulseStreamV2   | `0x6f617A19Bc676BffAb6ba857062c43d52f669613`   | v2.2 |
+| USDC (Arc Mainnet) | `0x3600000000000000000000000000000000000000` | — |
+
+PulseScoreV2 deploy tx:  `0x0b9f4f4546423a7e4ddb16329e11c6c682cabe631d81a23eabff6df5bf24efe7`
+PulseTaskV2 deploy tx:   `0xf6887807a81948b1c229126df5de0a0f2751a6e184abf97b84b9f62eab711f98`
+PulseStreamV2 deploy tx: `0x71a7d66e623221389f01e2c874d642de504d91712a2cad238d6e5371dfc17dc8`

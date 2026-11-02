@@ -198,3 +198,443 @@
 {"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793283793323}
 {"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793283793567}
 {"level":"debug","message":"[vite] connected.","timestamp":1793283814760}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793370626086}
+{"level":"debug","message":"[vite] connected.","timestamp":1793370634687}
+{"level":"debug","message":"[vite] connected.","timestamp":1793370777577}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793370785885}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793370785886}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793370785894}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793370785894}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793370795581}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793370795581}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793370795585}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793370795586}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793370797831}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793370797832}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793370797833}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793370797833}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793370802273}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793370802274}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793370802277}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793370802278}
+{"level":"debug","message":"[vite] connected.","timestamp":1793370814507}
+{"level":"debug","message":"[vite] connected.","timestamp":1793370877830}
+{"level":"debug","message":"[vite] connected.","timestamp":1793370880606}
+{"level":"debug","message":"[vite] connected.","timestamp":1793370883708}
+{"level":"debug","message":"[vite] connected.","timestamp":1793370929577}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793370949159}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793371567663}
+{"level":"debug","message":"[vite] hot updated: /src/StreamCard.tsx","timestamp":1793371594745}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793371594750}
+{"level":"debug","message":"[vite] connected.","timestamp":1793371603471}
+{"level":"debug","message":"[vite] connected.","timestamp":1793371619985}
+{"level":"debug","message":"[vite] connected.","timestamp":1793371665854}
+{"level":"debug","message":"[vite] connected.","timestamp":1793371665926}
+{"level":"debug","message":"[vite] connected.","timestamp":1793371690799}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793371808966}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793371808971}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793371818537}
+{"level":"debug","message":"[vite] connected.","timestamp":1793371869352}
+{"level":"debug","message":"[vite] connected.","timestamp":1793394996532}
+{"level":"debug","message":"[vite] connected.","timestamp":1793395401467}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793395612752}
+{"level":"debug","message":"[vite] connected.","timestamp":1793395620269}
+{"level":"debug","message":"[vite] connected.","timestamp":1793395687247}
+{"level":"debug","message":"[vite] connected.","timestamp":1793395762335}
+{"level":"debug","message":"[vite] connected.","timestamp":1793395767867}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793396141723}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793396141733}
+{"level":"debug","message":"[vite] connected.","timestamp":1793396164119}
+{"level":"debug","message":"[vite] connected.","timestamp":1793396168688}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793396336775}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793396336783}
+{"level":"debug","message":"[vite] connected.","timestamp":1793396364250}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793396368314}
+{"level":"debug","message":"[vite] connected.","timestamp":1793396373372}
+{"level":"debug","message":"[vite] connected.","timestamp":1793396375325}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793396457083}
+{"level":"debug","message":"[vite] connected.","timestamp":1793396467644}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793396601677}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793396601677}
+{"level":"debug","message":"[vite] hot updated: /src/StreamCard.tsx","timestamp":1793396601679}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793396601680}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityChart.tsx","timestamp":1793396601681}
+{"level":"debug","message":"[vite] connected.","timestamp":1793396679416}
+{"level":"debug","message":"[vite] connected.","timestamp":1793396684458}
+{"level":"debug","message":"[vite] connected.","timestamp":1793398374730}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityChart.tsx","timestamp":1793398390166}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793398390167}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityChart.tsx","timestamp":1793398390205}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793398390205}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793398426086}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793398426087}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793398429721}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793398429721}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793398433699}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793398433701}
+{"level":"debug","message":"[vite] connected.","timestamp":1793398437065}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793398438008}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793398438009}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793398442503}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793398442503}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793398444235}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793398444235}
+{"level":"debug","message":"[vite] connected.","timestamp":1793398447445}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793398447847}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793398447848}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793398448187}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793398448188}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityChart.tsx","timestamp":1793398448620}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793398448620}
+{"level":"debug","message":"[vite] connected.","timestamp":1793398529172}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793398694323}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793398694351}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793398977884}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793399116230}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793399116242}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793399200413}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793399200419}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793399231242}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793399231245}
+{"level":"debug","message":"[vite] connected.","timestamp":1793399232746}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793399244585}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793399244585}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793399252078}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793399252079}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793399252085}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793399252086}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793399255514}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793399255515}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793399255520}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793399255521}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793399258616}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793399258617}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793399258622}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793399258623}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793399265542}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793399265543}
+{"level":"debug","message":"[vite] connected.","timestamp":1793399273583}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793399277869}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793399277870}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793399277872}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793399277872}
+{"level":"debug","message":"[vite] connected.","timestamp":1793399329026}
+{"level":"debug","message":"[vite] connected.","timestamp":1793399334789}
+{"level":"debug","message":"[vite] connected.","timestamp":1793399339604}
+{"level":"debug","message":"[vite] connected.","timestamp":1793399376002}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793399652727}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793399652737}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793400028696}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793400028720}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793400045624}
+{"level":"debug","message":"[vite] connected.","timestamp":1793400068818}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793400070092}
+{"level":"debug","message":"[vite] connected.","timestamp":1793400111607}
+{"level":"debug","message":"[vite] connected.","timestamp":1793400144486}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793400347228}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793400347266}
+{"level":"debug","message":"[vite] connected.","timestamp":1793400582034}
+{"level":"debug","message":"[vite] connected.","timestamp":1793400597687}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793400786171}
+{"level":"debug","message":"[vite] connected.","timestamp":1793400807015}
+{"level":"debug","message":"[vite] connected.","timestamp":1793400814247}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793401082733}
+{"level":"debug","message":"[vite] connected.","timestamp":1793401791860}
+{"level":"debug","message":"[vite] connected.","timestamp":1793401799731}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793401930659}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793401930670}
+{"level":"debug","message":"[vite] connected.","timestamp":1793401952466}
+{"level":"debug","message":"[vite] connected.","timestamp":1793401954124}
+{"level":"debug","message":"[vite] connected.","timestamp":1793401967684}
+{"level":"debug","message":"[vite] connected.","timestamp":1793402005533}
+{"level":"debug","message":"[vite] connected.","timestamp":1793441667305}
+{"level":"debug","message":"[vite] connected.","timestamp":1793441675744}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793441730711}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793441730712}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793441733154}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793441733155}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793441736734}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793441736735}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793441741393}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793441741393}
+{"level":"debug","message":"[vite] connected.","timestamp":1793441749934}
+{"level":"debug","message":"[vite] connected.","timestamp":1793441749939}
+{"level":"debug","message":"[vite] connected.","timestamp":1793441788403}
+{"level":"debug","message":"[vite] connected.","timestamp":1793441798564}
+{"level":"debug","message":"[vite] connected.","timestamp":1793441813311}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793441925154}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793441925159}
+{"level":"debug","message":"[vite] connected.","timestamp":1793441937135}
+{"level":"debug","message":"[vite] connected.","timestamp":1793441937354}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793442081478}
+{"level":"debug","message":"[vite] connected.","timestamp":1793442091526}
+{"level":"debug","message":"[vite] connected.","timestamp":1793442095471}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793523547545}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793523647309}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793523652089}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793523668387}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793523668387}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793523690213}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793523690214}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793523739633}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793523739634}
+{"level":"debug","message":"[vite] hot updated: /src/AiInspector.tsx","timestamp":1793523741343}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793523741343}
+{"level":"debug","message":"[vite] hot updated: /src/AiInspector.tsx","timestamp":1793523744016}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793523744017}
+{"level":"debug","message":"[vite] connected.","timestamp":1793523747780}
+{"level":"debug","message":"[vite] connected.","timestamp":1793523753905}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793524021254}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793524021261}
+{"level":"debug","message":"[vite] connected.","timestamp":1793524032526}
+{"level":"debug","message":"[vite] connected.","timestamp":1793524039279}
+{"level":"debug","message":"[vite] hot updated: /src/StreamCard.tsx","timestamp":1793524046269}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793524046270}
+{"level":"debug","message":"[vite] hot updated: /src/StreamCard.tsx","timestamp":1793524057887}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793524057887}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793524059077}
+{"level":"debug","message":"[vite] hot updated: /src/StreamCard.tsx","timestamp":1793524059395}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793524059396}
+{"level":"debug","message":"[vite] connected.","timestamp":1793524102793}
+{"level":"debug","message":"[vite] connected.","timestamp":1793524103103}
+{"level":"debug","message":"[vite] connected.","timestamp":1793525528756}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793525559683}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793525559842}
+{"level":"debug","message":"[vite] hot updated: /src/StreamCard.tsx","timestamp":1793525561488}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793525561489}
+{"level":"debug","message":"[vite] hot updated: /src/StreamCard.tsx","timestamp":1793525561504}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793525561504}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793525588032}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793525588033}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793525588042}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793525588043}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793525603083}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793525603084}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793525603088}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793525603089}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793525609940}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793525609941}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793525609946}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793525609947}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793525612572}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793525612573}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793525612580}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793525612580}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793525614592}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793525614592}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793525614593}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793525614593}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793525704152}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793525704153}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793525706415}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793525706417}
+{"level":"debug","message":"[vite] connected.","timestamp":1793525717130}
+{"level":"debug","message":"[vite] connected.","timestamp":1793525722834}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793525846379}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793525846385}
+{"level":"debug","message":"[vite] connected.","timestamp":1793525858411}
+{"level":"debug","message":"[vite] connected.","timestamp":1793525861556}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793525862085}
+{"level":"debug","message":"[vite] connected.","timestamp":1793525870434}
+{"level":"debug","message":"[vite] connected.","timestamp":1793525870538}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793525937129}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793525937133}
+{"level":"debug","message":"[vite] connected.","timestamp":1793525963263}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793525967131}
+{"level":"debug","message":"[vite] connected.","timestamp":1793526003361}
+{"level":"debug","message":"[vite] connected.","timestamp":1793526014525}
+{"level":"debug","message":"[vite] connected.","timestamp":1793526050684}
+{"level":"debug","message":"[vite] connected.","timestamp":1793526061071}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793526063440}
+{"level":"debug","message":"[vite] connected.","timestamp":1793526068850}
+{"level":"debug","message":"[vite] connected.","timestamp":1793526069668}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793526292029}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793526292599}
+{"level":"debug","message":"[vite] connected.","timestamp":1793526306704}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityChart.tsx","timestamp":1793526315732}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793526315732}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityChart.tsx","timestamp":1793526326987}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793526326987}
+{"level":"debug","message":"[vite] connected.","timestamp":1793526349610}
+{"level":"debug","message":"[vite] connected.","timestamp":1793526353977}
+{"level":"debug","message":"[vite] connected.","timestamp":1793526361031}
+{"level":"debug","message":"[vite] connected.","timestamp":1793526791871}
+{"level":"debug","message":"[vite] connected.","timestamp":1793526822098}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793526829083}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793526829084}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793526829227}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793526829228}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793526834930}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793526834931}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793526834934}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793526834935}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793526843149}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793526843150}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793526843152}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793526843152}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793526863692}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793526863692}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793526863700}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793526863700}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793526871777}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793526871778}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793526871780}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793526871781}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793526883305}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793526883306}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793526883308}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793526883308}
+{"level":"debug","message":"[vite] connected.","timestamp":1793526951562}
+{"level":"debug","message":"[vite] connected.","timestamp":1793527657153}
+{"level":"debug","message":"[vite] connected.","timestamp":1793527671076}
+{"level":"error","message":"Uncaught TypeError: Cannot read properties of undefined (reading 'slice')","timestamp":1793527898453,"source":"https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:121:15","stack":"TypeError: Cannot read properties of undefined (reading 'slice')\n    at shortAddr (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:121:15)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:435:15)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at updateFunctionComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21508:28)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22850:22)\n    at HTMLUnknownElement.callCallback2 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10558:22)\n    at Object.invokeGuardedCallbackDev (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10583:24)\n    at invokeGuardedCallback (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10617:39)\n    at beginWork$1 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26696:15)\n    at performUnitOfWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26129:20)"}
+{"level":"error","message":"Uncaught TypeError: Cannot read properties of undefined (reading 'slice')","timestamp":1793527898659,"source":"https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:121:15","stack":"TypeError: Cannot read properties of undefined (reading 'slice')\n    at shortAddr (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:121:15)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:435:15)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at updateFunctionComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21508:28)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22850:22)\n    at HTMLUnknownElement.callCallback2 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10558:22)\n    at Object.invokeGuardedCallbackDev (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10583:24)\n    at invokeGuardedCallback (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10617:39)\n    at beginWork$1 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26696:15)\n    at performUnitOfWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26129:20)"}
+{"level":"error","message":"The above error occurred in the <StreamCard> component:\n\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:353:11)\n    at div\n    at div\n    at GlobalStreamList (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/App.tsx?t=1793527760360:1645:3)\n    at div\n    at div\n    at LeaderboardPanel (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/App.tsx?t=1793527760360:772:29)\n    at main\n    at div\n    at App (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/App.tsx?t=1793527760360:2277:25)\n    at Le (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js?v=8696a3ea:18793:42)\n    at Web3ContextProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js?v=8696a3ea:34420:30)\n    at ConnectKitProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js?v=8696a3ea:37910:29)\n    at QueryClientProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-WZEH4STI.js?v=8696a3ea:39:30)\n    at Hydrate (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-VSWSFIGY.js?v=8696a3ea:392:11)\n    at WagmiProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-VSWSFIGY.js?v=8696a3ea:414:11)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries.","timestamp":1793527898668}
+{"level":"error","message":"Uncaught TypeError: Cannot read properties of undefined (reading 'slice')","timestamp":1793527898668,"source":"https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:16054:15","stack":"TypeError: Cannot read properties of undefined (reading 'slice')\n    at shortAddr (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:121:15)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:435:15)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at updateFunctionComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21508:28)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22850:22)\n    at beginWork$1 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26684:22)\n    at performUnitOfWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26129:20)\n    at workLoopSync (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26068:13)\n    at renderRootSync (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26047:15)\n    at recoverFromConcurrentError (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:25664:28)"}
+{"level":"error","message":"Uncaught TypeError: Cannot read properties of undefined (reading 'slice')","timestamp":1793527898712,"source":"https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:121:15","stack":"TypeError: Cannot read properties of undefined (reading 'slice')\n    at shortAddr (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:121:15)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:435:15)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at updateFunctionComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21508:28)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22850:22)\n    at HTMLUnknownElement.callCallback2 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10558:22)\n    at Object.invokeGuardedCallbackDev (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10583:24)\n    at invokeGuardedCallback (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10617:39)\n    at beginWork$1 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26696:15)\n    at performUnitOfWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26129:20)"}
+{"level":"error","message":"Uncaught TypeError: Cannot read properties of undefined (reading 'slice')","timestamp":1793527898731,"source":"https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:121:15","stack":"TypeError: Cannot read properties of undefined (reading 'slice')\n    at shortAddr (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:121:15)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:435:15)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at updateFunctionComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21508:28)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22850:22)\n    at HTMLUnknownElement.callCallback2 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10558:22)\n    at Object.invokeGuardedCallbackDev (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10583:24)\n    at invokeGuardedCallback (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10617:39)\n    at beginWork$1 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26696:15)\n    at performUnitOfWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26129:20)"}
+{"level":"error","message":"The above error occurred in the <StreamCard> component:\n\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:353:11)\n    at div\n    at div\n    at GlobalStreamList (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/App.tsx?t=1793527760360:1645:3)\n    at div\n    at div\n    at LeaderboardPanel (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/App.tsx?t=1793527760360:772:29)\n    at main\n    at div\n    at App (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/App.tsx?t=1793527760360:2277:25)\n    at Le (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js?v=8696a3ea:18793:42)\n    at Web3ContextProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js?v=8696a3ea:34420:30)\n    at ConnectKitProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js?v=8696a3ea:37910:29)\n    at QueryClientProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-WZEH4STI.js?v=8696a3ea:39:30)\n    at Hydrate (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-VSWSFIGY.js?v=8696a3ea:392:11)\n    at WagmiProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-VSWSFIGY.js?v=8696a3ea:414:11)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries.","timestamp":1793527898736}
+{"level":"error","message":"Uncaught TypeError: Cannot read properties of undefined (reading 'slice')","timestamp":1793527898738,"source":"https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:16054:15","stack":"TypeError: Cannot read properties of undefined (reading 'slice')\n    at shortAddr (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:121:15)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:435:15)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at updateFunctionComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21508:28)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22850:22)\n    at beginWork$1 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26684:22)\n    at performUnitOfWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26129:20)\n    at workLoopSync (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26068:13)\n    at renderRootSync (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26047:15)\n    at recoverFromConcurrentError (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:25664:28)"}
+{"level":"debug","message":"[vite] connected.","timestamp":1793527959603}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793528114554}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793528114590}
+{"level":"debug","message":"[vite] connected.","timestamp":1793528122994}
+{"level":"debug","message":"[vite] connected.","timestamp":1793528125188}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793528359022}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793528359037}
+{"level":"debug","message":"[vite] connected.","timestamp":1793528378099}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793528633134}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793528633141}
+{"level":"debug","message":"[vite] connected.","timestamp":1793528652252}
+{"level":"error","message":"Uncaught TypeError: Cannot read properties of undefined (reading 'slice')","timestamp":1793528659956,"source":"https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:121:15","stack":"TypeError: Cannot read properties of undefined (reading 'slice')\n    at shortAddr (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:121:15)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:435:15)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at updateFunctionComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21508:28)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22850:22)\n    at HTMLUnknownElement.callCallback2 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10558:22)\n    at Object.invokeGuardedCallbackDev (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10583:24)\n    at invokeGuardedCallback (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10617:39)\n    at beginWork$1 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26696:15)\n    at performUnitOfWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26129:20)"}
+{"level":"error","message":"Uncaught TypeError: Cannot read properties of undefined (reading 'slice')","timestamp":1793528660066,"source":"https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:121:15","stack":"TypeError: Cannot read properties of undefined (reading 'slice')\n    at shortAddr (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:121:15)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:435:15)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at updateFunctionComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21508:28)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22850:22)\n    at HTMLUnknownElement.callCallback2 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10558:22)\n    at Object.invokeGuardedCallbackDev (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10583:24)\n    at invokeGuardedCallback (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10617:39)\n    at beginWork$1 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26696:15)\n    at performUnitOfWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26129:20)"}
+{"level":"error","message":"The above error occurred in the <StreamCard> component:\n\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:353:11)\n    at div\n    at div\n    at GlobalStreamList (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/App.tsx?t=1793527760360:1645:3)\n    at div\n    at div\n    at LeaderboardPanel (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/App.tsx?t=1793527760360:772:29)\n    at main\n    at div\n    at App (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/App.tsx?t=1793527760360:2277:25)\n    at Le (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js?v=8696a3ea:18793:42)\n    at Web3ContextProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js?v=8696a3ea:34420:30)\n    at ConnectKitProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js?v=8696a3ea:37910:29)\n    at QueryClientProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-WZEH4STI.js?v=8696a3ea:39:30)\n    at Hydrate (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-VSWSFIGY.js?v=8696a3ea:392:11)\n    at WagmiProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-VSWSFIGY.js?v=8696a3ea:414:11)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries.","timestamp":1793528660073}
+{"level":"error","message":"Uncaught TypeError: Cannot read properties of undefined (reading 'slice')","timestamp":1793528660073,"source":"https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:16054:15","stack":"TypeError: Cannot read properties of undefined (reading 'slice')\n    at shortAddr (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:121:15)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793527760360:435:15)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at updateFunctionComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21508:28)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22850:22)\n    at beginWork$1 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26684:22)\n    at performUnitOfWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26129:20)\n    at workLoopSync (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26068:13)\n    at renderRootSync (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26047:15)\n    at recoverFromConcurrentError (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:25664:28)"}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793528661849}
+{"level":"debug","message":"[vite] connected.","timestamp":1793528666526}
+{"level":"error","message":"Uncaught TypeError: Cannot read properties of undefined (reading 'slice')","timestamp":1793528679930,"source":"https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx:121:15","stack":"TypeError: Cannot read properties of undefined (reading 'slice')\n    at shortAddr (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx:121:15)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx:435:15)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at updateFunctionComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21508:28)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22850:22)\n    at HTMLUnknownElement.callCallback2 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10558:22)\n    at Object.invokeGuardedCallbackDev (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10583:24)\n    at invokeGuardedCallback (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10617:39)\n    at beginWork$1 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26696:15)\n    at performUnitOfWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26129:20)"}
+{"level":"error","message":"Uncaught TypeError: Cannot read properties of undefined (reading 'slice')","timestamp":1793528679952,"source":"https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx:121:15","stack":"TypeError: Cannot read properties of undefined (reading 'slice')\n    at shortAddr (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx:121:15)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx:435:15)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at updateFunctionComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21508:28)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22850:22)\n    at HTMLUnknownElement.callCallback2 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10558:22)\n    at Object.invokeGuardedCallbackDev (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10583:24)\n    at invokeGuardedCallback (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10617:39)\n    at beginWork$1 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26696:15)\n    at performUnitOfWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26129:20)"}
+{"level":"error","message":"The above error occurred in the <StreamCard> component:\n\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx:353:11)\n    at div\n    at div\n    at GlobalStreamList (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/App.tsx:1645:3)\n    at div\n    at div\n    at LeaderboardPanel (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/App.tsx:772:29)\n    at main\n    at div\n    at App (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/App.tsx:2277:25)\n    at Le (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js?v=8696a3ea:18793:42)\n    at Web3ContextProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js?v=8696a3ea:34420:30)\n    at ConnectKitProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js?v=8696a3ea:37910:29)\n    at QueryClientProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-WZEH4STI.js?v=8696a3ea:39:30)\n    at Hydrate (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-VSWSFIGY.js?v=8696a3ea:392:11)\n    at WagmiProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-VSWSFIGY.js?v=8696a3ea:414:11)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries.","timestamp":1793528679957}
+{"level":"error","message":"Uncaught TypeError: Cannot read properties of undefined (reading 'slice')","timestamp":1793528679958,"source":"https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:16054:15","stack":"TypeError: Cannot read properties of undefined (reading 'slice')\n    at shortAddr (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx:121:15)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx:435:15)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at updateFunctionComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21508:28)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22850:22)\n    at beginWork$1 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26684:22)\n    at performUnitOfWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26129:20)\n    at workLoopSync (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26068:13)\n    at renderRootSync (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26047:15)\n    at recoverFromConcurrentError (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:25664:28)"}
+{"level":"debug","message":"[vite] hot updated: /src/StreamCard.tsx","timestamp":1793528680696}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793528680697}
+{"level":"error","message":"Uncaught TypeError: Cannot read properties of undefined (reading 'toString')","timestamp":1793528682313,"source":"https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-FGVHOMD7.js?v=8696a3ea:6469:23","stack":"TypeError: Cannot read properties of undefined (reading 'toString')\n    at format (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-FGVHOMD7.js?v=8696a3ea:6469:23)\n    at formatUnits (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-AYECFCQJ.js?v=8696a3ea:11231:10)\n    at fmtUsdc (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793528678136:125:21)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793528678136:470:125)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at mountIndeterminateComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21852:21)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22840:22)\n    at HTMLUnknownElement.callCallback2 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10558:22)\n    at Object.invokeGuardedCallbackDev (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10583:24)\n    at invokeGuardedCallback (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10617:39)"}
+{"level":"error","message":"Uncaught TypeError: Cannot read properties of undefined (reading 'toString')","timestamp":1793528682324,"source":"https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-FGVHOMD7.js?v=8696a3ea:6469:23","stack":"TypeError: Cannot read properties of undefined (reading 'toString')\n    at format (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-FGVHOMD7.js?v=8696a3ea:6469:23)\n    at formatUnits (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-AYECFCQJ.js?v=8696a3ea:11231:10)\n    at fmtUsdc (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793528678136:125:21)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793528678136:470:125)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at mountIndeterminateComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21852:21)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22840:22)\n    at HTMLUnknownElement.callCallback2 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10558:22)\n    at Object.invokeGuardedCallbackDev (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10583:24)\n    at invokeGuardedCallback (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10617:39)"}
+{"level":"error","message":"Uncaught TypeError: Cannot read properties of undefined (reading 'toString')","timestamp":1793528682493,"source":"https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-FGVHOMD7.js?v=8696a3ea:6469:23","stack":"TypeError: Cannot read properties of undefined (reading 'toString')\n    at format (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-FGVHOMD7.js?v=8696a3ea:6469:23)\n    at formatUnits (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-AYECFCQJ.js?v=8696a3ea:11231:10)\n    at fmtUsdc (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793528678136:125:21)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793528678136:470:125)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at mountIndeterminateComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21852:21)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22840:22)\n    at HTMLUnknownElement.callCallback2 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10558:22)\n    at Object.invokeGuardedCallbackDev (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10583:24)\n    at invokeGuardedCallback (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10617:39)"}
+{"level":"error","message":"Uncaught TypeError: Cannot read properties of undefined (reading 'toString')","timestamp":1793528682497,"source":"https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-FGVHOMD7.js?v=8696a3ea:6469:23","stack":"TypeError: Cannot read properties of undefined (reading 'toString')\n    at format (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-FGVHOMD7.js?v=8696a3ea:6469:23)\n    at formatUnits (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-AYECFCQJ.js?v=8696a3ea:11231:10)\n    at fmtUsdc (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793528678136:125:21)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793528678136:470:125)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at mountIndeterminateComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21852:21)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22840:22)\n    at HTMLUnknownElement.callCallback2 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10558:22)\n    at Object.invokeGuardedCallbackDev (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10583:24)\n    at invokeGuardedCallback (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:10617:39)"}
+{"level":"error","message":"The above error occurred in the <StreamCard> component:\n\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793528678136:354:11)\n    at div\n    at div\n    at GlobalStreamList (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/App.tsx:1645:3)\n    at div\n    at div\n    at LeaderboardPanel (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/App.tsx:772:29)\n    at main\n    at div\n    at App (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/App.tsx:2277:25)\n    at Le (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js?v=8696a3ea:18793:42)\n    at Web3ContextProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js?v=8696a3ea:34420:30)\n    at ConnectKitProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/connectkit.js?v=8696a3ea:37910:29)\n    at QueryClientProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-WZEH4STI.js?v=8696a3ea:39:30)\n    at Hydrate (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-VSWSFIGY.js?v=8696a3ea:392:11)\n    at WagmiProvider (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-VSWSFIGY.js?v=8696a3ea:414:11)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries.","timestamp":1793528682539}
+{"level":"error","message":"(previous line repeated 1× more)","timestamp":1793528682875}
+{"level":"error","message":"Unhandled promise rejection: TypeError: Cannot read properties of undefined (reading 'toString')\n    at format (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-FGVHOMD7.js?v=8696a3ea:6469:23)\n    at formatUnits (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-AYECFCQJ.js?v=8696a3ea:11231:10)\n    at fmtUsdc (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793528678136:125:21)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793528678136:470:125)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at mountIndeterminateComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21852:21)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22840:22)\n    at beginWork$1 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26684:22)\n    at performUnitOfWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26129:20)\n    at workLoopSync (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26068:13)","timestamp":1793528682876,"stack":"TypeError: Cannot read properties of undefined (reading 'toString')\n    at format (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-FGVHOMD7.js?v=8696a3ea:6469:23)\n    at formatUnits (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-AYECFCQJ.js?v=8696a3ea:11231:10)\n    at fmtUsdc (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793528678136:125:21)\n    at StreamCard (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/src/StreamCard.tsx?t=1793528678136:470:125)\n    at renderWithHooks (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:18474:26)\n    at mountIndeterminateComponent (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:21852:21)\n    at beginWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:22840:22)\n    at beginWork$1 (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26684:22)\n    at performUnitOfWork (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26129:20)\n    at workLoopSync (https://it8xbdm6wqwr34s9k9jha.preview.studio.arc.io/node_modules/.vite/deps/chunk-YI6NTZAD.js?v=8696a3ea:26068:13)"}
+{"level":"debug","message":"[vite] hot updated: /src/StreamCard.tsx","timestamp":1793528723680}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793528723680}
+{"level":"debug","message":"[vite] connected.","timestamp":1793528729703}
+{"level":"debug","message":"[vite] connected.","timestamp":1793528738992}
+{"level":"debug","message":"[vite] connected.","timestamp":1793529369614}
+{"level":"debug","message":"[vite] hot updated: /src/StreamCard.tsx","timestamp":1793529375745}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793529375745}
+{"level":"debug","message":"[vite] hot updated: /src/StreamCard.tsx","timestamp":1793529384292}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793529384293}
+{"level":"debug","message":"[vite] hot updated: /src/StreamCard.tsx","timestamp":1793529384716}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793529384717}
+{"level":"debug","message":"[vite] hot updated: /src/StreamCard.tsx","timestamp":1793529386868}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793529386870}
+{"level":"debug","message":"[vite] hot updated: /src/StreamCard.tsx","timestamp":1793529386875}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793529386876}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793529388658}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793529388659}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793529388666}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793529388667}
+{"level":"debug","message":"[vite] connected.","timestamp":1793529429105}
+{"level":"debug","message":"[vite] connected.","timestamp":1793529432497}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793530053138}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793530053146}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793530053153}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793530079908}
+{"level":"debug","message":"[vite] connected.","timestamp":1793530089233}
+{"level":"debug","message":"[vite] hot updated: /src/StreamCard.tsx","timestamp":1793530098899}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793530098900}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793530110313}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793530110313}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793530121444}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793530121445}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793530121451}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793530121452}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793530126550}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793530126551}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793530126559}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793530126560}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793530131173}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793530131174}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793530131176}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793530131176}
+{"level":"debug","message":"[vite] connected.","timestamp":1793530137662}
+{"level":"debug","message":"[vite] connected.","timestamp":1793530176431}
+{"level":"debug","message":"[vite] connected.","timestamp":1793530179410}
+{"level":"debug","message":"[vite] connected.","timestamp":1793531423611}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793531566403}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1793531571542}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793531571543}
+{"level":"debug","message":"[vite] connected.","timestamp":1793531581199}
+{"level":"debug","message":"[vite] connected.","timestamp":1793531601885}
+{"level":"debug","message":"[vite] connected.","timestamp":1793531628284}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793532807192}
+{"level":"debug","message":"[vite] hot updated: /src/ActivityFeed.tsx","timestamp":1793532844436}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793532844436}
+{"level":"debug","message":"[vite] connected.","timestamp":1793532855123}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793532968893}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793532968963}
+{"level":"debug","message":"[vite] connected.","timestamp":1793534318731}
+{"level":"debug","message":"[vite] connected.","timestamp":1793534331578}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793534361111}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793534361117}
+{"level":"debug","message":"[vite] hot updated: /src/StreamCard.tsx","timestamp":1793534364262}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793534364263}
+{"level":"debug","message":"[vite] hot updated: /src/StreamCard.tsx","timestamp":1793534364284}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1793534364284}
+{"level":"debug","message":"[vite] connected.","timestamp":1793534393274}
+{"level":"debug","message":"[vite] connected.","timestamp":1793534396463}
+{"level":"debug","message":"[vite] connected.","timestamp":1793534409709}
+{"level":"debug","message":"[vite] connected.","timestamp":1793534414988}
+{"level":"debug","message":"[vite] connected.","timestamp":1793535223817}
+{"level":"debug","message":"[vite] connected.","timestamp":1793535468090}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793535587032}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793535587040}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793535707768}
+{"level":"debug","message":"[vite] connected.","timestamp":1793535746437}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793535865160}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793535865847}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793535868489}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793536161425}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793536161464}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793537567522}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793537567540}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793537567544}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793537567550}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793540156219}
+{"level":"debug","message":"[vite] connected.","timestamp":1793584893840}
+{"level":"debug","message":"[vite] connected.","timestamp":1793584917705}
+{"level":"debug","message":"[vite] connected.","timestamp":1793584928575}
+{"level":"debug","message":"[vite] connected.","timestamp":1793584951690}
+{"level":"debug","message":"[vite] connected.","timestamp":1793584958125}
+{"level":"debug","message":"[vite] connected.","timestamp":1793584968996}
+{"level":"debug","message":"[vite] connected.","timestamp":1793584981864}
+{"level":"debug","message":"[vite] connected.","timestamp":1793584992337}
+{"level":"debug","message":"[vite] connected.","timestamp":1793585000682}
+{"level":"debug","message":"[vite] connected.","timestamp":1793585029278}
+{"level":"debug","message":"[vite] connected.","timestamp":1793585041499}
+{"level":"debug","message":"[vite] connected.","timestamp":1793585045263}
+{"level":"debug","message":"[vite] connected.","timestamp":1793585058718}
+{"level":"debug","message":"[vite] connected.","timestamp":1793585075810}
+{"level":"debug","message":"[vite] connected.","timestamp":1793585079048}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793636902027}
+{"level":"debug","message":"[vite] connected.","timestamp":1793637079627}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793637275749}
+{"level":"debug","message":"[vite] connected.","timestamp":1793637295073}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793648708394}
+{"level":"debug","message":"[vite] connected.","timestamp":1793648722050}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793648974242}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793648974248}
+{"level":"debug","message":"[vite] connected.","timestamp":1793649038026}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1793649051006}
+{"level":"debug","message":"[vite] connected.","timestamp":1793649062451}
+{"level":"debug","message":"[vite] connected.","timestamp":1793649064756}

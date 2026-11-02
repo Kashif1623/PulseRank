@@ -11,9 +11,9 @@ PulseRank is a decentralised reputation and streaming-escrow protocol that lets 
 | Contract | Address |
 |---|---|
 | PulseRegistryV2 | `0x43d74ECe631598746E137CC43a81dFE5C8565aD1` |
-| PulseScoreV2 | `0xCBAa6A61A5960Af31A52bcbc32c1EC99a344F1Ed` |
-| PulseTaskV2 | `0x4FDF4B96D1d4e3788f33a64dC53e5e2c389Ac1d5` |
-| PulseStreamV2 | `0x1C8DB2fD6ED9d9Caea9e04B157DdE031C28e66F8` |
+| PulseScoreV2 | `0x418FC1385B55Bd1b26B0c5B7094502ed094864Ce` |
+| PulseTaskV2 | `0x8f893D6ad7fa39C881468C556c279b56306C193B` |
+| PulseStreamV2 | `0x6f617A19Bc676BffAb6ba857062c43d52f669613` |
 
 USDC (ERC-20): `0x3600000000000000000000000000000000000000` (6 decimals)
 

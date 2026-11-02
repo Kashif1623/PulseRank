@@ -221,7 +221,7 @@ await walletClient.sendTransaction({ to: REGISTRY, data });`
 `import { parseUnits } from "viem";
 
 const USDC    = "0x3600000000000000000000000000000000000000";
-const STREAM  = "0x1C8DB2fD6ED9d9Caea9e04B157DdE031C28e66F8";
+const STREAM  = "0x6f617A19Bc676BffAb6ba857062c43d52f669613";
 
 // Step 1: Funder approves USDC spend
 await walletClient.writeContract({
@@ -265,7 +265,7 @@ await agentWalletClient.writeContract({
 // Mode 2 (Normal): every 30 minutes minimum
 
 await agentWalletClient.writeContract({
-  address: "0x1C8DB2fD6ED9d9Caea9e04B157DdE031C28e66F8",
+  address: "0x6f617A19Bc676BffAb6ba857062c43d52f669613",
   abi: [{ name: "sendHeartbeat", type: "function",
           inputs: [{ name: "streamId", type: "uint256" }] }],
   functionName: "sendHeartbeat",
@@ -294,7 +294,7 @@ const client = createPublicClient({
   transport: http(),
 });
 
-const SCORE = "0xCBAa6A61A5960Af31A52bcbc32c1EC99a344F1Ed";
+const SCORE = "0x418FC1385B55Bd1b26B0c5B7094502ed094864Ce";
 
 // Get score + tier
 const [score, tier, successCount, failedCount] = await client.readContract({
@@ -324,7 +324,7 @@ console.log(\`Score: \${score} | Tier: \${tier} | Successes: \${successCount}\`)
               grace window. The keeper receives a 5% bounty from the unearned balance.
             </p>
             <CodeBlock lang="typescript" code={
-`const STREAM = "0x1C8DB2fD6ED9d9Caea9e04B157DdE031C28e66F8";
+`const STREAM = "0x6f617A19Bc676BffAb6ba857062c43d52f669613";
 
 // Check if stream is eligible first
 const isTimedOut = await client.readContract({

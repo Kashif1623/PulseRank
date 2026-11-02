@@ -49,7 +49,6 @@ contract PulseTaskV2 is Ownable, EIP712, ReentrancyGuard, IPulseTaskV2 {
     mapping(uint256 => uint256) public streamToTask;
 
     address public pulseStream;
-    bool public streamSet;
 
     bytes32 public constant MILESTONE_APPROVE_TYPEHASH =
         keccak256("MilestoneApproval(uint256 taskId,uint256 milestoneIdx,uint256 nonce,uint256 deadline)");
@@ -66,7 +65,6 @@ contract PulseTaskV2 is Ownable, EIP712, ReentrancyGuard, IPulseTaskV2 {
     error ZeroAddress();
     error InvalidMilestoneCount();
     error MilestoneIndexOutOfRange();
-    error AlreadySet();
     error SignatureExpired();
     error NoAttesterConfigured();
     error InvalidSignature();
@@ -83,11 +81,10 @@ contract PulseTaskV2 is Ownable, EIP712, ReentrancyGuard, IPulseTaskV2 {
         nextTaskId = 1;
     }
 
+    /// @notice Set or update the PulseStream contract address. Owner only.
     function setPulseStream(address s) external onlyOwner nonReentrant {
-        if (streamSet) revert AlreadySet();
         if (s == address(0)) revert ZeroAddress();
         pulseStream = s;
-        streamSet = true;
         emit PulseStreamSet(s);
     }
 

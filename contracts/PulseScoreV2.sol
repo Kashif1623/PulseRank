@@ -19,11 +19,9 @@ contract PulseScoreV2 is Ownable, ReentrancyGuard {
     mapping(address => uint256) public disputesWon;
 
     address public pulseStream;
-    bool public streamSet;
 
     error NotAuthorized();
     error ZeroAddress();
-    error AlreadySet();
 
     event PulseStreamSet(address indexed pulseStream);
     event ScoreInitialized(address indexed agent, uint256 score);
@@ -40,15 +38,11 @@ contract PulseScoreV2 is Ownable, ReentrancyGuard {
         if (initialOwner == address(0)) revert ZeroAddress();
     }
 
-    /// @notice Set PulseStream contract address once.
+    /// @notice Set or update the PulseStream contract address. Owner only.
     /// @param s PulseStreamV2 address.
     function setPulseStream(address s) external onlyOwner nonReentrant {
-        if (streamSet) revert AlreadySet();
         if (s == address(0)) revert ZeroAddress();
-
         pulseStream = s;
-        streamSet = true;
-
         emit PulseStreamSet(s);
     }
 

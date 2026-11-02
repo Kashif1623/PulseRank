@@ -1,14 +1,28 @@
 {
-  "contractAddress": "0x374D9d2B6cA2557D24FA49603dcfdEd4905AB683",
+  "contractAddress": "0x418FC1385B55Bd1b26B0c5B7094502ed094864Ce",
   "network": "ARC",
   "deployerWalletId": "95db8cf1-cfed-5301-92ab-f562aa2d284b",
   "deployerAddress": "0x1bc3e8b8bd8724d13dae6de9602f9e4dd1a682e8",
   "contract_code_path": "/home/user/app/contracts/PulseScoreV2.sol",
   "contract_compiled_code_path": "/home/user/app/contracts/out/PulseScoreV2.sol/PulseScoreV2.json",
   "contract_network_and_links": {
-    "Arc": "0x374D9d2B6cA2557D24FA49603dcfdEd4905AB683"
+    "Arc": "0x418FC1385B55Bd1b26B0c5B7094502ed094864Ce"
   },
   "contract_deployments": [
+    {
+      "chain": "Arc",
+      "address": "0x418FC1385B55Bd1b26B0c5B7094502ed094864Ce",
+      "explorerUrl": "0x418FC1385B55Bd1b26B0c5B7094502ed094864Ce",
+      "txHash": "0x0b9f4f4546423a7e4ddb16329e11c6c682cabe631d81a23eabff6df5bf24efe7",
+      "deployedAt": "2026-11-02T19:52:20.267Z"
+    },
+    {
+      "chain": "Arc",
+      "address": "0xCBAa6A61A5960Af31A52bcbc32c1EC99a344F1Ed",
+      "explorerUrl": "0xCBAa6A61A5960Af31A52bcbc32c1EC99a344F1Ed",
+      "txHash": "0xc817445c8b946d99617ba9a08724d837f3470f72f928b2af917ef3a4a4655fea",
+      "deployedAt": "2026-10-30T21:41:13.282Z"
+    },
     {
       "chain": "Arc",
       "address": "0x374D9d2B6cA2557D24FA49603dcfdEd4905AB683",
