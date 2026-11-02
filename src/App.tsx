@@ -739,12 +739,12 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
 
 // ── Duration presets ───────────────────────────────────────────────────────────
 
-const DURATION_PRESETS = [
-  { label: "1 Day",  days: 1 },
-  { label: "3 Days", days: 3 },
-  { label: "5 Days", days: 5 },
-  { label: "7 Days", days: 7 },
-  { label: "Custom", days: 0 },
+// Quick-fill shortcuts shown above the custom input
+const DURATION_SHORTCUTS = [
+  { label: "5 min",   value: "5",   unit: "minutes" as const },
+  { label: "30 min",  value: "30",  unit: "minutes" as const },
+  { label: "1 day",   value: "1",   unit: "days"    as const },
+  { label: "7 days",  value: "7",   unit: "days"    as const },
 ] as const;
 
 // ── Stream cooldown helper (module-level — outside React, so Date is not "impure render") ──
@@ -766,11 +766,11 @@ function FunderPanel() {
   const [agentAddr,     setAgentAddr]     = useState("");
   const [amount,        setAmount]        = useState("");
   const [selectedMode,  setSelectedMode]  = useState<1 | 2 | 3>(2);
-  const [selectedPreset, setSelectedPreset] = useState<number>(1);
-  const [customDays,    setCustomDays]    = useState("");
-  const isCustom   = selectedPreset === 0;
-  const activeDays = isCustom ? (parseFloat(customDays) || 0) : selectedPreset;
-  const durationSecs = Math.round(activeDays * 86400);
+  const [durationVal,  setDurationVal]  = useState("");
+  const [durationUnit, setDurationUnit] = useState<"minutes" | "days">("minutes");
+
+  const durationNum  = parseFloat(durationVal) || 0;
+  const durationSecs = Math.round(durationNum * (durationUnit === "minutes" ? 60 : 86400));
 
   // Step 1: approve USDC
   const { writeContract: approve, data: approveTxHash, isPending: approving } = useWriteContract();
@@ -799,7 +799,7 @@ function FunderPanel() {
       onError: (e) => toast.error(`Stream failed: ${e.message.slice(0, 80)}`),
       onSuccess: () => {
         toast.success("Stream proposed successfully! The agent can now accept.");
-        setAgentAddr(""); setAmount(""); setSelectedPreset(1); setCustomDays("");
+        setAgentAddr(""); setAmount(""); setDurationVal(""); setDurationUnit("minutes");
         // Record timestamp for 30-min cooldown
         if (address) recordStreamCreated(address);
       },
@@ -890,34 +890,68 @@ function FunderPanel() {
               <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: T.subtle }}>
                 Stream Duration
               </label>
+
+              {/* Quick-fill shortcuts */}
               <div className="flex flex-wrap gap-1.5 mb-2">
-                {DURATION_PRESETS.map(p => {
-                  const active = p.days === 0 ? isCustom : selectedPreset === p.days;
+                {DURATION_SHORTCUTS.map(s => {
+                  const active = durationVal === s.value && durationUnit === s.unit;
                   return (
-                    <button key={p.label} type="button"
-                      onClick={() => { setSelectedPreset(p.days); if (p.days !== 0) setCustomDays(""); }}
+                    <button key={s.label} type="button"
+                      onClick={() => { setDurationVal(s.value); setDurationUnit(s.unit); }}
                       className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
                       style={{
                         background: active ? "rgba(2,132,199,0.12)" : "rgba(255,255,255,0.60)",
                         border: active ? `1px solid ${T.accent}` : `1px solid ${T.border}`,
                         color:  active ? T.accent : T.muted,
                       }}>
-                      {p.label}
+                      {s.label}
                     </button>
                   );
                 })}
               </div>
-              {isCustom && (
-                <input type="number" min="0.01" step="0.5" value={customDays}
-                  onChange={e => setCustomDays(e.target.value)}
-                  className={inputCls + " mb-2"} style={inputStyle}
-                  placeholder="Enter number of days (e.g. 2.5)" />
-              )}
-              {activeDays > 0 && (
-                <p className="text-xs mono mt-1" style={{ color: T.accentLight }}>
-                  {activeDays === 1 ? "1 Day" : `${activeDays} Days`}
+
+              {/* Numeric input + unit toggle */}
+              <div className="flex gap-2">
+                <input
+                  type="number" min="1" step="1"
+                  value={durationVal}
+                  onChange={e => setDurationVal(e.target.value)}
+                  className={inputCls + " flex-1"}
+                  style={inputStyle}
+                  placeholder="Enter duration (e.g. 5)"
+                />
+                {/* Unit toggle: Minutes / Days */}
+                <div className="flex rounded-xl overflow-hidden shrink-0"
+                  style={{ border: `1px solid ${T.border}` }}>
+                  {(["minutes", "days"] as const).map(u => (
+                    <button key={u} type="button"
+                      onClick={() => setDurationUnit(u)}
+                      className="px-3 py-2 text-xs font-semibold transition-all capitalize"
+                      style={{
+                        background: durationUnit === u
+                          ? "rgba(2,132,199,0.14)"
+                          : "rgba(255,255,255,0.70)",
+                        color: durationUnit === u ? T.accent : T.muted,
+                        borderRight: u === "minutes" ? `1px solid ${T.border}` : "none",
+                      }}>
+                      {u === "minutes" ? "Min" : "Days"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Live conversion helper */}
+              {durationNum > 0 && (
+                <p className="text-xs mono mt-1.5" style={{ color: T.accentLight }}>
+                  <span style={{ color: T.muted }}>
+                    {durationNum} {durationUnit === "minutes"
+                      ? (durationNum === 1 ? "Minute" : "Minutes")
+                      : (durationNum === 1 ? "Day"    : "Days")}
+                  </span>
                   {" = "}
-                  <span className="font-semibold" style={{ color: T.ink }}>{durationSecs.toLocaleString()} seconds</span>
+                  <span className="font-semibold" style={{ color: T.ink }}>
+                    {durationSecs.toLocaleString()} seconds
+                  </span>
                   {" on-chain"}
                 </p>
               )}
