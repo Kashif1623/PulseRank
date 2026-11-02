@@ -489,7 +489,16 @@ export function AiWidget() {
   const [open, setOpen]   = useState(false);
   const [tab, setTab]     = useState<"chat" | "inspector">("chat");
 
-  // Drag state
+  // Responsive: track whether we're on a mobile-width screen
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  // Drag state (desktop only — disabled on mobile)
   const [pos, setPos]         = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragging              = useRef(false);
@@ -552,20 +561,42 @@ export function AiWidget() {
 
       {/* Modal */}
       {open && (
-        <div
-          className="fixed rounded-2xl shadow-2xl flex flex-col"
-          style={{
-            right:  defaultRight - pos.x + 64,
-            bottom: defaultBottom - pos.y,
-            zIndex: 9999,
-            width:  360,
-            maxWidth: "calc(100vw - 24px)",
-            maxHeight: "80vh",
-            background: T.surface,
-            border: `1px solid ${T.border}`,
-            backdropFilter: "blur(20px)",
-          }}
-        >
+        <>
+          {/* Mobile backdrop */}
+          {isMobile && (
+            <div
+              className="fixed inset-0"
+              style={{ zIndex: 9998, background: "rgba(0,0,0,0.40)", backdropFilter: "blur(4px)" }}
+              onClick={() => setOpen(false)}
+            />
+          )}
+          <div
+            className="fixed rounded-2xl shadow-2xl flex flex-col"
+            style={isMobile ? {
+              // Mobile: centered horizontally, anchored near bottom above button
+              left: "50%",
+              bottom: defaultBottom + 64,
+              transform: "translateX(-50%)",
+              width: "calc(100vw - 32px)",
+              maxWidth: 400,
+              maxHeight: "70vh",
+              zIndex: 9999,
+              background: T.surface,
+              border: `1px solid ${T.border}`,
+              backdropFilter: "blur(20px)",
+            } : {
+              // Desktop: bottom-right above button
+              right:  defaultRight - pos.x + 64,
+              bottom: defaultBottom - pos.y,
+              zIndex: 9999,
+              width:  360,
+              maxWidth: "calc(100vw - 24px)",
+              maxHeight: "80vh",
+              background: T.surface,
+              border: `1px solid ${T.border}`,
+              backdropFilter: "blur(20px)",
+            }}
+          >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b"
             style={{ borderColor: T.border }}>
@@ -603,7 +634,8 @@ export function AiWidget() {
             {tab === "chat"      && <Web3Chat />}
             {tab === "inspector" && <AgentInspector />}
           </div>
-        </div>
+          </div>
+        </>
       )}
     </>
   );

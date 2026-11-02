@@ -652,8 +652,8 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
           {rows.map((a, i) => (
             <div key={a.agentId}>
               <div
-                className="grid items-center gap-2 px-4 py-3 transition-colors cursor-pointer"
-                style={{ gridTemplateColumns: "1.5rem minmax(0,1fr) 4rem 4rem",
+                className="grid items-center gap-2 px-3 sm:px-4 py-3 transition-colors cursor-pointer"
+                style={{ gridTemplateColumns: "1.5rem minmax(0,1fr) 3rem 3rem",
                          borderBottom: `1px solid ${T.border}` }}
                 onClick={() => setExpandedRow(expandedRow === a.agentId ? null : a.agentId)}
                 onMouseEnter={ev => (ev.currentTarget.style.background = "rgba(186,230,253,0.25)")}
@@ -662,22 +662,31 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
                       style={{ color: i === 0 ? "#b45309" : i === 1 ? "#64748b" : i === 2 ? "#c2410c" : T.placeholder }}>
                   {i + 1}
                 </span>
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                {/* Agent cell: avatar + name/addr + tier badge + status — all bounded by min-w-0 */}
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
                        style={{ background: TIER_BG[a.tier] ?? "rgba(14,165,233,0.12)", color: T.accent }}>
                     {a.name[0]?.toUpperCase() ?? "?"}
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-semibold truncate" style={{ color: T.ink }}>{a.name}</div>
-                    <div className="mono text-xs truncate" style={{ color: T.placeholder }}>{shortAddr(a.owner)}</div>
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    {/* Name: no truncation below sm, truncate only at very narrow widths */}
+                    <div className="text-xs sm:text-sm font-semibold leading-tight"
+                         style={{ color: T.ink, wordBreak: "break-word", overflowWrap: "anywhere" }}>
+                      {a.name}
+                    </div>
+                    <div className="mono text-[10px] sm:text-xs leading-tight" style={{ color: T.placeholder }}>
+                      {shortAddr(a.owner)}
+                    </div>
                   </div>
-                  <span className="text-xs font-bold shrink-0 ml-1" style={{ color: TIER_COLOR[a.tier] ?? T.subtle }}>
+                  {/* Tier + status — hidden on very small screens to preserve name space */}
+                  <span className="text-[10px] sm:text-xs font-bold shrink-0 hidden xs:inline"
+                        style={{ color: TIER_COLOR[a.tier] ?? T.subtle }}>
                     {a.tier}
                   </span>
                   <AgentStatusBadge agentOwner={a.owner} agentId={a.agentId} />
                 </div>
-                <span className="mono text-sm font-bold tabular-nums" style={{ color: T.ink }}>{a.score}</span>
-                <span className="mono text-xs tabular-nums" style={{ color: T.accentMid }}>
+                <span className="mono text-xs sm:text-sm font-bold tabular-nums text-right" style={{ color: T.ink }}>{a.score}</span>
+                <span className="mono text-[10px] sm:text-xs tabular-nums text-right" style={{ color: T.accentMid }}>
                   {a.success + a.failed > 0 ? `${((a.success / (a.success + a.failed)) * 100).toFixed(0)}%` : "—"}
                 </span>
               </div>
