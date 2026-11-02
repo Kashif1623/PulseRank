@@ -1,7 +1,48 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useReadContracts, useReadContract } from "wagmi";
-import { X, Bot, Zap, Search, Send, GripVertical } from "lucide-react";
+import { X, Search, Send, GripVertical } from "lucide-react";
 import contractsJson from "./contracts.json";
+
+// ── PulseRank brand avatar (inline SVG, no external asset needed) ─────────────
+function PulseAvatar({ size = 32 }: { size?: number }) {
+  const r = size / 2;
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="aw-bg" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#0ea5e9" />
+          <stop offset="100%" stopColor="#0284c7" />
+        </radialGradient>
+        <linearGradient id="aw-ring1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#0284c7" stopOpacity="0.3" />
+        </linearGradient>
+        <linearGradient id="aw-ring2" x1="1" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.6" />
+          <stop offset="100%" stopColor="#0369a1" stopOpacity="0.2" />
+        </linearGradient>
+      </defs>
+      {/* Background circle */}
+      <circle cx={r} cy={r} r={r} fill="url(#aw-bg)" />
+      {/* Outer ring */}
+      <circle cx={r} cy={r} r={r * 0.85} stroke="url(#aw-ring1)" strokeWidth="2" fill="none" />
+      {/* Middle ring */}
+      <circle cx={r} cy={r} r={r * 0.65} stroke="url(#aw-ring2)" strokeWidth="1.5" fill="none" />
+      {/* ECG pulse waveform */}
+      <polyline
+        points={`${r*0.22},${r} ${r*0.45},${r} ${r*0.55},${r*0.48} ${r*0.65},${r*1.35} ${r*0.75},${r*0.55} ${r*0.85},${r} ${r*1.1},${r} ${r*1.22},${r}`}
+        stroke="white"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+        opacity="0.95"
+      />
+      {/* Center pulse dot */}
+      <circle cx={r} cy={r} r={r * 0.1} fill="white" opacity="0.9" />
+    </svg>
+  );
+}
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -475,8 +516,8 @@ export function AiWidget() {
     setIsDragging(false);
   }, []);
 
-  const defaultRight = 20;
-  const defaultBottom = 20;
+  const defaultRight  = 20;
+  const defaultBottom = 96; // above "Built with Arc Studio" badge (~bottom-24)
 
   return (
     <>
@@ -487,28 +528,36 @@ export function AiWidget() {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onClick={() => setOpen(o => !o)}
-        className="fixed z-50 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center select-none"
+        className="fixed w-14 h-14 rounded-full shadow-2xl flex items-center justify-center select-none"
         style={{
-          right:  defaultRight - pos.x,
-          bottom: defaultBottom - pos.y,
+          right:     defaultRight - pos.x,
+          bottom:    defaultBottom - pos.y,
+          zIndex:    9999,
           background: "linear-gradient(135deg,#0284c7,#0ea5e9,#06b6d4)",
           touchAction: "none",
           cursor: isDragging ? "grabbing" : "grab",
-          boxShadow: "0 8px 30px rgba(2,132,199,0.45)",
+          boxShadow: "0 0 0 4px rgba(14,165,233,0.25), 0 8px 30px rgba(2,132,199,0.50)",
         }}
         aria-label="Open AI assistant"
       >
-        <Bot size={26} color="#fff" />
-        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-green-400 border-2 border-white animate-pulse" />
+        {/* Glowing pulse ring */}
+        <span
+          className="absolute inset-0 rounded-full animate-ping"
+          style={{ background: "rgba(14,165,233,0.35)", animationDuration: "2s" }}
+        />
+        <PulseAvatar size={38} />
+        {/* Live status dot */}
+        <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-white" />
       </button>
 
       {/* Modal */}
       {open && (
         <div
-          className="fixed z-50 rounded-2xl shadow-2xl flex flex-col"
+          className="fixed rounded-2xl shadow-2xl flex flex-col"
           style={{
             right:  defaultRight - pos.x + 64,
             bottom: defaultBottom - pos.y,
+            zIndex: 9999,
             width:  360,
             maxWidth: "calc(100vw - 24px)",
             maxHeight: "80vh",
@@ -521,10 +570,7 @@ export function AiWidget() {
           <div className="flex items-center justify-between px-4 py-3 border-b"
             style={{ borderColor: T.border }}>
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center"
-                style={{ background: "linear-gradient(135deg,#0284c7,#0ea5e9)" }}>
-                <Zap size={14} color="#fff" />
-              </div>
+              <PulseAvatar size={28} />
               <span className="text-sm font-bold" style={{ color: T.ink }}>PulseRank AI</span>
             </div>
             <div className="flex items-center gap-2">

@@ -738,6 +738,18 @@ const DURATION_PRESETS = [
   { label: "Custom", days: 0 },
 ] as const;
 
+// ── Stream cooldown helper (module-level — outside React, so Date is not "impure render") ──
+
+const STREAM_CD_MS = 30 * 60 * 1000;
+function streamCooldownKey(addr: string) { return `pulserank_stream_cd_${addr.toLowerCase()}`; }
+function streamCooldownRemaining(addr: string): number {
+  const last = parseInt(localStorage.getItem(streamCooldownKey(addr)) ?? "0", 10);
+  return Math.max(0, STREAM_CD_MS - (performance.timeOrigin + performance.now() - last));
+}
+function recordStreamCreated(addr: string) {
+  localStorage.setItem(streamCooldownKey(addr), String(Math.round(performance.timeOrigin + performance.now())));
+}
+
 // ── Funder panel ───────────────────────────────────────────────────────────────
 
 function FunderPanel() {
@@ -779,6 +791,8 @@ function FunderPanel() {
       onSuccess: () => {
         toast.success("Stream proposed successfully! The agent can now accept.");
         setAgentAddr(""); setAmount(""); setSelectedPreset(1); setCustomDays("");
+        // Record timestamp for 30-min cooldown
+        if (address) recordStreamCreated(address);
       },
     });
   }
@@ -790,6 +804,14 @@ function FunderPanel() {
     if (!agentAddr || !/^0x[0-9a-fA-F]{40}$/.test(agentAddr)) { toast.error("Enter a valid agent address."); return; }
     if (!amount || parseFloat(amount) < 0.20) { toast.error("Minimum stream amount is 0.20 USDC."); return; }
     if (durationSecs <= 0) { toast.error("Select a valid stream duration."); return; }
+
+    // 30-minute cooldown between stream creations
+    const remaining = streamCooldownRemaining(address);
+    if (remaining > 0) {
+      const remMins = Math.ceil(remaining / 60_000);
+      toast.error(`Cooldown active — wait ${remMins} more minute${remMins === 1 ? "" : "s"} before creating another stream.`);
+      return;
+    }
 
     const usdcAmount = parseUnits(amount, 6);
     approve({

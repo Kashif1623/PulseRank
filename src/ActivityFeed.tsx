@@ -108,8 +108,23 @@ export interface ActivityFeedHandle {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
+const LS_KEY = "pulserank_feed_events_v1";
+
+function loadCached(): FeedEvent[] {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw) as FeedEvent[];
+  } catch { return []; }
+}
+
+function saveCache(evs: FeedEvent[]) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(evs.slice(0, 200))); } catch { /* quota */ }
+}
+
 export const ActivityFeed = forwardRef<ActivityFeedHandle, Props>(function ActivityFeed({ onEvent }, ref) {
-  const [events, setEvents]         = useState<FeedEvent[]>([]);
+  // Hydrate from localStorage on mount so events survive page refresh
+  const [events, setEvents]         = useState<FeedEvent[]>(() => loadCached());
   const [scanDone, setScanDone]     = useState(false);
   // Stable base timestamp for seed events — initialised once, never mutated.
   const [baseTs]                    = useState(() => 1_000_000_000_000); // fixed epoch, not Date.now()
@@ -123,11 +138,13 @@ export const ActivityFeed = forwardRef<ActivityFeedHandle, Props>(function Activ
     query: { retry: 3, staleTime: 30_000 },
   });
 
-  // Stable push: deduplicates by id, caps at 200, newest first
+  // Stable push: deduplicates by id, caps at 200, newest first, persists to localStorage
   const push = useCallback((ev: FeedEvent) => {
     setEvents(prev => {
       if (prev.some(e => e.id === ev.id)) return prev;
-      return [ev, ...prev].slice(0, 200);
+      const next = [ev, ...prev].slice(0, 200);
+      saveCache(next);
+      return next;
     });
     onEvent?.(ev);
   }, [onEvent]);
@@ -223,7 +240,9 @@ export const ActivityFeed = forwardRef<ActivityFeedHandle, Props>(function Activ
           setEvents(prev => {
             const merged = [...collected, ...prev];
             const seen = new Set<string>();
-            return merged.filter(e => seen.has(e.id) ? false : (seen.add(e.id), true)).slice(0, 200);
+            const next = merged.filter(e => seen.has(e.id) ? false : (seen.add(e.id), true)).slice(0, 200);
+            saveCache(next);
+            return next;
           });
         }
       } catch { /* silently fall through to on-chain fallback */ }
