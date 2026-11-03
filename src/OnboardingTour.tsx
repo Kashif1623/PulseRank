@@ -1,11 +1,11 @@
 /**
  * OnboardingTour — step-by-step guided tour for first-time visitors.
- * Auto-shows once (localStorage key "pulserank_onboarded").
+ * Auto-shows once (localStorage key "pulserank_onboarded" = "true").
  * Can also be triggered manually via the exported triggerTour() or the
  * <TourButton /> component in the nav header.
  */
 
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { X, ChevronRight, ChevronLeft, Zap, User, Wallet, FileText, Trophy } from "lucide-react";
 
 // ── Tour steps ────────────────────────────────────────────────────────────────
@@ -72,14 +72,25 @@ interface Props {
 
 export function OnboardingTour({ forceOpen = false, onClose }: Props) {
   const [step, setStep] = useState(0);
-  // Derive visibility at render time: forced always shows; first-timers see it once
-  const isDismissed = !forceOpen && !!localStorage.getItem(LS_KEY);
-  const visible = !isDismissed;
+  // Own the open state: forced opens (the Tour button remounts this component via `key`)
+  // and first-time visitors start open; every dismiss path flips it to false immediately.
+  const [isOpen, setIsOpen] = useState(() => forceOpen || !localStorage.getItem(LS_KEY));
 
   const close = useCallback(() => {
-    localStorage.setItem(LS_KEY, "1");
+    setIsOpen(false);
+    try { localStorage.setItem(LS_KEY, "true"); } catch { /* storage unavailable */ }
     onClose?.();
   }, [onClose]);
+
+  // Escape closes the tour
+  useEffect(() => {
+    if (!isOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") close();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, close]);
 
   const next = useCallback(() => {
     if (step < STEPS.length - 1) setStep(s => s + 1);
@@ -90,7 +101,7 @@ export function OnboardingTour({ forceOpen = false, onClose }: Props) {
     setStep(s => Math.max(0, s - 1));
   }, []);
 
-  if (!visible) return null;
+  if (!isOpen) return null;
 
   const current = STEPS[step];
   const isLast  = step === STEPS.length - 1;
@@ -102,10 +113,14 @@ export function OnboardingTour({ forceOpen = false, onClose }: Props) {
         className="fixed inset-0"
         style={{ zIndex: 10000, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)" }}
         onClick={close}
+        aria-hidden="true"
       />
 
       {/* Modal */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="PulseRank guided tour"
         className="fixed left-1/2 top-1/2 rounded-3xl shadow-2xl flex flex-col"
         style={{
           zIndex:    10001,
@@ -137,6 +152,7 @@ export function OnboardingTour({ forceOpen = false, onClose }: Props) {
             ))}
           </div>
           <button
+            type="button"
             onClick={close}
             className="p-1.5 rounded-xl hover:bg-sky-50 transition-colors"
             aria-label="Close tour"
