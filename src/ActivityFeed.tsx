@@ -1,67 +1,12 @@
 import { useState, useCallback, useEffect, useRef, useMemo, forwardRef, useImperativeHandle } from "react";
-import { decodeEventLog } from "viem";
 import { usePublicClient, useWatchContractEvent, useReadContract } from "wagmi";
 import { Activity, Zap, CheckCircle, AlertTriangle } from "lucide-react";
-import contractsJson from "./contracts.json";
+import {
+  STREAM_ADDR, TASK_ADDR, STREAM_EVENTS_ABI, TASK_EVENTS_ABI,
+  loadCachedEvents, saveCachedEvents, mergeEvents, runFeedScan, shortAddr,
+} from "./feedScan";
 
-const ARC_MAINNET_ID  = 5042;
-const DEPLOY_BLOCK    = 28710405n;
-const RECENT_BLOCKS   = 10_000n;  // only scan last ~10k blocks on mount (fast)
-const CHUNK           = 1000n;    // smaller chunks for reliability
-const STREAM_ADDR     = contractsJson.contracts.PulseStreamV2.address as `0x${string}`;
-const TASK_ADDR       = contractsJson.contracts.PulseTaskV2.address   as `0x${string}`;
-const STREAM_COUNT_ADDR = contractsJson.contracts.PulseStreamV2.address as `0x${string}`;
-
-// ── ABIs ─────────────────────────────────────────────────────────────────────
-
-const TASK_EVENTS_ABI = [
-  {
-    name: "TaskCreated", type: "event",
-    inputs: [
-      { name: "taskId",   type: "uint256", indexed: true  },
-      { name: "funder",   type: "address", indexed: true  },
-      { name: "agent",    type: "address", indexed: true  },
-      { name: "streamId", type: "uint256", indexed: false },
-    ],
-  },
-] as const;
-
-const STREAM_EVENTS_ABI = [
-  {
-    name: "HeartbeatSent", type: "event",
-    inputs: [
-      { name: "streamId",         type: "uint256", indexed: true  },
-      { name: "timestamp",        type: "uint256", indexed: false },
-      { name: "newEarned",        type: "uint256", indexed: false },
-      { name: "missedHeartbeats", type: "uint256", indexed: false },
-    ],
-  },
-  {
-    name: "StreamCompleted", type: "event",
-    inputs: [
-      { name: "streamId", type: "uint256", indexed: true  },
-      { name: "earned",   type: "uint256", indexed: false },
-      { name: "refund",   type: "uint256", indexed: false },
-    ],
-  },
-  {
-    name: "StreamReclaimed", type: "event",
-    inputs: [
-      { name: "streamId", type: "uint256", indexed: true  },
-      { name: "keeper",   type: "address", indexed: true  },
-      { name: "earned",   type: "uint256", indexed: false },
-      { name: "bounty",   type: "uint256", indexed: false },
-      { name: "refund",   type: "uint256", indexed: false },
-    ],
-  },
-  {
-    name: "StreamActivated", type: "event",
-    inputs: [
-      { name: "streamId",  type: "uint256", indexed: true  },
-      { name: "startTime", type: "uint256", indexed: false },
-    ],
-  },
-] as const;
+const ARC_MAINNET_ID = 5042;
 
 const NEXT_STREAM_ABI = [
   { name: "nextStreamId", type: "function", stateMutability: "view",
@@ -88,8 +33,6 @@ const T = {
   accent: "#0284c7",
 };
 
-function shortAddr(a: string) { return `${a.slice(0, 6)}…${a.slice(-4)}`; }
-
 function KindIcon({ kind, positive }: { kind: FeedEvent["kind"]; positive: boolean }) {
   const col = positive ? "#22c55e" : "#ef4444";
   if (kind === "heartbeat") return <Zap          size={13} style={{ color: col }} />;
@@ -108,23 +51,9 @@ export interface ActivityFeedHandle {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-const LS_KEY = "pulserank_feed_events_v1";
-
-function loadCached(): FeedEvent[] {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as FeedEvent[];
-  } catch { return []; }
-}
-
-function saveCache(evs: FeedEvent[]) {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(evs.slice(0, 200))); } catch { /* quota */ }
-}
-
 export const ActivityFeed = forwardRef<ActivityFeedHandle, Props>(function ActivityFeed({ onEvent }, ref) {
   // Hydrate from localStorage on mount so events survive page refresh
-  const [events, setEvents]         = useState<FeedEvent[]>(() => loadCached());
+  const [events, setEvents]         = useState<FeedEvent[]>(() => loadCachedEvents());
   const [scanDone, setScanDone]     = useState(false);
   // Stable base timestamp for seed events — initialised once, never mutated.
   const [baseTs]                    = useState(() => 1_000_000_000_000); // fixed epoch, not Date.now()
@@ -133,7 +62,7 @@ export const ActivityFeed = forwardRef<ActivityFeedHandle, Props>(function Activ
 
   // On-chain fallback: read nextStreamId to seed synthetic events when logs are empty
   const { data: nextStreamIdRaw } = useReadContract({
-    address: STREAM_COUNT_ADDR, abi: NEXT_STREAM_ABI,
+    address: STREAM_ADDR, abi: NEXT_STREAM_ABI,
     functionName: "nextStreamId", chainId: ARC_MAINNET_ID,
     query: { retry: 3, staleTime: 30_000 },
   });
@@ -142,8 +71,8 @@ export const ActivityFeed = forwardRef<ActivityFeedHandle, Props>(function Activ
   const push = useCallback((ev: FeedEvent) => {
     setEvents(prev => {
       if (prev.some(e => e.id === ev.id)) return prev;
-      const next = [ev, ...prev].slice(0, 200);
-      saveCache(next);
+      const next = mergeEvents([ev], prev);
+      saveCachedEvents(next);
       return next;
     });
     onEvent?.(ev);
@@ -151,108 +80,26 @@ export const ActivityFeed = forwardRef<ActivityFeedHandle, Props>(function Activ
 
   useImperativeHandle(ref, () => ({ push }), [push]);
 
-  // ── Historical fetch: recent blocks only, 2s hard timeout ─────────────────
+  // ── Historical fetch ──────────────────────────────────────────────────────
+  // 1) Replay cached events to the parent (chart) immediately so a refresh never
+  //    shows an empty chart.  2) Scan RPC logs from the deployment block (only the
+  //    blocks after the saved cursor), merge, and replay to the chart as well.
   useEffect(() => {
     if (fetchedRef.current || !client) return;
     fetchedRef.current = true;
 
-    // Hard 2-second abort — if RPC is slow, skip and use fallback immediately
-    const abortTimer = setTimeout(() => setScanDone(true), 2000);
-
     void (async () => {
+      loadCachedEvents().forEach(ev => onEvent?.(ev));
       try {
-        const latest = await Promise.race([
-          client.getBlockNumber(),
-          new Promise<never>((_, rej) => setTimeout(() => rej(new Error("rpc-timeout")), 1500)),
-        ]);
-
-        // Only scan last RECENT_BLOCKS — fast, avoids 256k-block timeout
-        const fromBlock = latest > DEPLOY_BLOCK + RECENT_BLOCKS
-          ? latest - RECENT_BLOCKS
-          : DEPLOY_BLOCK;
-
-        const collected: FeedEvent[] = [];
-
-        async function scanAddress(address: `0x${string}`, isStream: boolean) {
-          let from = fromBlock;
-          while (from <= latest) {
-            const to = from + CHUNK - 1n < latest ? from + CHUNK - 1n : latest;
-            try {
-              const logs = await client!.getLogs({ address, fromBlock: from, toBlock: to });
-              for (const log of logs) {
-                try {
-                  const decoded = decodeEventLog({
-                    abi:    isStream ? STREAM_EVENTS_ABI : TASK_EVENTS_ABI,
-                    data:   log.data,
-                    topics: log.topics,
-                  });
-                  const txId = log.transactionHash ?? "x";
-                  const bn   = log.blockNumber ?? undefined;
-                  const args = decoded.args as Record<string, unknown>;
-
-                  if (decoded.eventName === "HeartbeatSent") {
-                    collected.push({
-                      id: `hb-${txId}-${log.logIndex}`, kind: "heartbeat", positive: true,
-                      label:  `Heartbeat OK — Stream #${(args.streamId as bigint | undefined)?.toString() ?? "?"}`,
-                      detail: `Missed: ${(args.missedHeartbeats as bigint | undefined)?.toString() ?? "0"}`,
-                      ts:     Number((args.timestamp as bigint | undefined) ?? 0n) * 1000 || Date.now(),
-                      blockNumber: bn,
-                    });
-                  } else if (decoded.eventName === "StreamCompleted") {
-                    collected.push({
-                      id: `sc-${txId}-${log.logIndex}`, kind: "completed", positive: true,
-                      label:  `Stream #${(args.streamId as bigint | undefined)?.toString() ?? "?"} Completed`,
-                      detail: "All funds settled", ts: Date.now(), blockNumber: bn,
-                    });
-                  } else if (decoded.eventName === "StreamReclaimed") {
-                    collected.push({
-                      id: `sr-${txId}-${log.logIndex}`, kind: "reclaimed", positive: false,
-                      label:  `Stream #${(args.streamId as bigint | undefined)?.toString() ?? "?"} Reclaimed`,
-                      detail: `Keeper: ${args.keeper ? shortAddr(args.keeper as string) : "?"}`,
-                      ts: Date.now(), blockNumber: bn,
-                    });
-                  } else if (decoded.eventName === "TaskCreated") {
-                    collected.push({
-                      id: `tc-${txId}-${log.logIndex}`, kind: "task", positive: true,
-                      label:  `Task #${(args.taskId as bigint | undefined)?.toString() ?? "?"} Created`,
-                      detail: `Agent ${args.agent ? shortAddr(args.agent as string) : "?"}`,
-                      ts: Date.now(), blockNumber: bn,
-                    });
-                  } else if (decoded.eventName === "StreamActivated") {
-                    collected.push({
-                      id: `sa-${txId}-${log.logIndex}`, kind: "task", positive: true,
-                      label:  `Stream #${(args.streamId as bigint | undefined)?.toString() ?? "?"} Activated`,
-                      detail: "Agent accepted stream", ts: Date.now(), blockNumber: bn,
-                    });
-                  }
-                } catch { /* unknown topic — skip */ }
-              }
-            } catch { /* chunk failed — skip and continue */ }
-            from = to + 1n;
-          }
+        const scanned = await runFeedScan(client);
+        if (scanned.length > 0) {
+          setEvents(prev => mergeEvents(scanned, prev));
+          scanned.forEach(ev => onEvent?.(ev));
         }
-
-        await scanAddress(STREAM_ADDR, true);
-        await scanAddress(TASK_ADDR,   false);
-
-        if (collected.length > 0) {
-          collected.sort((a, b) => Number((b.blockNumber ?? 0n) - (a.blockNumber ?? 0n)));
-          setEvents(prev => {
-            const merged = [...collected, ...prev];
-            const seen = new Set<string>();
-            const next = merged.filter(e => seen.has(e.id) ? false : (seen.add(e.id), true)).slice(0, 200);
-            saveCache(next);
-            return next;
-          });
-        }
-      } catch { /* silently fall through to on-chain fallback */ }
-
-      clearTimeout(abortTimer);
+      } catch { /* RPC unavailable: cached events stay visible */ }
       setScanDone(true);
     })();
-
-    return () => clearTimeout(abortTimer);
-  }, [client, push]);
+  }, [client, onEvent]);
 
   // ── On-chain fallback: derive seed events from nextStreamId during render ───
   // This is intentionally a derived value (not an effect) so it never triggers
@@ -336,6 +183,39 @@ export const ActivityFeed = forwardRef<ActivityFeedHandle, Props>(function Activ
           label: `Task #${taskId?.toString() ?? "?"} Created`,
           detail: `Agent ${agent ? shortAddr(agent) : "?"}`,
           ts: Date.now(), blockNumber: log.blockNumber ?? undefined,
+        });
+      });
+    },
+  });
+
+  useWatchContractEvent({
+    address: STREAM_ADDR, abi: STREAM_EVENTS_ABI,
+    eventName: "StreamActivated", chainId: ARC_MAINNET_ID,
+    onLogs(logs) {
+      logs.forEach(log => {
+        push({
+          id: `sa-${log.transactionHash}-${log.logIndex}`,
+          kind: "task", positive: true,
+          label: `Stream #${log.args.streamId?.toString() ?? "?"} Activated`,
+          detail: "Agent accepted stream", ts: Date.now(),
+          blockNumber: log.blockNumber ?? undefined,
+        });
+      });
+    },
+  });
+
+  useWatchContractEvent({
+    address: STREAM_ADDR, abi: STREAM_EVENTS_ABI,
+    eventName: "StreamProposed", chainId: ARC_MAINNET_ID,
+    onLogs(logs) {
+      logs.forEach(log => {
+        const { streamId, agent } = log.args;
+        push({
+          id: `sp-${log.transactionHash}-${log.logIndex}`,
+          kind: "task", positive: true,
+          label: `Stream #${streamId?.toString() ?? "?"} Proposed`,
+          detail: agent ? `Agent ${shortAddr(agent)}` : "New stream", ts: Date.now(),
+          blockNumber: log.blockNumber ?? undefined,
         });
       });
     },

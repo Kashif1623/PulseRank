@@ -516,7 +516,7 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
   const handleEvent = useCallback((ev: FeedEvent) => {
     setFeedEvents(prev => {
       if (prev.some(e => e.id === ev.id)) return prev;
-      return [ev, ...prev].slice(0, 80);
+      return [ev, ...prev].slice(0, 300);
     });
   }, []);
 

@@ -96,6 +96,19 @@ const ACCEPT_STREAM_ABI = [
   },
 ] as const;
 
+const GET_MODE_CONFIG_ABI = [
+  {
+    name: "getModeConfig",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "mode", type: "uint8" }],
+    outputs: [
+      { name: "heartbeatInterval", type: "uint256" },
+      { name: "gracePeriod",       type: "uint256" },
+    ],
+  },
+] as const;
+
 const SEND_HEARTBEAT_ABI = [
   {
     name: "sendHeartbeat",
@@ -173,28 +186,51 @@ function fmtCountdown(secs: number): string {
 // ── HeartbeatButton ───────────────────────────────────────────────────────────
 
 function HeartbeatButton({
-  streamId, lastHeartbeat, mode, onSent,
+  streamId, lastHeartbeat, startTime, durationSecs, mode, onSent,
 }: {
   streamId: number;
   lastHeartbeat: bigint;
+  startTime: bigint;
+  durationSecs: bigint;
   mode: number;
   onSent?: () => void;
 }) {
   const [nowSec, setNowSec] = useState(() => Math.floor(Date.now() / 1000));
   useEffect(() => {
-    const id = setInterval(() => setNowSec(Math.floor(Date.now() / 1000)), 5_000);
+    const id = setInterval(() => setNowSec(Math.floor(Date.now() / 1000)), 1_000);
     return () => clearInterval(id);
   }, []);
 
-  const interval = MODE_INTERVAL[mode] ?? 1800;
+  // The contract accepts a heartbeat only once `heartbeatInterval` seconds have passed since
+  // the last one (or since activation). Read the live value instead of trusting a constant.
+  const { data: modeCfg } = useReadContract({
+    address: STREAM_CONTRACT,
+    abi: GET_MODE_CONFIG_ABI,
+    functionName: "getModeConfig",
+    args: [mode],
+    chainId: ARC_MAINNET_ID,
+    query: { staleTime: 60_000 },
+  });
+  const interval = modeCfg ? Number(modeCfg[0]) : (MODE_INTERVAL[mode] ?? 1800);
   const nextAt   = Number(lastHeartbeat) + interval;
   const secsLeft = Math.max(0, nextAt - nowSec);
-  // Always show active button — contract enforces HeartbeatTooEarly on-chain.
-  // Show countdown as a secondary hint only; never disable the button for timing.
+  const endsAt   = Number(startTime) + Number(durationSecs);
+  // True when the stream will already be over by the time the first heartbeat is allowed.
+  const tooShort = nextAt >= endsAt;
 
   const { writeContract, isPending: sending } = useWriteContract();
 
   function handleHeartbeat() {
+    // A call made before the window opens is guaranteed to revert (HeartbeatTooEarly),
+    // so explain it instead of sending a transaction that can only fail.
+    if (secsLeft > 10) {
+      toast.warning(
+        tooShort
+          ? `This stream ends before the first heartbeat window opens (${fmtCountdown(secsLeft)} from now).`
+          : `Heartbeat window opens in ${fmtCountdown(secsLeft)}.`,
+      );
+      return;
+    }
     writeContract(
       {
         address: STREAM_CONTRACT,
@@ -219,25 +255,35 @@ function HeartbeatButton({
   }
 
   return (
-    <button
-      onClick={handleHeartbeat}
-      disabled={sending}
-      title={secsLeft > 0 ? `Next interval in ${fmtCountdown(secsLeft)} — contract will enforce` : "Send heartbeat now"}
-      className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-      style={{
-        background: "linear-gradient(135deg,#0284c7,#06b6d4)",
-        color:      "#fff",
-        boxShadow:  "0 3px 12px rgba(2,132,199,0.30)",
-        border:     "1px solid rgba(186,230,253,0.70)",
-      }}
-    >
-      {sending ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
-      {sending
-        ? "Waiting for wallet…"
-        : secsLeft > 0
-          ? `⚡ Send Heartbeat (next in ${fmtCountdown(secsLeft)})`
-          : "⚡ Send Manual Heartbeat"}
-    </button>
+    <div>
+      <button
+        onClick={handleHeartbeat}
+        disabled={sending}
+        title={secsLeft > 0 ? `Heartbeat window opens in ${fmtCountdown(secsLeft)}` : "Send heartbeat now"}
+        className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{
+          background: "linear-gradient(135deg,#0284c7,#06b6d4)",
+          color:      "#fff",
+          boxShadow:  "0 3px 12px rgba(2,132,199,0.30)",
+          border:     "1px solid rgba(186,230,253,0.70)",
+          opacity:    secsLeft > 10 ? 0.75 : 1,
+        }}
+      >
+        {sending ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
+        {sending
+          ? "Waiting for wallet…"
+          : secsLeft > 0
+            ? `⚡ Send Heartbeat (opens in ${fmtCountdown(secsLeft)})`
+            : "⚡ Send Manual Heartbeat"}
+      </button>
+      {tooShort && (
+        <p className="mt-1.5 text-xs leading-snug" style={{ color: "#b45309" }}>
+          This stream is shorter than its {MODE_LABEL[mode] ?? ""} heartbeat interval ({fmtCountdown(interval)}).
+          The contract only accepts a heartbeat {fmtCountdown(interval)} after activation, so none can be recorded
+          before it ends. Use a longer duration to record heartbeats.
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -675,6 +721,8 @@ export function StreamCard({
         <HeartbeatButton
           streamId={stream.streamId}
           lastHeartbeat={stream.lastHeartbeat}
+          startTime={stream.startTime}
+          durationSecs={stream.durationSecs}
           mode={stream.mode}
           onSent={handleHeartbeatSent}
         />
