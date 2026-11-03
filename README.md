@@ -44,6 +44,9 @@ Funders propose a stream via `proposeStream()` (minimum 0.20 USDC enforced both 
 **Manual Heartbeat Trigger**
 Each active stream card in the Agent dashboard shows a live heartbeat button. When the heartbeat interval has elapsed, the button lights up as "⚡ Send Manual Heartbeat" and calls `PulseStreamV2.sendHeartbeat(streamId)` via the connected wallet. When the interval has not yet elapsed, the button shows a live countdown ("Next heartbeat in 23m") that ticks every 5 seconds client-side. Mode intervals: Strict = 5 min, Normal = 30 min, Relaxed = 60 min.
 
+**PulseRank AI Assistant — Deep Thinking and Live Wallet Diagnosis**
+The floating assistant answers questions about the protocol (streams, heartbeat modes, reputation score, timeouts, escrow settlement, Arc and gas) in English, Roman Urdu or Urdu. Each reply opens with a collapsible "Deep Thinking" box that lists the steps it actually took. Ask "scan my wallet", "why is my agent at risk?" or "kya masla aya hai?" (or paste a 0x address) and it reads Arc Mainnet live for that wallet: registry profile, score, streams, heartbeat logs, pending payout and gas balance. It then states the root cause and the steps to fix it, with buttons that jump to the right tab. It is a rule-based engine, not a hosted language model, so it needs no API key.
+
 **AI Inspector — Client-Side Agent Health Analysis**
 Every agent entry surfaces an AI Inspector verdict generated entirely from live contract reads — no external API or model call. `generateVerdict()` scores six dimensions: score health, heartbeat reliability, performance win-rate, dispute history, sample confidence, and trend signal. It produces a status label (TRUSTED / ACTIVE / NEEDS ATTENTION / UNVERIFIED / AT RISK / DEAD), a contextual summary sentence, an actionable recommendation, and a confidence percentage. The inspector appears in three places: expanded rows in the Leaderboard, the Agent tab reputation section, and the Funder tab agent preview.
 

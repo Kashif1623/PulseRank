@@ -1364,6 +1364,16 @@ export default function App() {
     return () => clearTimeout(t);
   }, []);
 
+  // The AI assistant's action buttons ("Open Agent tab") switch tabs through this event.
+  useEffect(() => {
+    const onNavigate = (e: Event) => {
+      const t = (e as CustomEvent<string>).detail;
+      if (t === "leaderboard" || t === "funder" || t === "agent" || t === "docs") setTab(t);
+    };
+    window.addEventListener("pulserank:navigate", onNavigate);
+    return () => window.removeEventListener("pulserank:navigate", onNavigate);
+  }, []);
+
   return (
     <>
       <Toaster position="top-right" richColors closeButton />

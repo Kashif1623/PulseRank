@@ -93,7 +93,7 @@ export function OnboardingTour({ forceOpen = false, onClose }: Props) {
   }, [isOpen, close]);
 
   const next = useCallback(() => {
-    if (step < STEPS.length - 1) setStep(s => s + 1);
+    if (step < STEPS.length - 1) setStep(s => Math.min(STEPS.length - 1, s + 1));
     else close();
   }, [step, close]);
 
