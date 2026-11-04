@@ -15,6 +15,7 @@
  * behaviour is always preserved.
  * Built with Arc Studio — https://studio.arc.io
  */
+import { redactDeep } from './redact';
 
 type ConsoleLevel = 'log' | 'info' | 'warn' | 'error' | 'debug';
 
@@ -136,7 +137,7 @@ let _dropped = 0;
 
 function send(entry: ConsoleLogEntry): void {
   try {
-    window.parent.postMessage({ type: MESSAGE_TYPE, entry }, _parentOrigin);
+    window.parent.postMessage({ type: MESSAGE_TYPE, entry: redactDeep(entry) }, _parentOrigin);
   } catch {
     /* ignore — postMessage can throw on cross-origin edge cases */
   }

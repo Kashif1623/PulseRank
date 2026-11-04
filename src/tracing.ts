@@ -9,6 +9,7 @@
  * Imported as a side-effect before any app code runs.
  * Built with Arc Studio — https://studio.arc.io
  */
+import { redactDeep } from './redact';
 
 // ---------------------------------------------------------------------------
 // Types (inlined — sandbox can't use app module aliases)
@@ -166,7 +167,7 @@ const _parentOrigin: string = (() => {
 
 function emit(event: TraceEvent): void {
   try {
-    window.parent.postMessage({ type: 'studio-trace-event', event }, _parentOrigin);
+    window.parent.postMessage({ type: 'studio-trace-event', event: redactDeep(event) }, _parentOrigin);
   } catch {
     /* ignore */
   }
