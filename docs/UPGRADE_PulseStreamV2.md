@@ -27,3 +27,29 @@ You run these steps yourself, from your own machine and wallet. Mainnet transact
 5. `bun run check`, then commit and push. The AI assistant, diagnostics, stream cards and event feed all read the address from `src/contracts.json`.
 
 Do not publish the app against the new address before step 2 is done. Until Score is relinked, activating a stream reverts.
+
+---
+
+## Circle-signed route (no raw private key)
+
+Use this when you want the existing Circle wallet (`0x1bc3…2e8`, which already owns Score and Task) to sign the deploy and the relink.
+
+Notes:
+- The plain `scripts/self-deploy.ts` engine is testnet-only, and the fork-verified `compass:deploy` engine only exists inside Arc Studio, so neither runs on your machine. `scripts/deploy-stream-circle.ts` uses only Circle's public SDK.
+- Your Circle account must be enabled for mainnet, or the API will reject chain `ARC`.
+- Keep some USDC in the Circle wallet. It pays gas for the deploy **and** for the two relink transactions.
+
+Run on your own machine, in a checkout of `main` with `CIRCLE_API_KEY` and `CIRCLE_ENTITY_SECRET` in `.env` (or exported):
+
+```bash
+bun install
+forge build
+bun run scripts/deploy-stream-circle.ts             # dry run, sends nothing
+bun run scripts/deploy-stream-circle.ts --confirm   # type DEPLOY to send
+bun run scripts/link-stream.ts --stream <NEW_ADDRESS>
+bun run scripts/verify-stream-links.ts --stream <NEW_ADDRESS>   # every line must PASS
+```
+
+Then send the address, deploy tx hash and deploy block back, or run the `deploy:patch` command the script prints.
+
+A fork rehearsal of this exact contract against real Arc Mainnet state passed 30 integration checks. The test script is `contracts/test-integration/PulseStreamV2.integration.test.ts`.
