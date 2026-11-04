@@ -19,6 +19,14 @@ export const TASK_ADDR   = contractsJson.contracts.PulseTaskV2.address   as `0x$
 export const STREAM_DEPLOY_BLOCK = 29_210_038n;
 export const TASK_DEPLOY_BLOCK   = 29_209_925n;
 
+/**
+ * Previously deployed PulseStreamV2 contracts. Their history stays in the feed and chart
+ * after a redeploy. `bun run deploy:patch` appends the outgoing stream here.
+ */
+export const LEGACY_STREAMS: { address: `0x${string}`; fromBlock: bigint }[] = [
+  // legacy-streams:append
+];
+
 export const STREAM_EVENTS_ABI = [
   {
     name: "StreamProposed", type: "event",
@@ -83,7 +91,7 @@ export const TASK_EVENTS_ABI = [
 // ── Cache ────────────────────────────────────────────────────────────────────
 
 export const LS_EVENTS_KEY = "pulserank_feed_events_v1";
-const LS_CURSOR_KEY = "pulserank_feed_scan_v2";
+const LS_CURSOR_KEY = "pulserank_feed_scan_v3";
 const MAX_EVENTS = 200;
 
 export function shortAddr(a: string) { return `${a.slice(0, 6)}…${a.slice(-4)}`; }
@@ -124,12 +132,13 @@ export function saveCachedEvents(evs: FeedEvent[]) {
   } catch { /* quota / private mode */ }
 }
 
-type Cursor = { stream: string; task: string };
-function loadCursor(): Cursor | null {
+/** Last fully scanned block per contract address (lower-cased). */
+type Cursor = Record<string, string>;
+function loadCursor(): Cursor {
   try {
     const raw = localStorage.getItem(LS_CURSOR_KEY);
-    return raw ? (JSON.parse(raw) as Cursor) : null;
-  } catch { return null; }
+    return raw ? (JSON.parse(raw) as Cursor) : {};
+  } catch { return {}; }
 }
 function saveCursor(c: Cursor) {
   try { localStorage.setItem(LS_CURSOR_KEY, JSON.stringify(c)); } catch { /* ignore */ }
@@ -233,44 +242,67 @@ function toFeedEvent(r: Raw): FeedEvent | null {
   }
 }
 
-async function doScan(client: ScanClient): Promise<FeedEvent[]> {
-  const latest = await client.getBlockNumber();
-  const cursor = loadCursor();
-  const next = (saved: string | undefined, floor: bigint) =>
-    saved !== undefined && BigInt(saved) + 1n > floor ? BigInt(saved) + 1n : floor;
-  const sFrom = next(cursor?.stream, STREAM_DEPLOY_BLOCK);
-  const tFrom = next(cursor?.task,   TASK_DEPLOY_BLOCK);
+type DecodedLog = {
+  eventName:       string;
+  args:            unknown;
+  blockNumber:     bigint | null;
+  transactionHash: string | null;
+  logIndex:        number | null;
+};
 
-  const [s, t] = await Promise.all([
-    scanRange(
-      (fromBlock, toBlock) => client.getLogs({ address: STREAM_ADDR, events: STREAM_EVENTS_ABI, fromBlock, toBlock }),
-      sFrom, latest),
-    scanRange(
-      (fromBlock, toBlock) => client.getLogs({ address: TASK_ADDR, events: TASK_EVENTS_ABI, fromBlock, toBlock }),
-      tFrom, latest),
-  ]);
-
-  const raws: Raw[] = [...s.logs, ...t.logs].flatMap(l =>
+function toRaws(logs: DecodedLog[]): Raw[] {
+  return logs.flatMap(l =>
     l.blockNumber === null || l.transactionHash === null || l.logIndex === null
       ? []
       : [{
           name:  l.eventName,
-          args:  l.args,
+          args:  (l.args ?? {}) as Record<string, unknown>,
           tx:    l.transactionHash,
           idx:   l.logIndex,
           block: l.blockNumber,
         }],
   );
+}
+
+async function doScan(client: ScanClient): Promise<FeedEvent[]> {
+  const latest = await client.getBlockNumber();
+  const cursor = loadCursor();
+  const startFor = (address: string, floor: bigint) => {
+    const saved = cursor[address.toLowerCase()];
+    return saved !== undefined && BigInt(saved) + 1n > floor ? BigInt(saved) + 1n : floor;
+  };
+
+  const streamTargets = [
+    { address: STREAM_ADDR, floor: STREAM_DEPLOY_BLOCK },
+    ...LEGACY_STREAMS.map(l => ({ address: l.address, floor: l.fromBlock })),
+  ];
+
+  const streamScans = await Promise.all(streamTargets.map(async t => {
+    const from = startFor(t.address, t.floor);
+    const r = await scanRange(
+      (fromBlock, toBlock) => client.getLogs({ address: t.address, events: STREAM_EVENTS_ABI, fromBlock, toBlock }),
+      from, latest);
+    return { address: t.address, from, scannedTo: r.scannedTo, raws: toRaws(r.logs) };
+  }));
+
+  const taskFrom = startFor(TASK_ADDR, TASK_DEPLOY_BLOCK);
+  const taskScan = await scanRange(
+    (fromBlock, toBlock) => client.getLogs({ address: TASK_ADDR, events: TASK_EVENTS_ABI, fromBlock, toBlock }),
+    taskFrom, latest);
+
+  const raws: Raw[] = [...streamScans.flatMap(s => s.raws), ...toRaws(taskScan.logs)];
 
   await resolveBlockTimes(client, raws.map(r => r.block));
   const events = raws.flatMap(r => { const e = toFeedEvent(r); return e ? [e] : []; });
 
-  // Persist events first, then advance the cursor, so a gap can never appear.
+  // Persist events first, then advance the cursors, so a gap can never appear.
   saveCachedEvents(events);
-  saveCursor({
-    stream: (s.scannedTo >= sFrom ? s.scannedTo : sFrom - 1n).toString(),
-    task:   (t.scannedTo >= tFrom ? t.scannedTo : tFrom - 1n).toString(),
-  });
+  const next: Cursor = { ...cursor };
+  for (const s of streamScans) {
+    if (s.scannedTo >= s.from) next[s.address.toLowerCase()] = s.scannedTo.toString();
+  }
+  if (taskScan.scannedTo >= taskFrom) next[TASK_ADDR.toLowerCase()] = taskScan.scannedTo.toString();
+  saveCursor(next);
   return events;
 }
 

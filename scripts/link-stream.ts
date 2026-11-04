@@ -21,9 +21,16 @@ const API_KEY       = envVar("CIRCLE_API_KEY");
 const ENTITY_SECRET = envVar("CIRCLE_ENTITY_SECRET");
 const WALLET_ID     = "95db8cf1-cfed-5301-92ab-f562aa2d284b";
 
-const NEW_STREAM  = "0x6f617A19Bc676BffAb6ba857062c43d52f669613";
-const SCORE_ADDR  = "0x418FC1385B55Bd1b26B0c5B7094502ed094864Ce";
-const TASK_ADDR   = "0x8f893D6ad7fa39C881468C556c279b56306C193B";
+// Addresses come from src/contracts.json (run `bun run deploy:patch` first), or pass
+// --stream 0x... to link a specific PulseStreamV2.
+const contracts = (JSON.parse(readFileSync(resolve(ROOT, "src/contracts.json"), "utf8")) as {
+  contracts: Record<string, { address: string }>;
+}).contracts;
+const streamArgIdx = process.argv.indexOf("--stream");
+const NEW_STREAM  = streamArgIdx !== -1 ? process.argv[streamArgIdx + 1] : contracts.PulseStreamV2.address;
+const SCORE_ADDR  = contracts.PulseScoreV2.address;
+const TASK_ADDR   = contracts.PulseTaskV2.address;
+if (!/^0x[0-9a-fA-F]{40}$/.test(NEW_STREAM)) throw new Error(`Invalid stream address: ${NEW_STREAM}`);
 
 // keccak256("setPulseStream(address)")[0..4] = 0xd2eee8e4
 function encodeCalldata(streamAddress: string): string {

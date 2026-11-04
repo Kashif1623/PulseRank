@@ -21,6 +21,7 @@ import { ActivityFeed, type FeedEvent, type ActivityFeedHandle } from "./Activit
 import { AiWidget } from "./AiWidget";
 import { ActivityChart } from "./ActivityChart";
 import { OnboardingTour, TourButton } from "./OnboardingTour";
+import { StreamAgainContext, durationToForm, type StreamPrefill } from "./StreamAgainContext";
 
 // ── Chain / contract constants ─────────────────────────────────────────────────
 
@@ -788,13 +789,15 @@ function recordStreamCreated(addr: string) {
 
 // ── Funder panel ───────────────────────────────────────────────────────────────
 
-function FunderPanel() {
+function FunderPanel({ prefill }: { prefill?: StreamPrefill | null }) {
   const { address, isConnected } = useAccount();
-  const [agentAddr,     setAgentAddr]     = useState("");
-  const [amount,        setAmount]        = useState("");
-  const [selectedMode,  setSelectedMode]  = useState<1 | 2 | 3>(2);
-  const [durationVal,  setDurationVal]  = useState("");
-  const [durationUnit, setDurationUnit] = useState<"minutes" | "days">("minutes");
+  // "Stream Again" remounts this panel (via key) with the previous stream's parameters.
+  const initialDuration = prefill ? durationToForm(prefill.durationSecs) : null;
+  const [agentAddr,     setAgentAddr]     = useState(prefill?.agent ?? "");
+  const [amount,        setAmount]        = useState(prefill?.amount ?? "");
+  const [selectedMode,  setSelectedMode]  = useState<1 | 2 | 3>(prefill?.mode ?? 2);
+  const [durationVal,  setDurationVal]  = useState(initialDuration?.value ?? "");
+  const [durationUnit, setDurationUnit] = useState<"minutes" | "days">(initialDuration?.unit ?? "minutes");
 
   const durationNum  = parseFloat(durationVal) || 0;
   const durationSecs = Math.round(durationNum * (durationUnit === "minutes" ? 60 : 86400));
@@ -1358,6 +1361,13 @@ export default function App() {
   const [splash,    setSplash]   = useState(true);
   const [tourOpen,  setTourOpen] = useState(false);
   const [tourKey,   setTourKey]  = useState(0);
+  // "Stream Again": a finished stream's parameters, plus a counter that remounts the form
+  const [prefill,   setPrefill]  = useState<{ data: StreamPrefill; nonce: number } | null>(null);
+  const handleStreamAgain = useCallback((p: StreamPrefill) => {
+    setPrefill(prev => ({ data: p, nonce: (prev?.nonce ?? 0) + 1 }));
+    setTab("funder");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => setSplash(false), 2200);
@@ -1413,12 +1423,14 @@ export default function App() {
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-5 max-w-4xl mx-auto w-full">
-          {tab === "leaderboard" && <LeaderboardPanel setTab={setTab} />}
-          {tab === "funder"      && <FunderPanel />}
-          {tab === "agent"       && <AgentPanel />}
-          {tab === "docs"        && <DocsPanel />}
-        </main>
+        <StreamAgainContext.Provider value={handleStreamAgain}>
+          <main className="flex-1 px-4 py-5 max-w-4xl mx-auto w-full">
+            {tab === "leaderboard" && <LeaderboardPanel setTab={setTab} />}
+            {tab === "funder"      && <FunderPanel key={prefill?.nonce ?? 0} prefill={prefill?.data} />}
+            {tab === "agent"       && <AgentPanel />}
+            {tab === "docs"        && <DocsPanel />}
+          </main>
+        </StreamAgainContext.Provider>
 
         <ContractBar />
 

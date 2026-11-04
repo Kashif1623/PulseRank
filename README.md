@@ -41,6 +41,9 @@ Any caller can invoke `cancelTimedOutStream()` once an agent misses its heartbea
 **Stream Lifecycle — Proposal and Agent Acceptance**
 Funders propose a stream via `proposeStream()` (minimum 0.20 USDC enforced both on-chain and in the UI). The stream sits in `Proposed` state until the assigned agent calls `acceptStream()`, which starts time accrual. The UI shows an "✅ Accept Stream" button on every Proposed card in the Agent dashboard. Early-exit is available via `triggerReclaim()` (participant-only) or `cancelTimedOutStream()` (permissionless, after timeout).
 
+**Self-Streams, Claim Earnings and Stream Again** (upgraded contract)
+When you stream to your own agent wallet, the stream starts Active straight away with no Accept step. When a stream's time is up, the card shows **Claim Earnings** (agent) or **Settle & Reclaim Unspent USDC** (funder), then **Withdraw** to send the USDC to your wallet. A finished stream also offers **Stream Again & Boost Score**, which opens the Funder form pre-filled with the same agent, amount, duration and mode. A stream can only be settled once.
+
 **Manual Heartbeat Trigger**
 Each active stream card in the Agent dashboard shows a live heartbeat button. When the heartbeat interval has elapsed, the button lights up as "⚡ Send Manual Heartbeat" and calls `PulseStreamV2.sendHeartbeat(streamId)` via the connected wallet. When the interval has not yet elapsed, the button shows a live countdown ("Next heartbeat in 23m") that ticks every 5 seconds client-side. Mode intervals: Strict = 5 min, Normal = 30 min, Relaxed = 60 min.
 
@@ -50,8 +53,12 @@ The floating assistant answers questions about the protocol (streams, heartbeat 
 **AI Inspector — Client-Side Agent Health Analysis**
 Every agent entry surfaces an AI Inspector verdict generated entirely from live contract reads — no external API or model call. `generateVerdict()` scores six dimensions: score health, heartbeat reliability, performance win-rate, dispute history, sample confidence, and trend signal. It produces a status label (TRUSTED / ACTIVE / NEEDS ATTENTION / UNVERIFIED / AT RISK / DEAD), a contextual summary sentence, an actionable recommendation, and a confidence percentage. The inspector appears in three places: expanded rows in the Leaderboard, the Agent tab reputation section, and the Funder tab agent preview.
 
-**Event-Driven Candlestick Chart and Historical Indexing**
-The Protocol Activity chart plots real on-chain events into 2-hour candles: green for heartbeats and completions, red for reclaims and penalties. On first load, `ActivityFeed` performs a non-blocking background scan from deploy block `28710405` to the chain tip in 2000-block chunks, fetching `HeartbeatSent`, `StreamCompleted`, `StreamReclaimed`, and `TaskCreated` events from both `PulseStreamV2` and `PulseTaskV2`. Events are decoded with viem's `decodeEventLog`, deduplicated, sorted by block descending, and merged with the live `useWatchContractEvent` stream. The UI never blocks on this scan — if the RPC is slow or the scan fails, live watchers continue unaffected and the chart shows a clean empty state until events arrive.
+**Event-Driven Candlestick Chart and Persistent Activity Feed**
+The Protocol Activity chart plots real on-chain events into daily candles: green for heartbeats, activations and completions, red for reclaims. The feed reads the contracts' event logs from their deployment blocks (never from block 0), remembers how far it has scanned, and keeps a local copy so a page refresh never empties the chart or the feed. Streams from previously deployed stream contracts stay in the history.
+
+## Upgrading the stream contract
+
+See [docs/UPGRADE_PulseStreamV2.md](docs/UPGRADE_PulseStreamV2.md) for the deploy, relink, verify and `deploy:patch` steps.
 
 ---
 

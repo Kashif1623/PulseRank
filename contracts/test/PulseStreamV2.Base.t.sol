@@ -99,6 +99,23 @@ abstract contract PulseStreamV2TestBase is Test {
         return _createActiveStream(TOTAL_AMOUNT, DURATION, 0);
     }
 
+    /// @dev Funder proposes a stream to `agent` (stays Proposed). Funder must hold USDC.
+    function _proposeStream(uint256 totalAmount, uint256 durationSecs) internal returns (uint256 streamId) {
+        vm.startPrank(funder);
+        usdc.approve(address(stream), totalAmount);
+        streamId = stream.proposeStream(agent, totalAmount, durationSecs, MODE, 0);
+        vm.stopPrank();
+    }
+
+    /// @dev Registered agent funds a stream to itself (created directly Active).
+    function _createSelfStream(uint256 totalAmount, uint256 durationSecs) internal returns (uint256 streamId) {
+        usdc.mint(agent, totalAmount);
+        vm.startPrank(agent);
+        usdc.approve(address(stream), totalAmount);
+        streamId = stream.proposeStream(agent, totalAmount, durationSecs, MODE, 0);
+        vm.stopPrank();
+    }
+
     /// @dev Warps past the timeout threshold for a stream.
     function _warpToTimeout(uint256 streamId) internal {
         PulseStreamV2.Stream memory s = stream.getStream(streamId);

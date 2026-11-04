@@ -2,6 +2,7 @@
 pragma solidity 0.8.28;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
@@ -13,7 +14,7 @@ import {IPulseDisputeV2, IPulseStreamV2, IPulseTaskV2, VerificationMethod} from 
 
 /// @title PulseStreamV2
 /// @notice Core PulseRank v2 streaming escrow and payout settlement contract.
-contract PulseStreamV2 is ReentrancyGuard, Ownable, IPulseStreamV2 {
+contract PulseStreamV2 is ReentrancyGuard, Ownable2Step, IPulseStreamV2 {
     using SafeERC20 for IERC20;
 
     uint256 public constant MIN_AMOUNT = 200_000;
@@ -96,6 +97,7 @@ contract PulseStreamV2 is ReentrancyGuard, Ownable, IPulseStreamV2 {
     error TimelockNotExpired();
     error StreamNotTimedOut();
     error TreasuryNotSet();
+    error RenounceDisabled();
 
     event StreamProposed(uint256 indexed streamId, address indexed funder, address indexed agent, uint256 totalAmount, uint256 durationSecs, uint8 mode, uint256 taskId);
     event StreamActivated(uint256 indexed streamId, uint256 startTime);
@@ -137,6 +139,11 @@ contract PulseStreamV2 is ReentrancyGuard, Ownable, IPulseStreamV2 {
     }
 
     // ── Admin ─────────────────────────────────────────────────────────────────
+
+    /// @dev Renouncing would permanently lock mode, treasury and dispute administration.
+    function renounceOwnership() public view override onlyOwner {
+        revert RenounceDisabled();
+    }
 
     function proposeDisputeContract(address d) external onlyOwner nonReentrant {
         if (d == address(0)) revert ZeroAddress();
@@ -207,18 +214,19 @@ contract PulseStreamV2 is ReentrancyGuard, Ownable, IPulseStreamV2 {
         funderStreams[msg.sender].push(streamId);
 
         emit StreamProposed(streamId, msg.sender, agent, totalAmount, durationSecs, mode, taskId);
+
+        // Self-stream (funder == agent): there is no counterparty who could accept, so the stream
+        // starts Active right away. The Proposed -> Activated lifecycle is still fully emitted.
+        if (msg.sender == agent) {
+            _activate(streamId, s);
+        }
     }
 
     function acceptStream(uint256 streamId) external nonReentrant {
         Stream storage s = streams[streamId];
         if (msg.sender != s.agent) revert NotAgent();
         if (s.status != StreamStatus.Proposed) revert WrongStatus();
-        s.status = StreamStatus.Active;
-        s.startTime = block.timestamp;
-        s.lastHeartbeat = block.timestamp;
-        s.lastMissCheckpoint = block.timestamp;
-        scoreContract.initScore(s.agent);
-        emit StreamActivated(streamId, block.timestamp);
+        _activate(streamId, s);
     }
 
     function cancelProposal(uint256 streamId) external nonReentrant {
@@ -284,7 +292,7 @@ contract PulseStreamV2 is ReentrancyGuard, Ownable, IPulseStreamV2 {
     }
 
     /// @notice Permissionless. Terminates a stream whose agent has gone silent.
-    /// @dev    Eligible when: stream is Active or Paused, AND
+    /// @dev    Eligible when: stream is Active (Paused streams are not eligible), AND
     ///         block.timestamp > lastHeartbeat + heartbeatInterval + gracePeriod
     ///         (uses the ModeConfig for the stream's mode).
     ///         Distributes funds:
@@ -322,9 +330,13 @@ contract PulseStreamV2 is ReentrancyGuard, Ownable, IPulseStreamV2 {
         emit StreamTimedOut(streamId, msg.sender, agentEarned, penalty, funderRefund);
     }
 
+    /// @notice Settles an Active stream: the agent is credited what it earned, the funder the rest.
+    /// @dev    Only an Active stream can be settled. The status flips to Completed before any
+    ///         payout is credited, so a stream can never be settled (or paid out) twice.
     function settleStream(uint256 streamId) external nonReentrant {
         Stream storage s = streams[streamId];
         if (msg.sender != s.funder && msg.sender != s.agent) revert NotParticipant();
+        if (s.status != StreamStatus.Active) revert WrongStatus();
         (, , uint256 earned) = _snapshot(s, block.timestamp);
         earned = _applyTaskCap(s, earned);
         uint256 refund = s.totalAmount - earned;
@@ -375,6 +387,18 @@ contract PulseStreamV2 is ReentrancyGuard, Ownable, IPulseStreamV2 {
     }
 
     // ── Internals ─────────────────────────────────────────────────────────────
+
+    /// @dev Moves a Proposed stream to Active and starts its clock. Callers guarantee the
+    ///      stream is Proposed. State is written before the external score call.
+    function _activate(uint256 streamId, Stream storage s) internal {
+        uint256 ts = block.timestamp;
+        s.status = StreamStatus.Active;
+        s.startTime = ts;
+        s.lastHeartbeat = ts;
+        s.lastMissCheckpoint = ts;
+        scoreContract.initScore(s.agent);
+        emit StreamActivated(streamId, ts);
+    }
 
     function _snapshot(Stream storage s, uint256 atTime)
         internal view

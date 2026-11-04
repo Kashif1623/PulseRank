@@ -295,15 +295,16 @@ contract PulseStreamV2CancelTimedOutTest is PulseStreamV2TestBase {
         assertTrue(stream.isTimedOut(sid));
     }
 
-    function test_IsTimedOut_TrueForPausedStream_ViewContractBug() public {
+    function test_IsTimedOut_FalseForPausedStream() public {
         uint256 sid = _createDefaultStream();
         vm.prank(funder);
         stream.pauseStream(sid);
         _warpToTimeout(sid);
-        // isTimedOut() returns TRUE for a Paused stream past the threshold
-        // because its guard allows Paused status, but cancelTimedOutStream()
-        // reverts WrongStatus for Paused. The two are inconsistent — contract bug.
-        assertTrue(stream.isTimedOut(sid));
+        // isTimedOut() is now consistent with cancelTimedOutStream(): only Active
+        // streams are eligible, so a Paused stream past the threshold is NOT timed out.
+        assertFalse(stream.isTimedOut(sid));
+        vm.expectRevert(PulseStreamV2.WrongStatus.selector);
+        stream.cancelTimedOutStream(sid);
     }
 
     function test_IsTimedOut_FalseForReclaimed() public {

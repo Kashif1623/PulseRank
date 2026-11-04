@@ -1,9 +1,10 @@
 import { formatUnits } from "viem";
 import { useReadContract, useWriteContract, useAccount } from "wagmi";
 import { useState, useEffect, useCallback } from "react";
-import { Loader2, AlertTriangle, Zap, CheckCircle, DollarSign, Clock } from "lucide-react";
+import { Loader2, AlertTriangle, Zap, CheckCircle, DollarSign, Clock, Repeat } from "lucide-react";
 import { toast } from "sonner";
 import contractsJson from "./contracts.json";
+import { useStreamAgain } from "./StreamAgainContext";
 
 const ARC_MAINNET_ID = 5042;
 const STREAM_CONTRACT = contractsJson.contracts.PulseStreamV2.address as `0x${string}`;
@@ -395,8 +396,12 @@ function SettleButton({
   onSettled: () => void;
 }) {
   const { writeContract, isPending } = useWriteContract();
+  // Locks the button the moment a transaction is submitted so it can never be sent twice.
+  const [submitted, setSubmitted] = useState(false);
 
   function handle() {
+    if (submitted || isPending) return;
+    setSubmitted(true);
     writeContract(
       {
         address: STREAM_CONTRACT,
@@ -406,12 +411,15 @@ function SettleButton({
         chainId: ARC_MAINNET_ID,
       },
       {
-        onError: (e) => toast.error(`Settle failed: ${e.message.slice(0, 100)}`),
+        onError: (e) => {
+          setSubmitted(false); // rejected or failed: allow a retry
+          toast.error(`Settle failed: ${e.message.slice(0, 100)}`);
+        },
         onSuccess: () => {
           toast.success(
             role === "agent"
-              ? `Stream #${streamId} settled — earnings added to your claimable balance.`
-              : `Stream #${streamId} settled — unearned USDC returned to your claimable balance.`
+              ? `Stream #${streamId} settled. Use Withdraw to send your earnings to your wallet.`
+              : `Stream #${streamId} settled. Use Withdraw to send the unearned USDC to your wallet.`
           );
           onSettled();
         },
@@ -419,10 +427,12 @@ function SettleButton({
     );
   }
 
+  const locked = isPending || submitted;
+
   return (
     <button
       onClick={handle}
-      disabled={isPending}
+      disabled={locked}
       className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
       style={{
         background: role === "agent"
@@ -434,12 +444,47 @@ function SettleButton({
           : "0 3px 12px rgba(2,132,199,0.30)",
       }}
     >
-      {isPending ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle size={13} />}
+      {locked ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle size={13} />}
       {isPending
         ? "Waiting for wallet…"
-        : role === "agent"
-          ? "Settle & Claim Earnings"
-          : "Settle & Reclaim Unspent USDC"}
+        : submitted
+          ? "Settling…"
+          : role === "agent"
+            ? "Claim Earnings"
+            : "Settle & Reclaim Unspent USDC"}
+    </button>
+  );
+}
+
+// ── StreamAgainButton ────────────────────────────────────────────────────────
+
+/** Reopens the stream form pre-filled with this stream's agent, amount, duration and mode. */
+function StreamAgainButton({ stream }: { stream: StreamData }) {
+  const streamAgain = useStreamAgain();
+  if (!streamAgain) return null;
+
+  function handle() {
+    streamAgain?.({
+      agent:        stream.agent,
+      amount:       formatUnits(stream.totalAmount, 6),
+      durationSecs: Number(stream.durationSecs),
+      mode:         (stream.mode === 1 || stream.mode === 3 ? stream.mode : 2),
+    });
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handle}
+      className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98]"
+      style={{
+        background: "rgba(2,132,199,0.10)",
+        border:     "1px solid rgba(2,132,199,0.30)",
+        color:      "#0284c7",
+      }}
+    >
+      <Repeat size={13} />
+      Stream Again &amp; Boost Score
     </button>
   );
 }
@@ -459,7 +504,7 @@ function ClaimPayoutButton({ onClaimed }: { onClaimed?: () => void }) {
     functionName: "pendingPayouts",
     args: address ? [address] : undefined,
     chainId: ARC_MAINNET_ID,
-    query: { enabled: !!address, refetchInterval: 10_000 },
+    query: { enabled: !!address, refetchInterval: 4_000 },
   });
 
   const { writeContract, isPending } = useWriteContract();
@@ -744,6 +789,11 @@ export function StreamCard({
       {/* Claim payout: shown after any terminal event (settle / reclaim / complete) */}
       {(isTerminal || isExpired) && (
         <ClaimPayoutButton onClaimed={() => onEvent?.("claim")} />
+      )}
+
+      {/* Restart: finished streams (expired, completed or reclaimed) can be re-created in one click */}
+      {showFunderActions && (isExpired || stream.status === 3 || stream.status === 4) && (
+        <StreamAgainButton stream={stream} />
       )}
     </div>
   );

@@ -14,6 +14,7 @@
  *     --score-tx  <0x...>   # deploy tx hash \
  *     --task-tx   <0x...>   \
  *     --stream-tx <0x...>   \
+ *     --stream-block <n>    # block the new PulseStreamV2 was deployed in (event scanner start) \
  *     --version   v2.2       # semver label for this deploy \
  *     --notes    "Short description of what changed"
  *
@@ -23,6 +24,7 @@
  * The script patches:
  *   src/contracts.json      — address + txHash + version + linkedTo fields
  *   src/Docs.tsx            — replaces address literals in the CONTRACTS array
+ *   src/feedScan.ts         — new stream deploy block; outgoing stream kept as a legacy scan target
  *   README.md               — updates the deployed-addresses table
  *   AGENTS.md               — appends a new deploy record section
  *
@@ -57,6 +59,7 @@ const deployer     = optionalHex(arg("--deployer"));
 const scoreTx      = arg("--score-tx")   ?? "";
 const taskTx       = arg("--task-tx")    ?? "";
 const streamTx     = arg("--stream-tx")  ?? "";
+const streamBlock  = arg("--stream-block");
 const version      = arg("--version")    ?? "v2.x";
 const notes        = arg("--notes")      ?? "Routine redeployment";
 
@@ -66,9 +69,19 @@ if (!newRegistry && !newScore && !newTask && !newStream) {
   process.exit(1);
 }
 
+if (newStream && !streamBlock) {
+  console.error("❌  --stream needs --stream-block <deploy block number> so the event feed can scan it.");
+  process.exit(1);
+}
+if (streamBlock && !/^\d+$/.test(streamBlock)) {
+  console.error(`❌  Invalid --stream-block: "${streamBlock}"`);
+  process.exit(1);
+}
+
 const ROOT         = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const contractsPath = resolve(ROOT, "src/contracts.json");
 const docsPath      = resolve(ROOT, "src/Docs.tsx");
+const feedScanPath  = resolve(ROOT, "src/feedScan.ts");
 const readmePath    = resolve(ROOT, "README.md");
 const agentsPath    = resolve(ROOT, "AGENTS.md");
 
@@ -106,6 +119,11 @@ interface ContractsJson {
 
 const cj: ContractsJson = JSON.parse(readFileSync(contractsPath, "utf8")) as ContractsJson;
 const old = { ...cj.contracts };
+
+if (newStream && newStream.toLowerCase() === old.PulseStreamV2.address.toLowerCase()) {
+  console.error("❌  --stream is already the current PulseStreamV2 address. Nothing to do.");
+  process.exit(1);
+}
 
 cj.deployedAt = new Date().toISOString();
 if (deployer) cj.deployer = deployer;
@@ -156,6 +174,13 @@ if (newStream) {
   };
 }
 
+// Score and Task authorise exactly one stream contract; keep their link records in sync.
+if (newStream) {
+  for (const name of ["PulseScoreV2", "PulseTaskV2"] as const) {
+    if (cj.contracts[name]) cj.contracts[name].linkedTo = newStream;
+  }
+}
+
 writeFileSync(contractsPath, JSON.stringify(cj, null, 2) + "\n");
 console.log("✅  src/contracts.json updated");
 
@@ -184,6 +209,30 @@ if (docsChanged) {
   console.log("✅  src/Docs.tsx updated");
 } else {
   console.log("⏭   src/Docs.tsx — no address changes needed");
+}
+
+// ── 2b. src/feedScan.ts ───────────────────────────────────────────────────────
+// Point the event scanner at the new stream and keep the outgoing one as a legacy target
+// so its history stays visible in the feed and chart.
+
+if (newStream && streamBlock) {
+  let scan = readFileSync(feedScanPath, "utf8");
+  const blockRe = /export const STREAM_DEPLOY_BLOCK = ([0-9_]+)n;/;
+  const marker  = "  // legacy-streams:append";
+  const m = scan.match(blockRe);
+  if (!m || !scan.includes(marker)) {
+    console.error("❌  src/feedScan.ts is missing STREAM_DEPLOY_BLOCK or the legacy-streams marker.");
+    process.exit(1);
+  }
+  const oldBlock = m[1];
+  const legacyLine = `  { address: "${old.PulseStreamV2.address}", fromBlock: ${oldBlock}n },\n`;
+  if (!scan.includes(`address: "${old.PulseStreamV2.address}"`)) {
+    scan = scan.replace(marker, legacyLine + marker);
+  }
+  const grouped = streamBlock.replace(/\B(?=(\d{3})+(?!\d))/g, "_");
+  scan = scan.replace(blockRe, `export const STREAM_DEPLOY_BLOCK = ${grouped}n;`);
+  writeFileSync(feedScanPath, scan);
+  console.log("✅  src/feedScan.ts updated (new deploy block, previous stream kept as legacy)");
 }
 
 // ── 3. README.md ──────────────────────────────────────────────────────────────
@@ -254,6 +303,7 @@ console.log(`
 Files updated:
   src/contracts.json
   src/Docs.tsx
+  src/feedScan.ts (when --stream-block was given)
   README.md
   AGENTS.md
 
