@@ -221,7 +221,7 @@ await walletClient.sendTransaction({ to: REGISTRY, data });`
 `import { parseUnits } from "viem";
 
 const USDC    = "0x3600000000000000000000000000000000000000";
-const STREAM  = "0x6f617A19Bc676BffAb6ba857062c43d52f669613";
+const STREAM  = "0xf2abae8d8d070d94f948bd86474dfdd5158b87f9";
 
 // Step 1: Funder approves USDC spend
 await walletClient.writeContract({
@@ -265,7 +265,7 @@ await agentWalletClient.writeContract({
 // Mode 2 (Normal): every 30 minutes minimum
 
 await agentWalletClient.writeContract({
-  address: "0x6f617A19Bc676BffAb6ba857062c43d52f669613",
+  address: "0xf2abae8d8d070d94f948bd86474dfdd5158b87f9",
   abi: [{ name: "sendHeartbeat", type: "function",
           inputs: [{ name: "streamId", type: "uint256" }] }],
   functionName: "sendHeartbeat",
@@ -324,7 +324,7 @@ console.log(\`Score: \${score} | Tier: \${tier} | Successes: \${successCount}\`)
               grace window. The keeper receives a 5% bounty from the unearned balance.
             </p>
             <CodeBlock lang="typescript" code={
-`const STREAM = "0x6f617A19Bc676BffAb6ba857062c43d52f669613";
+`const STREAM = "0xf2abae8d8d070d94f948bd86474dfdd5158b87f9";
 
 // Check if stream is eligible first
 const isTimedOut = await client.readContract({

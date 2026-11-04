@@ -1,7 +1,7 @@
 {
   "network": "Arc Mainnet",
   "chainId": 5042,
-  "deployedAt": "2026-11-02T19:54:55.246Z",
+  "deployedAt": "2026-11-04T13:28:59.087Z",
   "deployer": "0x1bc3e8b8bd8724d13dae6de9602f9e4dd1a682e8",
   "usdc": "0x3600000000000000000000000000000000000000",
   "contracts": {
@@ -16,20 +16,20 @@
       "txHash": "0x0b9f4f4546423a7e4ddb16329e11c6c682cabe631d81a23eabff6df5bf24efe7",
       "version": "v2.2",
       "note": "Updatable setPulseStream; full cross-link: Score+Task->Stream->Score all consistent",
-      "linkedTo": "0x6f617A19Bc676BffAb6ba857062c43d52f669613"
+      "linkedTo": "0xf2abae8d8d070d94f948bd86474dfdd5158b87f9"
     },
     "PulseTaskV2": {
       "address": "0x8f893D6ad7fa39C881468C556c279b56306C193B",
       "txHash": "0xf6887807a81948b1c229126df5de0a0f2751a6e184abf97b84b9f62eab711f98",
       "version": "v2.2",
       "note": "Updatable setPulseStream; full cross-link: Score+Task->Stream->Score all consistent",
-      "linkedTo": "0x6f617A19Bc676BffAb6ba857062c43d52f669613"
+      "linkedTo": "0xf2abae8d8d070d94f948bd86474dfdd5158b87f9"
     },
     "PulseStreamV2": {
-      "address": "0x6f617A19Bc676BffAb6ba857062c43d52f669613",
-      "txHash": "0x71a7d66e623221389f01e2c874d642de504d91712a2cad238d6e5371dfc17dc8",
-      "version": "v2.2",
-      "note": "Updatable setPulseStream; full cross-link: Score+Task->Stream->Score all consistent",
+      "address": "0xf2abae8d8d070d94f948bd86474dfdd5158b87f9",
+      "txHash": "0xb0c99d4fba36a75b7fcf5d5f09309ca49d13f3eb99b34278bdf40a5c4002313d",
+      "version": "v2.3",
+      "note": "Active-only settle guard, self-stream auto-activation, two-step ownership",
       "linkedScore": "0x418FC1385B55Bd1b26B0c5B7094502ed094864Ce",
       "linkedTask": "0x8f893D6ad7fa39C881468C556c279b56306C193B",
       "linkedRegistry": "0x43d74ECe631598746E137CC43a81dFE5C8565aD1"

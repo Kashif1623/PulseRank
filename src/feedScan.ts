@@ -15,8 +15,8 @@ import type { FeedEvent } from "./ActivityFeed";
 export const STREAM_ADDR = contractsJson.contracts.PulseStreamV2.address as `0x${string}`;
 export const TASK_ADDR   = contractsJson.contracts.PulseTaskV2.address   as `0x${string}`;
 
-// Deployment blocks of the current (v2.2) contracts, read from their deploy receipts.
-export const STREAM_DEPLOY_BLOCK = 29_210_038n;
+// Deployment blocks of the current contracts, read from their deploy receipts.
+export const STREAM_DEPLOY_BLOCK = 29_504_956n;
 export const TASK_DEPLOY_BLOCK   = 29_209_925n;
 
 /**
@@ -24,6 +24,7 @@ export const TASK_DEPLOY_BLOCK   = 29_209_925n;
  * after a redeploy. `bun run deploy:patch` appends the outgoing stream here.
  */
 export const LEGACY_STREAMS: { address: `0x${string}`; fromBlock: bigint }[] = [
+  { address: "0x6f617A19Bc676BffAb6ba857062c43d52f669613", fromBlock: 29_210_038n },
   // legacy-streams:append
 ];
 
