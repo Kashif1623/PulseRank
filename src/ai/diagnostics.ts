@@ -1,5 +1,6 @@
 import { hexToString, type PublicClient } from "viem";
 import contractsJson from "../contracts.json";
+import { STREAM_DEPLOY_BLOCK } from "../feedScan";
 
 // Live, read-only scan of one wallet on Arc Mainnet (chain 5042) through the viem public client.
 // Every number returned here comes from a contract call or an event log, never from a guess.
@@ -8,7 +9,6 @@ const C = contractsJson.contracts;
 export const REGISTRY = C.PulseRegistryV2.address as `0x${string}`;
 export const SCORE = C.PulseScoreV2.address as `0x${string}`;
 export const STREAM = C.PulseStreamV2.address as `0x${string}`;
-const STREAM_DEPLOY_BLOCK = 29_210_038n; // v2.2 PulseStreamV2 deployment block
 
 export type StepStatus = "run" | "ok" | "warn" | "fail";
 export interface ThinkStep { label: string; detail?: string; status: StepStatus; ms?: number }

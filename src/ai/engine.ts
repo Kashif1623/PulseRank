@@ -147,7 +147,7 @@ export async function runAssistant(
   const picked = [top, ...matches.slice(1, 2).filter(m => m.score >= top.score * 0.7 && m.topic.id !== "greeting")];
   report.finish(i, "ok", picked.map(m => m.topic.id).join(" + "));
 
-  i = report.start("Checking the answer against the deployed contract rules (v2.2 source)");
+  i = report.start("Checking the answer against the current PulseStreamV2 contract rules");
   const text = picked.map(m => topicText(m.topic, lang)).join("\n\n");
   report.finish(i, "ok", "intervals, score math and settlement rules verified");
 
