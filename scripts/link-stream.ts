@@ -7,6 +7,8 @@ import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { initiateDeveloperControlledWalletsClient } from "@circle-fin/developer-controlled-wallets";
+import { createPublicClient, http, parseAbi, getAddress, defineChain } from "viem";
+import { parseStreamArg } from "./stream-arg";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const env  = readFileSync(resolve(ROOT, ".env"), "utf8");
@@ -26,11 +28,39 @@ const WALLET_ID     = "95db8cf1-cfed-5301-92ab-f562aa2d284b";
 const contracts = (JSON.parse(readFileSync(resolve(ROOT, "src/contracts.json"), "utf8")) as {
   contracts: Record<string, { address: string }>;
 }).contracts;
-const streamArgIdx = process.argv.indexOf("--stream");
-const NEW_STREAM  = streamArgIdx !== -1 ? process.argv[streamArgIdx + 1] : contracts.PulseStreamV2.address;
+const NEW_STREAM  = parseStreamArg(process.argv, contracts.PulseStreamV2.address);
 const SCORE_ADDR  = contracts.PulseScoreV2.address;
 const TASK_ADDR   = contracts.PulseTaskV2.address;
-if (!/^0x[0-9a-fA-F]{40}$/.test(NEW_STREAM)) throw new Error(`Invalid stream address: ${NEW_STREAM}`);
+
+// Preflight (read-only): never point Score and Task at an address that is not the upgraded
+// stream wired to them. A typo here would break stream activation until it is corrected.
+const arc = defineChain({
+  id: 5042,
+  name: "Arc",
+  nativeCurrency: { name: "USD Coin", symbol: "USDC", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc.mainnet.arc.io"] } },
+});
+const reader = createPublicClient({ chain: arc, transport: http() });
+const streamAbi = parseAbi([
+  "function scoreContract() view returns (address)",
+  "function taskContract() view returns (address)",
+  "function pendingOwner() view returns (address)",
+]);
+const code = await reader.getCode({ address: NEW_STREAM });
+if (!code || code === "0x") throw new Error(`No contract code at ${NEW_STREAM}. Refusing to link.`);
+const [onScore, onTask] = await Promise.all([
+  reader.readContract({ address: NEW_STREAM, abi: streamAbi, functionName: "scoreContract" }),
+  reader.readContract({ address: NEW_STREAM, abi: streamAbi, functionName: "taskContract" }),
+]);
+if (onScore !== getAddress(SCORE_ADDR) || onTask !== getAddress(TASK_ADDR)) {
+  throw new Error(`${NEW_STREAM} is not wired to the current Score/Task contracts. Refusing to link.`);
+}
+try {
+  await reader.readContract({ address: NEW_STREAM, abi: streamAbi, functionName: "pendingOwner" });
+} catch {
+  throw new Error(`${NEW_STREAM} is not the upgraded PulseStreamV2 (no pendingOwner). Refusing to link.`);
+}
+console.log(`Preflight OK: ${NEW_STREAM} is the upgraded stream wired to the current Score and Task.`);
 
 // keccak256("setPulseStream(address)")[0..4] = 0xd2eee8e4
 function encodeCalldata(streamAddress: string): string {

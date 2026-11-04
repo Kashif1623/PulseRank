@@ -12,6 +12,7 @@ import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { createPublicClient, http, parseAbi, getAddress, defineChain } from "viem";
+import { parseStreamArg } from "./stream-arg";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const cfg = JSON.parse(readFileSync(resolve(ROOT, "src/contracts.json"), "utf8")) as {
@@ -19,8 +20,7 @@ const cfg = JSON.parse(readFileSync(resolve(ROOT, "src/contracts.json"), "utf8")
   contracts: Record<string, { address: string }>;
 };
 
-const idx = process.argv.indexOf("--stream");
-const streamAddr = getAddress(idx !== -1 ? process.argv[idx + 1] : cfg.contracts.PulseStreamV2.address);
+const streamAddr = parseStreamArg(process.argv, cfg.contracts.PulseStreamV2.address);
 const score = getAddress(cfg.contracts.PulseScoreV2.address);
 const task = getAddress(cfg.contracts.PulseTaskV2.address);
 const registry = getAddress(cfg.contracts.PulseRegistryV2.address);
