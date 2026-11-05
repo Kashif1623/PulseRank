@@ -5,6 +5,7 @@ import { Loader2, AlertTriangle, Zap, CheckCircle, DollarSign, Clock, Repeat } f
 import { toast } from "sonner";
 import contractsJson from "./contracts.json";
 import { useStreamAgain } from "./StreamAgainContext";
+import { useAgentBusyWith } from "./singleStream";
 
 const ARC_MAINNET_ID = 5042;
 const STREAM_CONTRACT = contractsJson.contracts.PulseStreamV2.address as `0x${string}`;
@@ -562,6 +563,9 @@ export function StreamCard({
   role: "funder" | "agent";
   onEvent?: (type: "heartbeat" | "accept" | "reclaim" | "settle" | "claim") => void;
 }) {
+  // One agent wallet works one open stream at a time (frontend rule)
+  const agentBusyWith = useAgentBusyWith(initialStream.agent, initialStream.streamId);
+
   // Local optimistic state: starts from the prop, can be overridden instantly
   const [optimisticStatus, setOptimisticStatus] = useState<number | null>(null);
   const [optimisticLastHb, setOptimisticLastHb] = useState<bigint | null>(null);
@@ -759,7 +763,14 @@ export function StreamCard({
 
       {/* Agent actions — shown when role===agent OR same wallet is both funder+agent */}
       {showAgentActions && isProposed && (
-        <AcceptButton streamId={stream.streamId} onAccepted={handleAccepted} />
+        agentBusyWith ? (
+          <div className="rounded-xl px-3 py-2.5 text-xs"
+               style={{ background: "rgba(245,158,11,0.10)", border: "1px solid rgba(245,158,11,0.30)", color: "#b45309" }}>
+            This agent already has an active stream (#{agentBusyWith.id}). It can accept a new one after #{agentBusyWith.id} is settled or reclaimed.
+          </div>
+        ) : (
+          <AcceptButton streamId={stream.streamId} onAccepted={handleAccepted} />
+        )
       )}
       {/* Heartbeat: only while truly running (Active and NOT expired) */}
       {showAgentActions && isActive && (

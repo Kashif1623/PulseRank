@@ -22,6 +22,7 @@ import { AiWidget } from "./AiWidget";
 import { ActivityChart } from "./ActivityChart";
 import { OnboardingTour, TourButton } from "./OnboardingTour";
 import { StreamAgainContext, durationToForm, type StreamPrefill } from "./StreamAgainContext";
+import { useStreamRules, useOwnAgentProfile } from "./singleStream";
 
 // ── Chain / contract constants ─────────────────────────────────────────────────
 
@@ -802,6 +803,10 @@ function FunderPanel({ prefill }: { prefill?: StreamPrefill | null }) {
   const durationNum  = parseFloat(durationVal) || 0;
   const durationSecs = Math.round(durationNum * (durationUnit === "minutes" ? 60 : 86400));
 
+  // 1 funder -> 1 dedicated agent -> 1 open stream (live contract state)
+  const agentIsValid = /^0x[0-9a-fA-F]{40}$/.test(agentAddr);
+  const rules = useStreamRules(address, agentIsValid ? agentAddr : undefined);
+
   // Step 1: approve USDC
   const { writeContract: approve, data: approveTxHash, isPending: approving } = useWriteContract();
   const { isLoading: approveConfirming } = useWaitForTransactionReceipt({ hash: approveTxHash });
@@ -843,6 +848,8 @@ function FunderPanel({ prefill }: { prefill?: StreamPrefill | null }) {
     if (!agentAddr || !/^0x[0-9a-fA-F]{40}$/.test(agentAddr)) { toast.error("Enter a valid agent address."); return; }
     if (!amount || parseFloat(amount) < 0.20) { toast.error("Minimum stream amount is 0.20 USDC."); return; }
     if (durationSecs <= 0) { toast.error("Select a valid stream duration."); return; }
+    if (rules.checking) { toast.error("Still checking the stream rules. Try again in a moment."); return; }
+    if (rules.blocked) { toast.error(rules.firstViolation ?? "This stream is not allowed."); return; }
 
     // 30-minute cooldown between stream creations
     const remaining = streamCooldownRemaining(address);
@@ -887,6 +894,12 @@ function FunderPanel({ prefill }: { prefill?: StreamPrefill | null }) {
               </label>
               <input className={inputCls} style={inputStyle} placeholder="0x…"
                      value={agentAddr} onChange={e => setAgentAddr(e.target.value)} />
+              {!agentAddr && rules.dedicatedAgent && (
+                <button type="button" onClick={() => setAgentAddr(rules.dedicatedAgent ?? "")}
+                  className="text-xs mt-1.5 underline" style={{ color: T.accent }}>
+                  Use your dedicated agent {rules.dedicatedAgent.slice(0, 6)}…{rules.dedicatedAgent.slice(-4)}
+                </button>
+              )}
             </div>
 
             {/* AI Inspector preview for the target agent */}
@@ -1008,7 +1021,26 @@ function FunderPanel({ prefill }: { prefill?: StreamPrefill | null }) {
               </div>
             </div>
 
-            <button onClick={handlePropose} disabled={busy}
+            {/* Stream rules: one funder, one dedicated agent, one open stream */}
+            <div className="rounded-xl px-3 py-2.5 space-y-1"
+                 style={{ background: "rgba(255,255,255,0.60)", border: `1px solid ${T.border}` }}>
+              <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: T.subtle }}>
+                Stream rules {rules.checking && <span className="normal-case font-normal">· checking…</span>}
+              </div>
+              {rules.checks.map(c => (
+                <div key={c.id} className="text-xs" style={{ color: c.ok ? "#15803d" : "#dc2626" }}>
+                  <span className="font-bold">{c.ok ? "✓" : "✕"}</span> {c.label}
+                  {c.detail && <span style={{ color: c.ok ? T.subtle : "#dc2626" }}> — {c.detail}</span>}
+                </div>
+              ))}
+              {!agentIsValid && (
+                <div className="text-xs" style={{ color: T.subtle }}>
+                  Enter the agent wallet address to check it. One funder works with one dedicated agent wallet and one open stream at a time.
+                </div>
+              )}
+            </div>
+
+            <button onClick={handlePropose} disabled={busy || rules.blocked}
               className="w-full rounded-xl py-3.5 text-sm font-bold transition-all hover:brightness-105 active:scale-[0.98] mt-1 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ background: T.accentGrad, color: "#fff", boxShadow: "0 4px 14px rgba(2,132,199,0.28)" }}>
               {busy && <Loader2 size={15} className="animate-spin" />}
@@ -1146,6 +1178,7 @@ function AgentPanel() {
   const [agentName, setAgentName] = useState("");
   const [profileURI, setProfileURI] = useState("");
   const [dailyRate,  setDailyRate]  = useState("");
+  const ownAgent = useOwnAgentProfile(address);
 
   // Reputation score for connected wallet
   const { data: statsRaw, isLoading: statsLoading, refetch: refetchStats } = useReadContract({
@@ -1171,6 +1204,7 @@ function AgentPanel() {
 
   function handleRegister() {
     if (!isConnected || !address) { toast.error("Connect your wallet first."); return; }
+    if (ownAgent.registered) { toast.error("This wallet already has its dedicated agent profile. Use a separate wallet for another agent."); return; }
     if (!agentName.trim()) { toast.error("Agent name is required."); return; }
     if (agentName.length > 32) { toast.error("Agent name must be 32 characters or fewer."); return; }
     if (!profileURI.trim()) { toast.error("Profile URI is required."); return; }
@@ -1209,6 +1243,16 @@ function AgentPanel() {
 
         {!isConnected ? (
           <WalletGuard message="Connect your wallet to register as an agent and start earning." />
+        ) : ownAgent.registered ? (
+          <div className="rounded-xl px-4 py-3 text-sm"
+               style={{ background: "rgba(22,163,74,0.08)", border: "1px solid rgba(22,163,74,0.25)", color: T.ink }}>
+            <div className="font-semibold" style={{ color: "#15803d" }}>
+              ✓ This wallet is your dedicated agent{ownAgent.name ? `: ${ownAgent.name}` : ""}
+            </div>
+            <div className="text-xs mt-1" style={{ color: T.subtle }}>
+              One wallet maps to one agent profile and one open stream at a time. To run another agent, connect a different wallet.
+            </div>
+          </div>
         ) : (
           <div className="space-y-3">
             <div>
