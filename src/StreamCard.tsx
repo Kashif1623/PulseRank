@@ -763,14 +763,15 @@ export function StreamCard({
 
       {/* Agent actions — shown when role===agent OR same wallet is both funder+agent */}
       {showAgentActions && isProposed && (
-        agentBusyWith ? (
-          <div className="rounded-xl px-3 py-2.5 text-xs"
-               style={{ background: "rgba(245,158,11,0.10)", border: "1px solid rgba(245,158,11,0.30)", color: "#b45309" }}>
-            This agent already has an active stream (#{agentBusyWith.id}). It can accept a new one after #{agentBusyWith.id} is settled or reclaimed.
-          </div>
-        ) : (
+        <>
+          {agentBusyWith && (
+            <div className="rounded-xl px-3 py-2 text-xs mb-2"
+                 style={{ background: "rgba(245,158,11,0.10)", border: "1px solid rgba(245,158,11,0.30)", color: "#b45309" }}>
+              Heads-up: this agent also has an active stream (#{agentBusyWith.id}). You can still accept this one.
+            </div>
+          )}
           <AcceptButton streamId={stream.streamId} onAccepted={handleAccepted} />
-        )
+        </>
       )}
       {/* Heartbeat: only while truly running (Active and NOT expired) */}
       {showAgentActions && isActive && (

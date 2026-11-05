@@ -159,7 +159,7 @@ export function useStreamRules(funder?: string, agent?: string) {
         : { id: "agent-free", ok: true, label: "Agent has no other open stream" });
     }
     checks.push(funderOpen
-      ? { id: "funder-free", ok: false, label: "You have no other open stream", detail: `You already have stream #${funderOpen.id} (${STATUS_NAMES[funderOpen.status] ?? "open"}). Settle or reclaim it before creating another.` }
+      ? { id: "funder-free", ok: false, label: "You have no other open stream", detail: `You already have stream #${funderOpen.id} (${STATUS_NAMES[funderOpen.status] ?? "open"}). Tip: settle or reclaim it first if you do not want two running at once.` }
       : { id: "funder-free", ok: true, label: "You have no other open stream" });
 
     const firstViolation = checks.find(c => !c.ok)?.detail;

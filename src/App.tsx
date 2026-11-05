@@ -848,11 +848,12 @@ function FunderPanel({ prefill }: { prefill?: StreamPrefill | null }) {
     if (!agentAddr || !/^0x[0-9a-fA-F]{40}$/.test(agentAddr)) { toast.error("Enter a valid agent address."); return; }
     if (!amount || parseFloat(amount) < 0.20) { toast.error("Minimum stream amount is 0.20 USDC."); return; }
     if (durationSecs <= 0) { toast.error("Select a valid stream duration."); return; }
-    if (rules.checking) { toast.error("Still checking the stream rules. Try again in a moment."); return; }
-    if (rules.blocked) { toast.error(rules.firstViolation ?? "This stream is not allowed."); return; }
 
     // 30-minute cooldown between stream creations
-    const remaining = streamCooldownRemaining(address);
+    // The cooldown only applies while an earlier stream of yours is still open; once it is
+    // settled, reclaimed or cancelled you can propose again right away.
+    const earlierStreamEnded = !rules.checking && !rules.funderOpen;
+    const remaining = earlierStreamEnded ? 0 : streamCooldownRemaining(address);
     if (remaining > 0) {
       const remMins = Math.ceil(remaining / 60_000);
       toast.error(`Cooldown active — wait ${remMins} more minute${remMins === 1 ? "" : "s"} before creating another stream.`);
@@ -1021,26 +1022,22 @@ function FunderPanel({ prefill }: { prefill?: StreamPrefill | null }) {
               </div>
             </div>
 
-            {/* Stream rules: one funder, one dedicated agent, one open stream */}
-            <div className="rounded-xl px-3 py-2.5 space-y-1"
-                 style={{ background: "rgba(255,255,255,0.60)", border: `1px solid ${T.border}` }}>
-              <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: T.subtle }}>
-                Stream rules {rules.checking && <span className="normal-case font-normal">· checking…</span>}
+            {/* Heads-up about the agent and your other streams. Informational only: it never blocks Propose Stream. */}
+            {rules.checks.some(c => !c.ok) && (
+              <div className="rounded-xl px-3 py-2.5 space-y-1"
+                   style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.28)" }}>
+                <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "#b45309" }}>
+                  Heads-up <span className="normal-case font-normal">· you can still propose</span>
+                </div>
+                {rules.checks.filter(c => !c.ok).map(c => (
+                  <div key={c.id} className="text-xs" style={{ color: "#b45309" }}>
+                    <span className="font-bold">!</span> {c.label}{c.detail && <span> — {c.detail}</span>}
+                  </div>
+                ))}
               </div>
-              {rules.checks.map(c => (
-                <div key={c.id} className="text-xs" style={{ color: c.ok ? "#15803d" : "#dc2626" }}>
-                  <span className="font-bold">{c.ok ? "✓" : "✕"}</span> {c.label}
-                  {c.detail && <span style={{ color: c.ok ? T.subtle : "#dc2626" }}> — {c.detail}</span>}
-                </div>
-              ))}
-              {!agentIsValid && (
-                <div className="text-xs" style={{ color: T.subtle }}>
-                  Enter the agent wallet address to check it. One funder works with one dedicated agent wallet and one open stream at a time.
-                </div>
-              )}
-            </div>
+            )}
 
-            <button onClick={handlePropose} disabled={busy || rules.blocked}
+            <button onClick={handlePropose} disabled={busy}
               className="w-full rounded-xl py-3.5 text-sm font-bold transition-all hover:brightness-105 active:scale-[0.98] mt-1 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ background: T.accentGrad, color: "#fff", boxShadow: "0 4px 14px rgba(2,132,199,0.28)" }}>
               {busy && <Loader2 size={15} className="animate-spin" />}
@@ -1204,7 +1201,6 @@ function AgentPanel() {
 
   function handleRegister() {
     if (!isConnected || !address) { toast.error("Connect your wallet first."); return; }
-    if (ownAgent.registered) { toast.error("This wallet already has its dedicated agent profile. Use a separate wallet for another agent."); return; }
     if (!agentName.trim()) { toast.error("Agent name is required."); return; }
     if (agentName.length > 32) { toast.error("Agent name must be 32 characters or fewer."); return; }
     if (!profileURI.trim()) { toast.error("Profile URI is required."); return; }
@@ -1240,19 +1236,15 @@ function AgentPanel() {
       <div className="glass rounded-2xl p-5 sm:p-6">
         <h2 className="display text-lg font-bold mb-1" style={{ color: T.ink }}>Register as Agent</h2>
         <p className="text-sm mb-5" style={{ color: T.subtle }}>Create your on-chain identity and start earning.</p>
+        {isConnected && ownAgent.registered && (
+          <div className="rounded-xl px-3 py-2 text-xs mb-4"
+               style={{ background: "rgba(22,163,74,0.08)", border: "1px solid rgba(22,163,74,0.25)", color: "#15803d" }}>
+            ✓ This wallet already has an agent profile{ownAgent.name ? ` (${ownAgent.name})` : ""}. You can still register another one if you need it.
+          </div>
+        )}
 
         {!isConnected ? (
           <WalletGuard message="Connect your wallet to register as an agent and start earning." />
-        ) : ownAgent.registered ? (
-          <div className="rounded-xl px-4 py-3 text-sm"
-               style={{ background: "rgba(22,163,74,0.08)", border: "1px solid rgba(22,163,74,0.25)", color: T.ink }}>
-            <div className="font-semibold" style={{ color: "#15803d" }}>
-              ✓ This wallet is your dedicated agent{ownAgent.name ? `: ${ownAgent.name}` : ""}
-            </div>
-            <div className="text-xs mt-1" style={{ color: T.subtle }}>
-              One wallet maps to one agent profile and one open stream at a time. To run another agent, connect a different wallet.
-            </div>
-          </div>
         ) : (
           <div className="space-y-3">
             <div>
