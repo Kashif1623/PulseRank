@@ -22,6 +22,7 @@ import { AiWidget } from "./AiWidget";
 import { ActivityChart } from "./ActivityChart";
 import { OnboardingTour, TourButton } from "./OnboardingTour";
 import { StreamAgainContext, durationToForm, type StreamPrefill } from "./StreamAgainContext";
+import { customAgentName } from "./agentLabels";
 import { useStreamRules, useOwnAgentProfile } from "./singleStream";
 
 // ── Chain / contract constants ─────────────────────────────────────────────────
@@ -596,7 +597,7 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
         score = Number(sr[0]); tier = sr[1] as string;
         success = Number(sr[2]); failed = Number(sr[3]);
       }
-      rows.push({ agentId: i + 1, name: nameStr, owner: owner as string, score, tier, success, failed });
+      rows.push({ agentId: i + 1, name: customAgentName(i + 1, owner as string) ?? nameStr, owner: owner as string, score, tier, success, failed });
     }
     rows.sort((a, b) => b.score - a.score);
   }
