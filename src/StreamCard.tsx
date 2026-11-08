@@ -490,14 +490,22 @@ function StreamAgainButton({ stream }: { stream: StreamData }) {
   );
 }
 
-// ── ClaimPayoutButton ─────────────────────────────────────────────────────────
+// ── Withdraw (per-stream view of the wallet's payout) ─────────────────────────
 
 /**
- * Calls claimPayout() to withdraw accumulated pendingPayouts[caller] to their wallet.
- * Shows only when pendingPayouts > 0 for the connected wallet.
+ * claimPayout() on the contract always pays out the connected wallet's WHOLE pending balance
+ * (it is not tracked per stream). So each stream card:
+ *  - shows nothing unless the connected wallet is the funder or agent of THIS stream,
+ *  - shows what THIS stream credited to that wallet,
+ *  - offers Withdraw only when this stream credited something and a balance is pending,
+ *    and says so when the pending balance also includes other streams.
  */
-function ClaimPayoutButton({ onClaimed }: { onClaimed?: () => void }) {
+function StreamPayout({ stream, onClaimed }: { stream: StreamData; onClaimed?: () => void }) {
   const { address } = useAccount();
+  const me = address?.toLowerCase();
+  const isAgent  = !!me && me === stream.agent.toLowerCase();
+  const isFunder = !!me && me === stream.funder.toLowerCase();
+  const settled  = stream.status >= 3; // Completed / Reclaimed / Cancelled
 
   const { data: pending, refetch: refetchPending } = useReadContract({
     address: STREAM_CONTRACT,
@@ -505,27 +513,31 @@ function ClaimPayoutButton({ onClaimed }: { onClaimed?: () => void }) {
     functionName: "pendingPayouts",
     args: address ? [address] : undefined,
     chainId: ARC_MAINNET_ID,
-    query: { enabled: !!address, refetchInterval: 4_000 },
+    query: { enabled: !!address && settled && (isAgent || isFunder), refetchInterval: 4_000 },
   });
+  const { writeContract, isPending: signing } = useWriteContract();
 
-  const { writeContract, isPending } = useWriteContract();
+  if (!settled || (!isAgent && !isFunder)) return null;
 
-  const hasPending = pending !== undefined && (pending) > 0n;
-  if (!hasPending) return null;
+  // What this stream credited to the connected wallet.
+  const unearned = stream.totalAmount - stream.earnedAmount;
+  let credit = 0n;
+  if (isAgent && stream.status !== 5) credit += stream.earnedAmount;
+  if (isFunder) credit += stream.status === 5 ? stream.totalAmount : unearned;
+  if (credit === 0n) return null;
+  // A timeout reclaim keeps 5% of the unearned part for the treasury, so the funder's share is a maximum.
+  const approx = stream.status === 4 && isFunder;
+
+  const hasPending = pending !== undefined && pending > 0n;
+  const includesOthers = hasPending && pending > credit;
 
   function handle() {
     writeContract(
-      {
-        address: STREAM_CONTRACT,
-        abi: CLAIM_PAYOUT_ABI,
-        functionName: "claimPayout",
-        args: [],
-        chainId: ARC_MAINNET_ID,
-      },
+      { address: STREAM_CONTRACT, abi: CLAIM_PAYOUT_ABI, functionName: "claimPayout", args: [], chainId: ARC_MAINNET_ID },
       {
         onError: (e) => toast.error(`Claim failed: ${e.message.slice(0, 100)}`),
         onSuccess: () => {
-          toast.success(`${fmtUsdc(pending as bigint)} USDC withdrawn to your wallet!`);
+          toast.success(`${fmtUsdc(pending ?? 0n)} USDC withdrawn to your wallet!`);
           void refetchPending();
           onClaimed?.();
         },
@@ -534,21 +546,33 @@ function ClaimPayoutButton({ onClaimed }: { onClaimed?: () => void }) {
   }
 
   return (
-    <button
-      onClick={handle}
-      disabled={isPending}
-      className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
-      style={{
-        background: "linear-gradient(135deg,#7c3aed,#8b5cf6)",
-        color:     "#fff",
-        boxShadow: "0 3px 12px rgba(124,58,237,0.30)",
-      }}
-    >
-      {isPending ? <Loader2 size={13} className="animate-spin" /> : <DollarSign size={13} />}
-      {isPending
-        ? "Waiting for wallet…"
-        : `Withdraw ${fmtUsdc(pending)} USDC`}
-    </button>
+    <div className="space-y-1.5">
+      <div className="text-xs" style={{ color: T.subtle }}>
+        Credited to you from this stream:{" "}
+        <span className="font-semibold mono" style={{ color: T.ink }}>
+          {approx ? "up to " : ""}{fmtUsdc(credit)} USDC
+        </span>
+        {pending !== undefined && pending === 0n && <span style={{ color: "#15803d" }}> · withdrawn</span>}
+      </div>
+      {hasPending && (
+        <>
+          <button
+            onClick={handle}
+            disabled={signing}
+            className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-bold transition-all hover:brightness-105 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+            style={{ background: "linear-gradient(135deg,#7c3aed,#8b5cf6)", color: "#fff", boxShadow: "0 3px 12px rgba(124,58,237,0.30)" }}
+          >
+            {signing ? <Loader2 size={13} className="animate-spin" /> : <DollarSign size={13} />}
+            {signing ? "Waiting for wallet…" : `Withdraw ${fmtUsdc(pending)} USDC`}
+          </button>
+          {includesOthers && (
+            <div className="text-[11px]" style={{ color: T.muted }}>
+              Withdrawing pays out your whole pending balance, which also includes USDC from your other streams.
+            </div>
+          )}
+        </>
+      )}
+    </div>
   );
 }
 
@@ -798,9 +822,9 @@ export function StreamCard({
         <ReclaimButton streamId={stream.streamId} onReclaimed={handleReclaimed} />
       )}
 
-      {/* Claim payout: shown after any terminal event (settle / reclaim / complete) */}
-      {(isTerminal || isExpired) && (
-        <ClaimPayoutButton onClaimed={() => onEvent?.("claim")} />
+      {/* Payout for THIS stream: only for its funder/agent, only once it has settled or been reclaimed */}
+      {isTerminal && (
+        <StreamPayout stream={stream} onClaimed={() => onEvent?.("claim")} />
       )}
 
       {/* Restart: finished streams (expired, completed or reclaimed) can be re-created in one click */}
