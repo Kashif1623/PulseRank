@@ -590,6 +590,9 @@ export function StreamCard({
   // One agent wallet works one open stream at a time (frontend rule)
   const agentBusyWith = useAgentBusyWith(initialStream.agent, initialStream.streamId);
 
+  // Action buttons are only for the connected wallet's own role in THIS stream
+  const { address: connectedWallet } = useAccount();
+
   // Local optimistic state: starts from the prop, can be overridden instantly
   const [optimisticStatus, setOptimisticStatus] = useState<number | null>(null);
   const [optimisticLastHb, setOptimisticLastHb] = useState<bigint | null>(null);
@@ -703,8 +706,11 @@ export function StreamCard({
   const isProposed  = stream.status === 0;
   const isTerminal  = stream.status >= 3;          // Completed / Reclaimed / Cancelled
   // Self-streams: show both agent actions (heartbeat/accept) and funder actions (reclaim)
-  const showAgentActions  = role === "agent"  || isSelfStream;
-  const showFunderActions = role === "funder" || isSelfStream;
+  // Authorization follows the connected wallet, not the tab: the contract only lets the stream's
+  // agent accept / heartbeat, and only its funder or agent settle, so other wallets see no actions.
+  const me = connectedWallet?.toLowerCase();
+  const showAgentActions  = !!me && me === stream.agent.toLowerCase();
+  const showFunderActions = !!me && me === stream.funder.toLowerCase();
 
   return (
     <div className="rounded-2xl p-4 space-y-3"
