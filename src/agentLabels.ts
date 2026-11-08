@@ -11,12 +11,10 @@
  * name stored in the registry.
  */
 export const AGENT_NAME_BY_ID: Record<number, string> = {
-  7: "Maliks_CircleAgent",
+  6: "Studio_Agent",
 };
 
-export const AGENT_NAME_BY_ADDRESS: Record<string, string> = {
-  "0x2d25420eed251f087dd2fc8442e43e134c635b0f": "Maliks_CircleAgent",
-};
+export const AGENT_NAME_BY_ADDRESS: Record<string, string> = {};
 
 export function customAgentName(agentId: number, owner: string | undefined): string | undefined {
   return AGENT_NAME_BY_ID[agentId] ?? (owner ? AGENT_NAME_BY_ADDRESS[owner.toLowerCase()] : undefined);
