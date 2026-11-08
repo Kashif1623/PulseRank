@@ -732,10 +732,10 @@ function LeaderboardPanel({ setTab }: { setTab: (t: Tab) => void }) {
         <ActivityFeed ref={feedRef} onEvent={handleEvent} />
       </div>
 
-      {/* All protocol streams on leaderboard */}
+      {/* The connected wallet's own streams */}
       <div className="glass rounded-2xl p-5">
         <h3 className="display text-sm font-bold mb-3 flex items-center gap-2" style={{ color: T.ink }}>
-          <Clock size={13} style={{ color: T.accent }} /> All Protocol Streams
+          <Clock size={13} style={{ color: T.accent }} /> Your Streams
         </h3>
         <GlobalStreamList onEvent={handleStreamEvent} />
       </div>
@@ -1050,65 +1050,70 @@ function FunderPanel({ prefill }: { prefill?: StreamPrefill | null }) {
 
       <div className="glass rounded-2xl p-5">
         <h3 className="display text-sm font-bold mb-3 flex items-center gap-2" style={{ color: T.ink }}>
-          <Clock size={13} style={{ color: T.accent }} /> All Protocol Streams
-          {isConnected && <span className="ml-1 text-xs font-normal" style={{ color: T.subtle }}>· your streams highlighted</span>}
+          <Clock size={13} style={{ color: T.accent }} /> Your Streams
         </h3>
-        <GlobalStreamList highlightAddress={address} />
+        <GlobalStreamList />
       </div>
     </div>
   );
 }
 
 // ── GlobalStreamList ────────────────────────────────────────────────────────
-// Iterates ALL stream IDs (1 … nextStreamId-1) and renders every stream.
-// Pass `highlightAddress` to visually highlight the user's own streams.
-// The StreamCard internally shows Accept / Heartbeat / Reclaim buttons
-// only when the connected wallet matches the assigned role.
+// Lists ONLY the streams where the connected wallet is the funder or the agent.
+// Without a connected wallet it shows a connect prompt and reads nothing from the chain.
+// It scans the latest MAX_GLOBAL stream IDs and filters them by the connected address.
+// The StreamCard shows Accept / Heartbeat / Settle / Reclaim only to the matching party.
 
 const MAX_GLOBAL = 50;
 
-function GlobalStreamList({ highlightAddress, onEvent }: {
-  highlightAddress?: string;
+function GlobalStreamList({ onEvent }: {
   onEvent?: (type: "heartbeat" | "accept" | "reclaim" | "settle" | "claim", streamId?: number) => void;
 }) {
+  const { address } = useAccount();
+
   const { data: nextRaw, isLoading: nextLoading } = useReadContract({
     address: CONTRACTS.stream, abi: STREAM_READ_ABI,
     functionName: "nextStreamId", chainId: ARC_MAINNET_ID,
+    query: { enabled: !!address },
   });
 
   const total = nextRaw !== undefined ? Math.max(0, Number(nextRaw) - 1) : 0;
   const fetchCount = Math.min(total, MAX_GLOBAL);
+  const firstId = total - fetchCount + 1; // newest MAX_GLOBAL streams
 
   const streamCalls = Array.from({ length: fetchCount }, (_, i) => ({
     address: CONTRACTS.stream, abi: STREAM_GET_ABI,
-    functionName: "getStream" as const, args: [BigInt(i + 1)] as [bigint],
+    functionName: "getStream" as const, args: [BigInt(firstId + i)] as [bigint],
     chainId: ARC_MAINNET_ID,
   }));
 
   const { data: streamResults, isLoading: streamsLoading } = useReadContracts({
-    contracts: streamCalls, query: { enabled: fetchCount > 0 },
+    contracts: streamCalls, query: { enabled: !!address && fetchCount > 0 },
   });
+
+  if (!address) {
+    return <WalletGuard message="Connect your wallet to view your streams." compact />;
+  }
 
   if (nextLoading || streamsLoading) {
     return <div className="text-sm text-center py-6 flex items-center justify-center gap-2" style={{ color: T.subtle }}>
-      <Loader2 size={14} className="animate-spin" style={{ color: T.accent }} /> Loading all streams…
+      <Loader2 size={14} className="animate-spin" style={{ color: T.accent }} /> Loading your streams…
     </div>;
   }
 
-  if (fetchCount === 0) {
-    return <div className="text-sm text-center py-6" style={{ color: T.placeholder }}>
-      No streams have been created yet.
-    </div>;
-  }
-
+  const me = address.toLowerCase();
   const streams: StreamData[] = [];
   streamResults?.forEach((r, i) => {
     if (r.status !== "success" || !r.result) return;
     const t = r.result as Record<string, unknown>;
+    const funder = t.funder as string;
+    const agent  = t.agent  as string;
+    // Only the connected wallet's own streams: it must be the funder or the agent.
+    if (funder.toLowerCase() !== me && agent.toLowerCase() !== me) return;
     streams.push({
-      streamId:           i + 1,
-      funder:             t.funder             as string,
-      agent:              t.agent              as string,
+      streamId:           firstId + i,
+      funder,
+      agent,
       totalAmount:        t.totalAmount        as bigint,
       durationSecs:       t.durationSecs       as bigint,
       ratePerSecX18:      t.ratePerSecX18      as bigint,
@@ -1125,42 +1130,33 @@ function GlobalStreamList({ highlightAddress, onEvent }: {
     });
   });
 
-  // Dedup: for each funder+agent pair keep the highest-streamId entry
-  // (preserves the most recent stream per relationship)
-  const dedupMap = new Map<string, StreamData>();
-  for (const s of streams) {
-    const key = `${s.funder.toLowerCase()}:${s.agent.toLowerCase()}`;
-    const existing = dedupMap.get(key);
-    if (!existing || s.streamId > existing.streamId) dedupMap.set(key, s);
+  if (streams.length === 0) {
+    return <div className="text-sm text-center py-6" style={{ color: T.placeholder }}>
+      {total === 0
+        ? "No streams have been created yet."
+        : "You have no streams yet. Streams you fund, or that are assigned to you as an agent, appear here."}
+    </div>;
   }
-  const deduped = Array.from(dedupMap.values());
 
-  // Sort: active first, then proposed, then rest by streamId desc
-  const sorted = [...deduped].sort((a, b) => {
+  // Sort: active first, then proposed, then the rest by streamId desc
+  const sorted = [...streams].sort((a, b) => {
     const order = (s: number) => s === 1 ? 0 : s === 0 ? 1 : 2;
     const diff = order(a.status) - order(b.status);
     return diff !== 0 ? diff : b.streamId - a.streamId;
   });
 
-  const hi = highlightAddress?.toLowerCase();
-
   return (
     <div className="space-y-3">
       {total > MAX_GLOBAL && (
         <p className="text-xs text-center" style={{ color: T.subtle }}>
-          Showing latest {MAX_GLOBAL} of {total} streams
+          Checked the latest {MAX_GLOBAL} of {total} streams
         </p>
       )}
       {sorted.map(s => {
-        const isOwn = hi && (
-          s.funder.toLowerCase() === hi || s.agent.toLowerCase() === hi
-        );
-        // Determine role for StreamCard button logic
-        const role: "funder" | "agent" = hi && s.agent.toLowerCase() === hi
-          ? "agent" : "funder";
+        // The role only labels the card; actions follow the connected wallet inside StreamCard.
+        const role: "funder" | "agent" = s.agent.toLowerCase() === me ? "agent" : "funder";
         return (
-          <div key={s.streamId}
-               style={isOwn ? { outline: `2px solid rgba(2,132,199,0.45)`, borderRadius: 16 } : {}}>
+          <div key={s.streamId}>
             <StreamCard stream={s} role={role} onEvent={(type) => onEvent?.(type, s.streamId)} />
           </div>
         );
@@ -1343,10 +1339,9 @@ function AgentPanel() {
       {/* Incoming streams */}
       <div className="glass rounded-2xl p-5">
         <h3 className="display text-sm font-bold mb-3 flex items-center gap-2" style={{ color: T.ink }}>
-          <Zap size={13} style={{ color: T.accent }} /> All Protocol Streams
-          {isConnected && <span className="ml-1 text-xs font-normal" style={{ color: T.subtle }}>· your streams highlighted</span>}
+          <Zap size={13} style={{ color: T.accent }} /> Your Streams
         </h3>
-        <GlobalStreamList highlightAddress={address} />
+        <GlobalStreamList />
       </div>
 
       {/* Live work feed */}
