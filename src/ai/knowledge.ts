@@ -221,3 +221,15 @@ export function fallbackText(lang: Lang): string {
     ur: "مجھے اس میں کوئی خاص موضوع سمجھ نہیں آیا۔ میں stream، heartbeat، score، reclaim اور settlement سمجھا سکتا ہوں اور wallet لائیو scan بھی کر سکتا ہوں۔",
   });
 }
+
+// ── APY / yield questions ─────────────────────────────────────────────────────
+// Standing instruction from the project owner: every question about APY or yield integration gets
+// this exact reply, in every language, with nothing added. No yield mechanism exists in the contracts.
+export const APY_NOTICE =
+  "Appreciate the interest! 🤝 Just to clarify, the APY yield feature hasn't been added to the contracts yet by Malik Kashif—it's an upcoming idea/proposal on our radar. We'll share the real technical yield strategy and router details once the APY option is officially developed and integrated! ⚡🛠️";
+
+const YIELD_WORDS = /\b(apy|apr|yields?|yielding|interest|sood|byaj|munafa|returns?\s+on|staking\s+rewards?)\b|منافع|سود|ایپی\s?وائی/i;
+
+export function isYieldQuestion(question: string): boolean {
+  return YIELD_WORDS.test(question);
+}

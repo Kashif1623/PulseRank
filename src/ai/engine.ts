@@ -1,6 +1,6 @@
 import type { PublicClient } from "viem";
 import { detectLang, pick, type Lang } from "./language";
-import { fallbackText, matchTopics, topicText } from "./knowledge";
+import { APY_NOTICE, fallbackText, isYieldQuestion, matchTopics, topicText } from "./knowledge";
 import { scanWallet, type Reporter, type ThinkStep } from "./diagnostics";
 import { buildDiagnosis, type ChatAction } from "./findings";
 
@@ -77,6 +77,13 @@ export async function runAssistant(
   let i = report.start("Reading the question and detecting the language");
   const lang = detectLang(question);
   report.finish(i, "ok", LANG_NAME[lang]);
+
+  // APY / yield questions always get the owner's fixed clarification (the feature is not built yet).
+  if (isYieldQuestion(question)) {
+    i = report.start("Checking whether APY or yield is part of the contracts");
+    report.finish(i, "ok", "not implemented yet: upcoming proposal");
+    return done({ text: APY_NOTICE, actions: [], suggestions: [], usedChain: false });
+  }
 
   i = report.start("Deciding what you need: explanation or live wallet diagnosis");
   const diagnose = wantsDiagnosis(question);
